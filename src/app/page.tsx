@@ -23,12 +23,12 @@ export default async function Dashboard() {
   return (
     <main className="app-shell">
       <aside className="sidebar">
-        <div className="brand"><span className="brand-mark">C</span><span>convergia</span><em>beta</em></div>
+        <div className="brand"><span className="brand-mark">C</span><span>cadencia</span><em>por Convergia</em></div>
         <nav aria-label="Navegación principal">
-          <a className="nav-item active" href="#overview"><i>01</i> Pulso</a>
-          <a className="nav-item" href="#campaigns"><i>02</i> Campañas <span>{campaigns.length}</span></a>
+          <Link className="nav-item active" href="/"><i>01</i> Pulso</Link>
+          <Link className="nav-item" href="/app/campaigns"><i>02</i> Campañas <span>{campaigns.length}</span></Link>
           <Link className="nav-item" href="/app/settings/catalogs"><i>03</i> Datos y agentes</Link>
-          <a className="nav-item" href="#reports"><i>04</i> Resultados</a>
+          <Link className="nav-item" href="/app/results"><i>04</i> Resultados</Link>
           <Link className="nav-item" href="/app/settings/members"><i>05</i> Equipo</Link>
           <Link className="nav-item" href="/app/settings/audit"><i>06</i> Actividad</Link>
         </nav>
@@ -45,13 +45,13 @@ export default async function Dashboard() {
         </header>
 
         <section className="hero-grid" id="overview">
-          <article className="metric-card dark"><p>Campañas configuradas</p><strong>{campaigns.length.toString().padStart(2, "0")}</strong><span>Datos reales del control API</span></article>
+          <article className="metric-card soft-accent"><p>Campañas configuradas</p><strong>{campaigns.length.toString().padStart(2, "0")}</strong><span>Datos reales del control API</span></article>
           <article className="metric-card"><p>Operando ahora</p><strong>{campaigns.filter((campaign) => campaign.status === "running").length.toString().padStart(2, "0")}</strong><span className="positive">Ejecución supervisada</span></article>
           <article className="metric-card"><p>Requieren revisión</p><strong>{campaigns.filter((campaign) => campaign.status === "paused" || campaign.status === "failed").length.toString().padStart(2, "0")}</strong><span>Pausadas o con incidencias</span></article>
         </section>
 
         <section className="section-block" id="campaigns">
-          <div className="section-heading"><div><p className="eyebrow">Operación</p><h2>Campañas en el radar</h2></div><a href="#all">Explorar operación ↗</a></div>
+          <div className="section-heading"><div><p className="eyebrow">Operación</p><h2>Campañas en el radar</h2></div><Link href="/app/campaigns">Explorar operación ↗</Link></div>
           <div className="campaign-list">
             {campaigns.map((campaign) => (
               <article className="campaign-row" key={campaign.name}>
