@@ -59,13 +59,13 @@ export default async function MembersPage() {
   return (
     <main className="members-shell">
       <header className="members-header">
-        <div><p className="eyebrow">Configuración</p><h1>Usuarios y acceso</h1><p className="muted">Invita personas, asigna responsabilidades y revoca accesos.</p></div>
+        <div><p className="eyebrow">Workspace</p><h1>Equipo y acceso</h1><p className="muted">Invita personas, asigna responsabilidades y controla quién puede operar.</p></div>
         <Link href="/">← Volver al resumen</Link>
       </header>
 
       <section className="member-grid">
         <form action={invite} className="member-invite-card">
-          <p className="eyebrow">Nueva invitación</p><h2>Dar acceso</h2>
+          <p className="eyebrow">Nueva invitación</p><h2>Sumar al equipo</h2>
           <label>Correo corporativo<input name="email" type="email" autoComplete="email" required placeholder="persona@empresa.com" /></label>
           <label>Rol<select name="role" defaultValue="operator">{roles.filter((role) => canAssignOwner || role.value !== "owner").map((role) => <option value={role.value} key={role.value}>{role.label}</option>)}</select></label>
           <button className="primary-action" type="submit">Crear invitación</button>

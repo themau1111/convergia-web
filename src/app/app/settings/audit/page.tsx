@@ -35,7 +35,7 @@ export default async function AuditPage() {
 
   return (
     <main className="members-shell">
-      <header className="members-header"><div><p className="eyebrow">Configuración</p><h1>Auditoría</h1><p className="muted">Cambios administrativos y operativos de la organización.</p></div><Link href="/">← Volver al resumen</Link></header>
+      <header className="members-header"><div><p className="eyebrow">Trazabilidad</p><h1>Registro de actividad</h1><p className="muted">Una línea de tiempo de los cambios administrativos y operativos.</p></div><Link href="/">← Volver al pulso</Link></header>
       <section className="audit-page-card">
         <div className="audit-page-head"><span>Evento</span><span>Actor</span><span>Cambio</span><span>Fecha</span></div>
         {events.map((event) => <article className="audit-page-row" key={event.id}><div><strong>{labels[event.action] ?? event.action}</strong><small>{event.entity_type} · {event.entity_id.slice(0, 8)}</small></div><span>{event.actor_display_name ?? event.actor_subject}</span><code>{changeSummary(event.metadata)}</code><time dateTime={event.created_at}>{dateTime.format(new Date(event.created_at))}</time></article>)}
