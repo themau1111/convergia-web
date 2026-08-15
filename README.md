@@ -27,6 +27,10 @@ Para habilitar el acceso se requieren issuer, audience de la API, cliente OIDC y
 `AUTH_SECRET`; las
 credenciales se resuelven en tiempo de ejecución. El callback que debe registrarse
 en el proveedor es `/api/auth/callback/oidc` sobre el dominio de la web.
+La integración nativa Auth0/Vercel puede aportar `AUTH0_DOMAIN`, `AUTH0_CLIENT_ID`,
+`AUTH0_CLIENT_SECRET` y `AUTH0_SECRET`; el adaptador los acepta sin perder compatibilidad
+con `AUTH_OIDC_*`. El audience continúa siendo explícito porque representa la API de
+control, no la aplicación web.
 
 ## Estructura prevista
 

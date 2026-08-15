@@ -1,14 +1,18 @@
 import NextAuth from "next-auth";
 
+const auth0Domain = process.env.AUTH0_DOMAIN?.replace(/^https?:\/\//, "").replace(/\/$/, "");
+const oidcIssuer = process.env.AUTH_OIDC_ISSUER ?? (auth0Domain ? `https://${auth0Domain}/` : undefined);
+
 export const { auth, handlers, signIn, signOut } = NextAuth({
+  secret: process.env.AUTH_SECRET ?? process.env.AUTH0_SECRET,
   providers: [
     {
       id: "oidc",
       name: "Acceso corporativo",
       type: "oidc",
-      issuer: process.env.AUTH_OIDC_ISSUER,
-      clientId: process.env.AUTH_OIDC_CLIENT_ID,
-      clientSecret: process.env.AUTH_OIDC_CLIENT_SECRET,
+      issuer: oidcIssuer,
+      clientId: process.env.AUTH_OIDC_CLIENT_ID ?? process.env.AUTH0_CLIENT_ID,
+      clientSecret: process.env.AUTH_OIDC_CLIENT_SECRET ?? process.env.AUTH0_CLIENT_SECRET,
       authorization: {
         params: {
           scope: "openid email profile",
