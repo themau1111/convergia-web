@@ -13,15 +13,17 @@ export default async function LoginPage() {
     <main className="login-shell">
       <section className="login-story">
         <div className="brand light"><span className="brand-mark">C</span><span>convergia</span></div>
-        <div><p className="eyebrow">Voice operations</p><h1>Conversaciones humanas.<br />Operación precisa.</h1><p>Configura cada campaña, entiende cada llamada y mantén el control de tus datos.</p></div>
-        <small>Privacidad y trazabilidad desde el primer contacto.</small>
+        <div className="login-signal" aria-hidden="true"><span /><span /><span /><span /><span /></div>
+        <div><p className="eyebrow">Centro de operaciones de voz</p><h1>Haz que cada llamada<br />mueva la operación.</h1><p>Diseña campañas, ajusta el comportamiento del agente y convierte conversaciones en decisiones claras.</p></div>
+        <small>Control, contexto y trazabilidad en tiempo real.</small>
       </section>
       <section className="login-panel">
         <form className="login-card" action={login}>
-          <p className="eyebrow">Bienvenido</p><h2>Ingresa a tu espacio</h2><p className="muted">Administra campañas y resultados desde un solo lugar.</p>
-          <button type="submit" className="login-button">Continuar con acceso seguro</button>
-          <div className="form-meta"><span>Credenciales administradas por tu organización</span><Link href="/forgot-password">¿Problemas para entrar?</Link></div>
-          <p className="security-note">Convergia no recibe ni almacena tu contraseña. El acceso y la recuperación ocurren en el proveedor de identidad.</p>
+          <span className="login-step">Acceso al workspace</span>
+          <p className="eyebrow">Bienvenido</p><h2>Tu operación empieza aquí.</h2><p className="muted">Usa la cuenta autorizada por tu organización para entrar al panel.</p>
+          <button type="submit" className="login-button">Entrar a Convergia <span>↗</span></button>
+          <div className="form-meta"><span>Identidad protegida por Auth0</span><Link href="/forgot-password" prefetch={false}>Recuperar acceso</Link></div>
+          <p className="security-note">Convergia nunca recibe tu contraseña. Auth0 administra el inicio de sesión, recuperación y factores de seguridad.</p>
         </form>
       </section>
     </main>

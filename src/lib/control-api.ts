@@ -43,7 +43,7 @@ export type AuditEventRecord = {
 };
 
 export type MemberRole = "owner" | "admin" | "operator" | "analyst" | "viewer";
-export type CurrentMembership = { subject: string; organization_id: string; role: MemberRole };
+export type CurrentMembership = { subject: string; organization_id: string; organization_name: string; role: MemberRole };
 export type MemberRecord = {
   id: string;
   email?: string | null;
