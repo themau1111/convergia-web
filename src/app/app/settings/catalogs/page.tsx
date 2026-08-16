@@ -18,6 +18,7 @@ import {
   getSqlDataSourcePlan,
   getDataSourceVerification,
   startLocalPocTestCall,
+  type LocalClientRecord,
   updateSqlDataSourceMapping,
   updateLocalPocClient,
 } from "@/lib/control-api";
@@ -48,9 +49,15 @@ export default async function CatalogsPage() {
   const sqlPlans = new Map((await Promise.all(sqlSources.map(async (source) => [
     source.id, await getSqlDataSourcePlan(source.id).catch(() => null),
   ] as const))).filter((entry) => entry[1]));
-  const localClients = new Map(await Promise.all(localPortfolios.map(async (portfolio) => [
-    portfolio.id, await getLocalPocClients(portfolio.id).catch(() => []),
-  ] as const)));
+  const localClientEntries: Array<readonly [string, { clients: LocalClientRecord[]; error: boolean }]> = await Promise.all(localPortfolios.map(async (portfolio) => {
+    try {
+      return [portfolio.id, { clients: await getLocalPocClients(portfolio.id), error: false }] as const;
+    } catch {
+      return [portfolio.id, { clients: [] as LocalClientRecord[], error: true }] as const;
+    }
+  }));
+  const localClientResults = new Map(localClientEntries);
+  const localClients = new Map(Array.from(localClientResults, ([id, result]) => [id, result.clients]));
   const sourceVerifications = new Map(await Promise.all(sources.map(async (source) => [
     source.id, await getDataSourceVerification(source.id).catch(() => null),
   ] as const)));
@@ -194,8 +201,9 @@ export default async function CatalogsPage() {
           <div className="test-portfolio-grid">
             {localPortfolios.map((portfolio) => (
               <article key={portfolio.id}>
-                <header><strong>{portfolio.name}</strong><small>{localClients.get(portfolio.id)?.length ?? 0} activos</small></header>
+                <header><strong>{portfolio.name}</strong><small>{localClientResults.get(portfolio.id)?.error ? "No se pudo cargar" : `${localClients.get(portfolio.id)?.length ?? 0} activos`}</small></header>
                 <div className="test-recipient-list">
+                  {localClientResults.get(portfolio.id)?.error && <p className="portfolio-load-error">No pudimos consultar esta cartera. Recarga la página; si continúa, revisaremos la conexión con la API.</p>}
                   {localClients.get(portfolio.id)?.map((client) => (
                     <div className="test-recipient" key={client.id}>
                       <div><strong>{client.nombre_cliente}</strong><a href={`tel:${client.telefono}`}>{client.telefono}</a><small>Saldo de prueba: ${client.saldo_pendiente.toLocaleString("es-MX")}</small></div>
@@ -207,6 +215,7 @@ export default async function CatalogsPage() {
                       </form>
                     </div>
                   ))}
+                  {!localClientResults.get(portfolio.id)?.error && !localClients.get(portfolio.id)?.length && <p className="muted portfolio-empty">Esta cartera todavía no tiene destinatarios activos.</p>}
                 </div>
               </article>
             ))}
