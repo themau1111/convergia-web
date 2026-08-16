@@ -16,6 +16,8 @@ import {
   syncLocalPocPortfolios,
   getSqlDataSourceMapping,
   getSqlDataSourcePlan,
+  getDataSourceVerification,
+  startLocalPocTestCall,
   updateSqlDataSourceMapping,
   updateLocalPocClient,
 } from "@/lib/control-api";
@@ -48,6 +50,9 @@ export default async function CatalogsPage() {
   ] as const))).filter((entry) => entry[1]));
   const localClients = new Map(await Promise.all(localPortfolios.map(async (portfolio) => [
     portfolio.id, await getLocalPocClients(portfolio.id).catch(() => []),
+  ] as const)));
+  const sourceVerifications = new Map(await Promise.all(sources.map(async (source) => [
+    source.id, await getDataSourceVerification(source.id).catch(() => null),
   ] as const)));
 
   async function addSource(formData: FormData) {
@@ -125,6 +130,17 @@ export default async function CatalogsPage() {
     revalidatePath("/app/settings/catalogs");
   }
 
+  async function callLocalClient(formData: FormData) {
+    "use server";
+    if (String(formData.get("confirmed") ?? "") !== "yes") {
+      throw new Error("call_confirmation_required");
+    }
+    await startLocalPocTestCall(
+      required(formData, "portfolio_id"), Number(required(formData, "client_id")),
+    );
+    revalidatePath("/app/settings/catalogs");
+  }
+
   async function saveSqlMapping(formData: FormData) {
     "use server";
     const optional = (key: string) => String(formData.get(key) ?? "").trim() || null;
@@ -161,10 +177,42 @@ export default async function CatalogsPage() {
     <main className="members-shell">
       <header className="members-header"><div><p className="eyebrow">Configuración operativa</p><h1>Datos y agentes</h1><p className="muted">Conecta carteras y define identidades de voz sin exponer credenciales del cliente.</p></div><Link href="/">← Volver al pulso</Link></header>
       <section className="catalog-grid">
-        <article className="catalog-card"><p className="eyebrow">1. Fuente</p><h2>Origen de datos</h2><form action={addSource}><label>Nombre<input name="name" required placeholder="Carteras de prueba" /></label><label>Adaptador<select name="adapter_type" defaultValue="local_poc"><option value="local_poc">Datos locales de prueba</option><option value="mysql">MySQL</option><option value="postgresql">PostgreSQL</option><option value="http_api">API HTTP</option></select></label><button className="primary-action">Agregar fuente</button></form><p className="security-note">La fuente local conserva las carteras y clientes editables de la POC. Las fuentes externas sólo guardarán referencias, nunca credenciales en la web.</p><ul>{sources.map((source) => <li key={source.id}><strong>{source.name}</strong><small>{source.adapter_type} · {source.status}</small>{source.adapter_type === "local_poc" && <form action={syncLocal}><input type="hidden" name="data_source_id" value={source.id} /><button className="text-button">Sincronizar carteras locales</button></form>}</li>)}</ul></article>
+        <article className="catalog-card"><p className="eyebrow">1. Fuente</p><h2>Origen de datos</h2><form action={addSource}><label>Nombre<input name="name" required placeholder="Carteras de prueba" /></label><label>Adaptador<select name="adapter_type" defaultValue="local_poc"><option value="local_poc">Datos locales de prueba</option><option value="mysql">MySQL</option><option value="postgresql">PostgreSQL</option><option value="http_api">API HTTP</option></select></label><button className="primary-action">Agregar fuente</button></form><p className="security-note">La fuente local conserva las carteras y clientes editables de la POC. Las fuentes externas sólo guardarán referencias, nunca credenciales en la web.</p><ul>{sources.map((source) => { const verification = sourceVerifications.get(source.id); return <li key={source.id}><strong>{source.name}</strong><small>{source.adapter_type} · {verification?.status === "ready" ? "verificada" : verification?.status === "error" ? "con error" : "conexión pendiente"}</small>{verification && <div className={`source-check ${verification.status}`}><b>{verification.message}</b><small>{verification.portfolios_found} carteras · {verification.eligible_recipients ?? "sin conteo real"} destinatarios</small></div>}{source.adapter_type === "local_poc" && <form action={syncLocal}><input type="hidden" name="data_source_id" value={source.id} /><button className="text-button">Sincronizar carteras locales</button></form>}</li>; })}</ul></article>
         <article className="catalog-card"><p className="eyebrow">2. Cartera externa</p><h2>Selección autorizada</h2><form action={addPortfolio}><label>Nombre<input name="name" required placeholder="Mora temprana" /></label><label>Fuente<select name="data_source_id" required defaultValue=""><option value="" disabled>Selecciona una fuente externa</option>{externalSources.map((source) => <option value={source.id} key={source.id}>{source.name}</option>)}</select></label><label>Clave externa<input name="external_key" required placeholder="mora_temprana" /></label><label>Destinatarios estimados<input name="estimated_recipients" type="number" min="0" /></label><button className="primary-action" disabled={!externalSources.length}>Agregar referencia</button></form><ul>{portfolios.filter((portfolio) => !localSourceIds.has(portfolio.data_source_id)).map((portfolio) => <li key={portfolio.id}><strong>{portfolio.name}</strong><small>{portfolio.external_key} · {portfolio.estimated_recipients ?? "sin estimación"}</small></li>)}</ul></article>
         <article className="catalog-card"><p className="eyebrow">3. Perfil versionado</p><h2>Identidad del agente</h2><form action={addProfile}><label>Clave del perfil<input name="profile_key" required placeholder="cobranza-amable" /></label><label>Nombre del agente<input name="agent_name" required placeholder="Sofía" /></label><label>Empresa presentada<input name="company_name" required placeholder="Financiera Horizonte" /></label><label>Personalidad<textarea name="personality" required maxLength={1000} placeholder="Empática, clara y directa…" /></label><label>ID de voz opcional<input name="voice_id" /></label><button className="primary-action">Crear nueva versión</button></form><ul>{profiles.map((profile) => <li key={profile.id}><strong>{profile.agent_name} · {profile.company_name}</strong><small>v{profile.version} · {profile.personality}</small></li>)}</ul></article>
       </section>
+      {localPortfolios.length > 0 && (
+        <section className="test-operation-card">
+          <div className="test-operation-head">
+            <div>
+              <p className="eyebrow">Pruebas controladas</p>
+              <h2>¿A quién vamos a llamar?</h2>
+              <p className="muted">Los números locales son visibles sólo para administración. Cada llamada requiere confirmación individual.</p>
+            </div>
+            <span>{Array.from(localClients.values()).reduce((total, clients) => total + clients.length, 0)} destinatarios</span>
+          </div>
+          <div className="test-portfolio-grid">
+            {localPortfolios.map((portfolio) => (
+              <article key={portfolio.id}>
+                <header><strong>{portfolio.name}</strong><small>{localClients.get(portfolio.id)?.length ?? 0} activos</small></header>
+                <div className="test-recipient-list">
+                  {localClients.get(portfolio.id)?.map((client) => (
+                    <div className="test-recipient" key={client.id}>
+                      <div><strong>{client.nombre_cliente}</strong><a href={`tel:${client.telefono}`}>{client.telefono}</a><small>Saldo de prueba: ${client.saldo_pendiente.toLocaleString("es-MX")}</small></div>
+                      <form action={callLocalClient}>
+                        <input type="hidden" name="portfolio_id" value={portfolio.id} />
+                        <input type="hidden" name="client_id" value={client.id} />
+                        <label className="call-confirm"><input type="checkbox" name="confirmed" value="yes" required /> Confirmo una llamada real</label>
+                        <button className="test-call-button">Llamar para prueba ↗</button>
+                      </form>
+                    </div>
+                  ))}
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
       {localSources.length > 0 && <section className="local-data-card"><div><p className="eyebrow">4. Datos propios</p><h2>Carteras y clientes de prueba</h2><p className="muted">Permanecen en SQLite durante la POC. Los clientes de cartera no son usuarios de acceso a la web.</p><form action={addLocalPortfolio}><label>Fuente local<select name="data_source_id" required>{localSources.map((source) => <option value={source.id} key={source.id}>{source.name}</option>)}</select></label><label>Nombre de cartera<input name="name" required placeholder="Cobranza interna" /></label><label>Clave opcional<input name="key" pattern="[a-z0-9_]+" placeholder="cobranza_interna" /></label><label>Descripción<input name="description" maxLength={500} /></label><button className="primary-action">Crear cartera local</button></form></div><div><form action={addLocalClient}><div className="form-grid"><label>Cartera<select name="portfolio_id" required>{localPortfolios.map((portfolio) => <option value={portfolio.id} key={portfolio.id}>{portfolio.name}</option>)}</select></label><label>Nombre<input name="nombre_cliente" required /></label><label>Teléfono<input name="telefono" required placeholder="8112345678" /></label><label>Día de pago<input name="dia_pago" /></label><label>Saldo<input name="saldo_pendiente" type="number" min="0" step="0.01" /></label><label>Producto<input name="articulo" /></label><label>Pagos atrasados<input name="pagos_atrasados" type="number" min="0" /></label><label>Modalidad<input name="modalidad" /></label><label>Cuota<input name="cuota_semanal" type="number" min="0" step="0.01" /></label></div><button className="primary-action" disabled={!localPortfolios.length}>Agregar cliente de prueba</button></form><div className="local-client-list">{localPortfolios.map((portfolio) => <article key={portfolio.id}><strong>{portfolio.name}</strong><small>{localClients.get(portfolio.id)?.length ?? 0} clientes activos</small><ul>{localClients.get(portfolio.id)?.map((client) => <li key={client.id}><details><summary><span>{client.nombre_cliente}</span><small>{client.telefono} · ${client.saldo_pendiente.toLocaleString("es-MX")}</small></summary><form action={editLocalClient} className="local-client-edit"><input type="hidden" name="portfolio_id" value={portfolio.id} /><input type="hidden" name="client_id" value={client.id} /><label>Nombre<input name="nombre_cliente" required defaultValue={client.nombre_cliente} /></label><label>Teléfono<input name="telefono" required defaultValue={client.telefono} /></label><label>Día de pago<input name="dia_pago" defaultValue={client.dia_pago ?? ""} /></label><label>Saldo<input name="saldo_pendiente" type="number" min="0" step="0.01" defaultValue={client.saldo_pendiente} /></label><label>Producto<input name="articulo" defaultValue={client.articulo ?? ""} /></label><label>Pagos atrasados<input name="pagos_atrasados" type="number" min="0" defaultValue={client.pagos_atrasados} /></label><label>Modalidad<input name="modalidad" defaultValue={client.modalidad ?? ""} /></label><label>Cuota<input name="cuota_semanal" type="number" min="0" step="0.01" defaultValue={client.cuota_semanal} /></label><button className="text-button">Guardar cambios</button></form><form action={deactivateLocalClient}><input type="hidden" name="portfolio_id" value={portfolio.id} /><input type="hidden" name="client_id" value={client.id} /><button className="danger-text">Desactivar cliente</button></form></details></li>)}</ul></article>)}</div></div></section>}
       {sqlSources.length > 0 && <section className="sql-mapping-card"><div><p className="eyebrow">5. Mapeo SQL</p><h2>Columnas de sólo lectura</h2><p className="muted">Configura identificadores; los valores se consultarán con parámetros enlazados. Aquí no se capturan credenciales.</p><div className="sql-plan-list">{sqlSources.map((source) => { const plan = sqlPlans.get(source.id); return <article key={source.id} className="sql-plan"><strong>{source.name}</strong>{plan ? <><small>{plan.statement_type} · valores {plan.values_bound ? "enlazados" : "directos"}</small><code>{plan.qualified_table}</code><small>{plan.projected_fields.length} campos · cartera {plan.portfolio_mode === "column" ? "por columna" : "fija"} · filtro activo {plan.active_filter ? "sí" : "no"}</small></> : <small>Guarda un mapeo para previsualizar el plan.</small>}</article>; })}</div></div><form action={saveSqlMapping}><div className="form-grid"><label>Fuente<select name="data_source_id" required>{sqlSources.map((source) => <option value={source.id} key={source.id}>{source.name} · {configuredMappings.has(source.id) ? "mapeada" : "sin mapear"}</option>)}</select></label><label>Esquema opcional<input name="schema_name" placeholder="public" /></label><label>Tabla<input name="table_name" required placeholder="accounts" /></label><label>Columna de cartera<input name="portfolio_column" placeholder="portfolio_key" /></label><label>Cartera fija alternativa<input name="default_portfolio_key" placeholder="default" /></label><label>ID del cliente<input name="external_client_id" required placeholder="client_id" /></label><label>Teléfono<input name="phone" required placeholder="phone_number" /></label><label>ID de cuenta<input name="external_account_id" placeholder="account_id" /></label><label>Nombre<input name="customer_name" placeholder="customer_name" /></label><label>Saldo<input name="balance_due" placeholder="balance" /></label><label>Día de pago<input name="payment_day" placeholder="payment_day" /></label><label>Producto<input name="product" placeholder="product" /></label><label>Pagos atrasados<input name="overdue_payments" placeholder="overdue_count" /></label><label>Modalidad<input name="payment_frequency" placeholder="frequency" /></label><label>Cuota<input name="installment_amount" placeholder="installment" /></label><label>Columna activo opcional<input name="active_column" placeholder="active" /></label><label>Valor activo<input name="active_value" placeholder="1" /></label></div><button className="primary-action">Guardar mapeo validado</button></form></section>}
     </main>

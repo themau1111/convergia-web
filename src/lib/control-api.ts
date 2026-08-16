@@ -65,6 +65,18 @@ export type DataSourceRecord = {
   id: string; name: string; adapter_type: "local_poc" | "mysql" | "postgresql" | "http_api";
   status: "unverified" | "ready" | "error" | "disabled";
 };
+export type DataSourceVerification = {
+  data_source_id: string;
+  adapter_type: DataSourceRecord["adapter_type"];
+  status: "ready" | "requires_connection" | "error";
+  adapter_available: boolean;
+  healthcheck_ok: boolean;
+  mapping_configured: boolean;
+  portfolios_found: number;
+  eligible_recipients?: number | null;
+  checked_at: string;
+  message: string;
+};
 export type SqlDataSourceMapping = {
   schema_name?: string | null; table_name: string;
   portfolio_column?: string | null; default_portfolio_key?: string | null;
@@ -193,6 +205,12 @@ export async function getDataSources(): Promise<DataSourceRecord[]> {
   return controlApi<DataSourceRecord[]>("/v1/data-sources");
 }
 
+export async function getDataSourceVerification(id: string): Promise<DataSourceVerification> {
+  return controlApi<DataSourceVerification>(
+    `/v1/data-sources/${encodeURIComponent(id)}/verification`,
+  );
+}
+
 export async function createDataSource(
   name: string,
   adapterType: DataSourceRecord["adapter_type"],
@@ -247,6 +265,15 @@ export async function deactivateLocalPocClient(
   return controlApi<void>(
     `/v1/portfolios/${encodeURIComponent(portfolioId)}/local-clients/${clientId}/deactivate`,
     { method: "POST" },
+  );
+}
+
+export async function startLocalPocTestCall(
+  portfolioId: string, clientId: number,
+): Promise<{ call_uuid: string; status: "originating"; client_id: number; portfolio_id: string }> {
+  return controlApi(
+    `/v1/portfolios/${encodeURIComponent(portfolioId)}/local-clients/${clientId}/test-call`,
+    { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ confirmed: true }) },
   );
 }
 
