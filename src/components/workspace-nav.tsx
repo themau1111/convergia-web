@@ -8,8 +8,9 @@ const items = [
   ["02", "Campañas", "/app/campaigns"],
   ["03", "Datos y agentes", "/app/settings/catalogs"],
   ["04", "Resultados", "/app/results"],
-  ["05", "Equipo", "/app/settings/members"],
-  ["06", "Actividad", "/app/settings/audit"],
+  ["05", "Calidad", "/app/quality"],
+  ["06", "Equipo", "/app/settings/members"],
+  ["07", "Actividad", "/app/settings/audit"],
 ] as const;
 
 export function WorkspaceNav({ campaignCount }: { campaignCount?: number }) {

@@ -41,6 +41,15 @@ export type AuditEventRecord = {
   id: string; actor_subject: string; actor_display_name?: string | null; action: string; entity_type: string;
   entity_id: string; metadata: Record<string, unknown>; created_at: string;
 };
+export type QualityCallRecord = {
+  uuid: string; updated_at: string; updated_local: string; size_bytes: number;
+};
+export type ConversationEvent = {
+  time: string; kind: "client" | "agent" | "system" | "voicemail"; text: string;
+};
+export type QualityConversation = {
+  uuid: string; truncated: boolean; events: ConversationEvent[];
+};
 
 export type MemberRole = "owner" | "admin" | "operator" | "analyst" | "viewer";
 export type CurrentMembership = { subject: string; organization_id: string; organization_name: string; role: MemberRole };
@@ -127,6 +136,14 @@ async function controlApi<T>(path: string, init?: RequestInit): Promise<T> {
 
 export async function getCampaigns(): Promise<CampaignRecord[]> {
   return controlApi<CampaignRecord[]>("/v1/campaigns");
+}
+
+export async function getQualityCalls(): Promise<QualityCallRecord[]> {
+  return controlApi<QualityCallRecord[]>("/v1/quality/calls");
+}
+
+export async function getQualityConversation(callUuid: string): Promise<QualityConversation> {
+  return controlApi<QualityConversation>(`/v1/quality/calls/${encodeURIComponent(callUuid)}`);
 }
 
 export async function getCampaign(id: string): Promise<CampaignDetail> {
