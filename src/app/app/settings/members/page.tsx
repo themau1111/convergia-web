@@ -26,7 +26,8 @@ function readRole(value: FormDataEntryValue | null): MemberRole {
   return role as MemberRole;
 }
 
-export default async function MembersPage() {
+export default async function MembersPage({ searchParams }: { searchParams: Promise<{ invitation?: string }> }) {
+  const { invitation } = await searchParams;
   const [membership, members] = await Promise.all([
     getCurrentMembership(),
     getMembers().catch(() => null),
@@ -38,8 +39,9 @@ export default async function MembersPage() {
     "use server";
     const email = String(formData.get("email") ?? "").trim().toLowerCase();
     if (!email || !email.includes("@")) throw new Error("invalid_email");
-    await inviteMember(email, readRole(formData.get("role")));
+    const result = await inviteMember(email, readRole(formData.get("role")));
     revalidatePath("/app/settings/members");
+    redirect(`/app/settings/members?invitation=${result.delivery_status}`);
   }
 
   async function updateRole(formData: FormData) {
@@ -68,7 +70,10 @@ export default async function MembersPage() {
           <p className="eyebrow">Nueva invitación</p><h2>Sumar al equipo</h2>
           <label>Correo corporativo<input name="email" type="email" autoComplete="email" required placeholder="persona@empresa.com" /></label>
           <label>Rol<select name="role" defaultValue="operator">{roles.filter((role) => canAssignOwner || role.value !== "owner").map((role) => <option value={role.value} key={role.value}>{role.label}</option>)}</select></label>
-          <button className="primary-action" type="submit">Crear invitación</button>
+          <button className="primary-action" type="submit">Crear y enviar invitación</button>
+          {invitation === "sent" && <p className="form-success" role="status">Invitación creada y correo enviado.</p>}
+          {invitation === "not_configured" && <p className="form-warning" role="status">Invitación creada. El remitente de correo aún no está configurado.</p>}
+          {invitation === "failed" && <p className="form-warning" role="status">Invitación creada, pero el correo no pudo enviarse. Puedes reintentar cuando el remitente esté disponible.</p>}
           <p className="security-note">El acceso se activa cuando la persona inicia sesión con este correo verificado en el proveedor de identidad.</p>
         </form>
 

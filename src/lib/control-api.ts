@@ -61,6 +61,9 @@ export type MemberRecord = {
   status: "active" | "pending";
   created_at: string;
 };
+export type MemberInvitationRecord = MemberRecord & {
+  delivery_status: "sent" | "not_configured" | "failed";
+};
 export type DataSourceRecord = {
   id: string; name: string; adapter_type: "local_poc" | "mysql" | "postgresql" | "http_api";
   status: "unverified" | "ready" | "error" | "disabled";
@@ -324,8 +327,8 @@ export async function createCampaign(payload: CampaignCreatePayload): Promise<Ca
   });
 }
 
-export async function inviteMember(email: string, role: MemberRole): Promise<MemberRecord> {
-  return controlApi<MemberRecord>("/v1/member-invitations", {
+export async function inviteMember(email: string, role: MemberRole): Promise<MemberInvitationRecord> {
+  return controlApi<MemberInvitationRecord>("/v1/member-invitations", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, role }),
