@@ -5,7 +5,7 @@ export default function ForgotPasswordPage() {
   return (
     <main className="login-shell">
       <section className="login-story">
-        <div className="brand light"><span className="brand-mark">C</span><span>cadencia</span><em>por Convergia</em></div>
+        <div className="brand light"><span className="brand-mark">C</span><span>cadencia</span></div>
         <div><p className="eyebrow">Acceso seguro</p><h1>Recupera el control.<br />Sin perder el contexto.</h1><p>Te enviaremos instrucciones al correo asociado con tu organización.</p></div>
         <small>No confirmaremos públicamente si una dirección tiene una cuenta.</small>
       </section>

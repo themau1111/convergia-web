@@ -23,7 +23,7 @@ export default async function Dashboard() {
   return (
     <main className="app-shell">
       <aside className="sidebar">
-        <div className="brand"><span className="brand-mark">C</span><span>cadencia</span><em>por Convergia</em></div>
+        <div className="brand"><span className="brand-mark">C</span><span>cadencia</span></div>
         <nav aria-label="Navegación principal">
           <Link className="nav-item active" href="/"><i>01</i> Pulso</Link>
           <Link className="nav-item" href="/app/campaigns"><i>02</i> Campañas <span>{campaigns.length}</span></Link>
@@ -33,7 +33,7 @@ export default async function Dashboard() {
           <Link className="nav-item" href="/app/settings/audit"><i>06</i> Actividad</Link>
         </nav>
         <div className="sidebar-footer">
-          <div className="organization"><span className="avatar">{initials}</span><div><strong>{membership?.organization_name || "Convergia"}</strong><small>{membership ? roleLabels[membership.role] : "Activando acceso"}</small></div></div>
+          <div className="organization"><span className="avatar">{initials}</span><div><strong>Workspace principal</strong><small>{membership ? roleLabels[membership.role] : "Activando acceso"}</small></div></div>
           <form action={logout}><button className="text-button" type="submit">Cerrar sesión</button></form>
         </div>
       </aside>

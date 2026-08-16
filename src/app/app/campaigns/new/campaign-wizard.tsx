@@ -58,7 +58,7 @@ export function CampaignWizard({ portfolios, profiles }: { portfolios: Portfolio
 
   return (
     <main className="wizard-shell">
-      <header className="wizard-header"><Link href="/app/campaigns">← Volver</Link><div className="brand"><span className="brand-mark">C</span><span>cadencia</span><em>por Convergia</em></div><span>Borrador seguro</span></header>
+      <header className="wizard-header"><Link href="/app/campaigns">← Volver</Link><div className="brand"><span className="brand-mark">C</span><span>cadencia</span></div><span>Borrador seguro</span></header>
       <section className="wizard-layout">
         <aside><p className="eyebrow">Nueva campaña</p><ol>{steps.map((label, index) => <li className={index === step ? "current" : index < step ? "done" : ""} key={label}><span>{index + 1}</span>{label}</li>)}</ol></aside>
         <section className="wizard-form">

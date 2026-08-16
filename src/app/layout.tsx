@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Cadencia | Operación de voz",
-  description: "Cadencia, el workspace de operación de voz de Convergia.",
+  description: "Cadencia, workspace de operación de voz.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
