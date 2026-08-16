@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { auth, signOut } from "@/auth";
+import { auth } from "@/auth";
+import { WorkspaceSidebar } from "@/components/workspace-sidebar";
 import { getCampaigns, getCurrentMembership } from "@/lib/control-api";
 
 const statusLabels = {
@@ -14,29 +15,10 @@ export default async function Dashboard() {
     getCurrentMembership().catch(() => null),
   ]);
   const displayName = session?.user?.name?.split(" ")[0] || "equipo";
-  const initials = (session?.user?.name || session?.user?.email || "CV").slice(0, 2).toUpperCase();
   const roleLabels = { owner: "Propietario", admin: "Administrador", operator: "Operador", analyst: "Analista", viewer: "Consulta" } as const;
-  async function logout() {
-    "use server";
-    await signOut({ redirectTo: "/login" });
-  }
   return (
     <main className="app-shell">
-      <aside className="sidebar">
-        <div className="brand"><span className="brand-mark">C</span><span>cadencia</span></div>
-        <nav aria-label="Navegación principal">
-          <Link className="nav-item active" href="/"><i>01</i> Pulso</Link>
-          <Link className="nav-item" href="/app/campaigns"><i>02</i> Campañas <span>{campaigns.length}</span></Link>
-          <Link className="nav-item" href="/app/settings/catalogs"><i>03</i> Datos y agentes</Link>
-          <Link className="nav-item" href="/app/results"><i>04</i> Resultados</Link>
-          <Link className="nav-item" href="/app/settings/members"><i>05</i> Equipo</Link>
-          <Link className="nav-item" href="/app/settings/audit"><i>06</i> Actividad</Link>
-        </nav>
-        <div className="sidebar-footer">
-          <div className="organization"><span className="avatar">{initials}</span><div><strong>Workspace principal</strong><small>{membership ? roleLabels[membership.role] : "Activando acceso"}</small></div></div>
-          <form action={logout}><button className="text-button" type="submit">Cerrar sesión</button></form>
-        </div>
-      </aside>
+      <WorkspaceSidebar campaignCount={campaigns.length} roleLabel={membership ? roleLabels[membership.role] : "Activando acceso"} />
 
       <section className="workspace">
         <header className="topbar">
