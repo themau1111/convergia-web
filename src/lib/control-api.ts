@@ -112,8 +112,9 @@ export type LocalClientRecord = {
   modalidad?: string | null; cuota_semanal: number;
 };
 export type TestAgentOptions = {
-  agent_name: string; company_name: string; personality: string; voice_id?: string;
+  agent_name: string; company_name: string; personality: string; voice_id?: string | null;
 };
+export type LocalPortfolioAgentConfig = TestAgentOptions & { updated_at?: string | null };
 export type AgentProfileRecord = {
   id: string; version: number; agent_name: string; company_name: string;
   personality: string; voice_id?: string | null;
@@ -246,6 +247,21 @@ export async function getLocalPocClients(id: string): Promise<LocalClientRecord[
   return controlApi<LocalClientRecord[]>(`/v1/portfolios/${encodeURIComponent(id)}/local-clients`);
 }
 
+export async function getLocalPortfolioAgentConfig(id: string): Promise<LocalPortfolioAgentConfig> {
+  return controlApi<LocalPortfolioAgentConfig>(
+    `/v1/portfolios/${encodeURIComponent(id)}/test-agent`,
+  );
+}
+
+export async function updateLocalPortfolioAgentConfig(
+  id: string, payload: TestAgentOptions,
+): Promise<LocalPortfolioAgentConfig> {
+  return controlApi<LocalPortfolioAgentConfig>(
+    `/v1/portfolios/${encodeURIComponent(id)}/test-agent`,
+    { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) },
+  );
+}
+
 export async function createLocalPocClient(
   id: string,
   payload: Omit<LocalClientRecord, "id" | "position" | "activo">,
@@ -295,11 +311,11 @@ export async function startManualTestCall(payload: {
 }
 
 export async function startPortfolioTestCalls(
-  portfolioId: string, confirmationName: string, agent: TestAgentOptions,
+  portfolioId: string, confirmationName: string,
 ): Promise<{ batch_id: string; portfolio_id: string; status: "queued"; queued: number }> {
   return controlApi(`/v1/portfolios/${encodeURIComponent(portfolioId)}/test-calls`, {
     method: "POST", headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ confirmed: true, confirmation_name: confirmationName, agent }),
+    body: JSON.stringify({ confirmed: true, confirmation_name: confirmationName }),
   });
 }
 
