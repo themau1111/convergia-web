@@ -111,6 +111,9 @@ export type LocalClientRecord = {
   articulo?: string | null; pagos_atrasados: number;
   modalidad?: string | null; cuota_semanal: number;
 };
+export type TestAgentOptions = {
+  agent_name: string; company_name: string; personality: string; voice_id?: string;
+};
 export type AgentProfileRecord = {
   id: string; version: number; agent_name: string; company_name: string;
   personality: string; voice_id?: string | null;
@@ -278,6 +281,26 @@ export async function startLocalPocTestCall(
     `/v1/portfolios/${encodeURIComponent(portfolioId)}/local-clients/${clientId}/test-call`,
     { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ confirmed: true }) },
   );
+}
+
+export async function startManualTestCall(payload: {
+  nombre_cliente: string; telefono: string; dia_pago?: string; saldo_pendiente?: number;
+  articulo?: string; pagos_atrasados?: number; modalidad?: string; cuota_semanal?: number;
+  agent: TestAgentOptions;
+}): Promise<{ call_uuid: string; status: "originating" }> {
+  return controlApi("/v1/test-calls/manual", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ...payload, confirmed: true }),
+  });
+}
+
+export async function startPortfolioTestCalls(
+  portfolioId: string, confirmationName: string, agent: TestAgentOptions,
+): Promise<{ batch_id: string; portfolio_id: string; status: "queued"; queued: number }> {
+  return controlApi(`/v1/portfolios/${encodeURIComponent(portfolioId)}/test-calls`, {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ confirmed: true, confirmation_name: confirmationName, agent }),
+  });
 }
 
 export async function getSqlDataSourceMapping(id: string): Promise<SqlDataSourceMapping> {
