@@ -1,5 +1,5 @@
 import { auth, signOut } from "@/auth";
-import { WorkspaceNav } from "@/components/workspace-nav";
+import { WorkspaceSidebarFrame } from "@/components/workspace-sidebar-frame";
 
 export async function WorkspaceSidebar({ campaignCount, roleLabel }: { campaignCount?: number; roleLabel?: string }) {
   const session = await auth();
@@ -9,13 +9,11 @@ export async function WorkspaceSidebar({ campaignCount, roleLabel }: { campaignC
     await signOut({ redirectTo: "/login" });
   }
   return (
-    <aside className="sidebar">
-      <div className="brand"><span className="brand-mark">C</span><span>cadencia</span></div>
-      <WorkspaceNav campaignCount={campaignCount} />
+    <WorkspaceSidebarFrame campaignCount={campaignCount} footer={
       <div className="sidebar-footer">
         <div className="organization"><span className="avatar">{initials}</span><div><strong>Workspace principal</strong><small>{roleLabel || "Acceso operativo"}</small></div></div>
         <form action={logout}><button className="text-button" type="submit">Cerrar sesión</button></form>
       </div>
-    </aside>
+    } />
   );
 }
