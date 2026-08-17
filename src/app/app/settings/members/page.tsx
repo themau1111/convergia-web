@@ -2,6 +2,8 @@ import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
+import { ConfirmationButton } from "@/components/confirmation-button";
+
 import {
   changeMemberRole,
   getCurrentMembership,
@@ -92,7 +94,12 @@ export default async function MembersPage({ searchParams }: { searchParams: Prom
                 ) : <span className="status-pill">Pendiente · {roles.find((role) => role.value === member.role)?.label}</span>}
                 <form action={revoke}>
                   <input type="hidden" name="id" value={member.id} /><input type="hidden" name="status" value={member.status} />
-                  <button type="submit" className="danger-action">{member.status === "pending" ? "Cancelar" : "Revocar"}</button>
+                  <ConfirmationButton
+                    className="danger-action"
+                    title={member.status === "pending" ? "¿Cancelar esta invitación?" : "¿Revocar este acceso?"}
+                    description={member.status === "pending" ? "La invitación dejará de estar disponible para esta persona." : "La persona perderá el acceso a este espacio de trabajo."}
+                    confirmLabel={member.status === "pending" ? "Cancelar invitación" : "Revocar acceso"}
+                  >{member.status === "pending" ? "Cancelar" : "Revocar"}</ConfirmationButton>
                 </form>
               </article>
             ))}

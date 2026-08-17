@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { revalidatePath } from "next/cache";
 
+import { ConfirmationButton } from "@/components/confirmation-button";
+
 import {
   createLocalPocClient, createLocalPocPortfolio, deactivateLocalPocClient,
   getDataSources, getLocalPocClients, getLocalPortfolioAgentConfig, getPortfolios, startLocalPocTestCall,
@@ -77,7 +79,7 @@ export default async function LocalOperationsPage() {
                   </form>
                   <div className="recipient-row-actions">
                     <form action={callClient} className="recipient-call-form"><input type="hidden" name="portfolio_id" value={portfolio.id} /><input type="hidden" name="client_id" value={client.id} /><div><strong>Llamada individual</strong><small>Usará la identidad configurada para {portfolio.name}.</small></div><label className="call-confirm"><input type="checkbox" name="confirmed" value="yes" required /> Confirmo una llamada real</label><button className="test-call-button">Llamar ahora</button></form>
-                    <form action={deactivateClient} className="recipient-deactivate-form"><input type="hidden" name="portfolio_id" value={portfolio.id} /><input type="hidden" name="client_id" value={client.id} /><div><strong>Retirar de esta cartera</strong><small>Dejará de aparecer en pruebas y lotes.</small></div><button className="danger-action">Desactivar destinatario</button></form>
+                    <form action={deactivateClient} className="recipient-deactivate-form"><input type="hidden" name="portfolio_id" value={portfolio.id} /><input type="hidden" name="client_id" value={client.id} /><div><strong>Retirar de esta cartera</strong><small>Dejará de aparecer en pruebas y lotes.</small></div><ConfirmationButton className="danger-action" title={`¿Desactivar a ${client.nombre_cliente}?`} description={`Dejará de aparecer en las pruebas y llamadas de ${portfolio.name}. Sus datos no se eliminarán de forma definitiva.`} confirmLabel="Desactivar destinatario">Desactivar destinatario</ConfirmationButton></form>
                   </div>
                 </div>
               </details>)}

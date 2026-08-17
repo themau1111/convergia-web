@@ -157,6 +157,16 @@ body { background:transparent; }
 .result-note { max-width:820px; }
 .result-note .primary-action { margin-top:18px; }
 .icon-button,.secondary-action,.danger-action,.text-button { cursor:pointer; }
+.confirmation-backdrop { position:fixed; z-index:100; inset:0; display:grid; place-items:center; padding:24px; background:#151020a8; backdrop-filter:blur(7px); animation:confirmation-fade .16s ease-out; }
+.confirmation-modal { width:min(100%,500px); max-height:calc(100dvh - 48px); overflow:auto; padding:28px; border:1px solid #ead9d5; border-radius:22px; background:#fffdfc; box-shadow:0 28px 90px #120d2066; animation:confirmation-rise .2s ease-out; }
+.confirmation-icon { display:grid; width:44px; height:44px; margin-bottom:18px; place-items:center; border-radius:14px; background:#fff0ec; color:#a74431; font-size:22px; font-weight:900; }
+.confirmation-copy .eyebrow { margin:0 0 7px; color:#9d4b3c; }
+.confirmation-copy h2 { margin:0; color:var(--ink); font-family:var(--font-display),Georgia,serif; font-size:clamp(27px,4vw,36px); line-height:1.08; }
+.confirmation-copy>p:last-child { margin:13px 0 0; color:var(--muted); line-height:1.55; }
+.confirmation-actions { display:flex; justify-content:flex-end; gap:10px; margin-top:26px; }
+.confirmation-actions button { min-height:44px; }
+@keyframes confirmation-fade { from { opacity:0; } }
+@keyframes confirmation-rise { from { opacity:0; transform:translateY(10px) scale(.98); } }
 @media (max-width:900px) { .sidebar::after,.login-signal { display:none; }.sidebar { position:relative; }.login-story { min-height:460px; } }
 @media (max-width:600px) { .header-actions { width:100%; align-items:stretch; flex-direction:column; }.header-actions .primary-action { width:100%; }.compact-view { padding-top:28px; } }
 .app-shell>main { min-width:0; }
@@ -223,6 +233,10 @@ body { background:transparent; }
   .review-list div { grid-template-columns:1fr; gap:5px; }
   .wizard-actions { flex-direction:column-reverse; }
   .wizard-actions button,.wizard-actions a { width:100%; }
+  .confirmation-backdrop { align-items:end; padding:12px; }
+  .confirmation-modal { width:100%; max-height:calc(100dvh - 24px); padding:22px 18px 18px; border-radius:20px; }
+  .confirmation-actions { flex-direction:column-reverse; }
+  .confirmation-actions button { width:100%; }
 }
 
 /* Focused local testing and portfolio administration. */
