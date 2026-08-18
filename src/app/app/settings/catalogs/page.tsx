@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { ConfirmationButton } from "@/components/confirmation-button";
 import { ManualCallForm } from "./manual-call-form";
 import { RecipientCallButton } from "./recipient-call-button";
+import { UploadContactsForm } from "./upload-form";
 
 import {
   createLocalPocClient, createLocalPocPortfolio, deactivateLocalPocClient,
@@ -62,6 +63,7 @@ export default async function LocalOperationsPage() {
                 <button className="secondary-action">Guardar identidad</button>
               </form>
             </details>
+            <UploadContactsForm portfolioId={portfolio.id} portfolioName={portfolio.name} />
             <div className="portfolio-recipient-scroll">{result?.clients.map((client) =>
               <details className="recipient-row" key={client.id}>
                 <summary><span><strong>{client.nombre_cliente}</strong><span className="recipient-phone">{client.telefono}</span><small>{client.articulo || "Sin producto"} · ${client.saldo_pendiente.toLocaleString("es-MX")}</small></span><b>Administrar</b></summary>

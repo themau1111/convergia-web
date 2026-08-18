@@ -118,8 +118,30 @@ export type TestAgentOptions = {
 };
 export type LocalPortfolioAgentConfig = TestAgentOptions & { updated_at?: string | null };
 export type AgentProfileRecord = {
-  id: string; version: number; agent_name: string; company_name: string;
-  personality: string; voice_id?: string | null;
+  id: string; organization_id: string; profile_key: string; version: number;
+  agent_name: string; company_name: string; personality: string;
+  script: string; flow_scenarios: string; objective: string;
+  voice_id: string | null; created_at: string;
+};
+export type AgentLabelRecord = {
+  id: string; organization_id: string; profile_key: string;
+  name: string; criteria: string; position: number; created_at: string;
+};
+export type ContactUploadResult = {
+  inserted: number; skipped: number; errors: { row: number; reason: string }[];
+};
+export type TelephonyResultOption = { value: string; label: string };
+export type MonitoringCallRecord = {
+  id: string; call_uuid: string; campaign_id: string;
+  campaign_name: string | null; agent_name: string | null;
+  contact_name: string | null; attempt_number: number; round_number: number;
+  technical_status: string; telephony_result: string | null;
+  labels: { id: string; name: string }[];
+  created_at: string; started_at: string | null; completed_at: string | null;
+};
+export type DialerConfig = {
+  rounds: number; cooldown_minutes: number;
+  telephony_filter: string[]; label_filter: string[];
 };
 export type CampaignCreatePayload = {
   name: string;
@@ -131,6 +153,7 @@ export type CampaignCreatePayload = {
     retry_minutes: number; max_attempts_per_recipient: number;
   };
   notes: string;
+  dialer?: DialerConfig;
 };
 
 async function controlApi<T>(path: string, init?: RequestInit): Promise<T> {
@@ -355,11 +378,74 @@ export async function getAgentProfiles(): Promise<AgentProfileRecord[]> {
 
 export async function createAgentProfile(payload: {
   profile_key: string; agent_name: string; company_name: string;
-  personality: string; voice_id?: string;
+  personality: string; voice_id?: string | null;
+  script?: string; flow_scenarios?: string; objective?: string;
 }): Promise<AgentProfileRecord> {
   return controlApi<AgentProfileRecord>("/v1/agent-profiles", {
     method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload),
   });
+}
+
+export async function getAgentProfile(id: string): Promise<AgentProfileRecord> {
+  return controlApi<AgentProfileRecord>(`/v1/agent-profiles/${encodeURIComponent(id)}`);
+}
+
+export async function updateAgentProfile(
+  id: string,
+  payload: {
+    agent_name?: string; company_name?: string; personality?: string;
+    voice_id?: string | null; script?: string; flow_scenarios?: string;
+    objective?: string; profile_key?: string;
+  },
+): Promise<AgentProfileRecord> {
+  return controlApi<AgentProfileRecord>(`/v1/agent-profiles/${encodeURIComponent(id)}`, {
+    method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload),
+  });
+}
+
+export async function listAgentLabels(versionId: string): Promise<AgentLabelRecord[]> {
+  return controlApi<AgentLabelRecord[]>(`/v1/agent-profiles/${encodeURIComponent(versionId)}/labels`);
+}
+
+export async function createAgentLabel(
+  versionId: string,
+  payload: { name: string; criteria: string; position?: number },
+): Promise<AgentLabelRecord> {
+  return controlApi<AgentLabelRecord>(`/v1/agent-profiles/${encodeURIComponent(versionId)}/labels`, {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload),
+  });
+}
+
+export async function updateAgentLabel(
+  versionId: string, labelId: string,
+  payload: { name?: string; criteria?: string; position?: number },
+): Promise<AgentLabelRecord> {
+  return controlApi<AgentLabelRecord>(
+    `/v1/agent-profiles/${encodeURIComponent(versionId)}/labels/${encodeURIComponent(labelId)}`,
+    { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) },
+  );
+}
+
+export async function deleteAgentLabel(versionId: string, labelId: string): Promise<void> {
+  return controlApi<void>(
+    `/v1/agent-profiles/${encodeURIComponent(versionId)}/labels/${encodeURIComponent(labelId)}`,
+    { method: "DELETE" },
+  );
+}
+
+export async function getTelephonyResults(): Promise<TelephonyResultOption[]> {
+  return controlApi<TelephonyResultOption[]>("/v1/telephony-results");
+}
+
+export async function getMonitoringCalls(params?: {
+  campaign_id?: string; search?: string; limit?: number;
+}): Promise<MonitoringCallRecord[]> {
+  const qs = new URLSearchParams();
+  if (params?.campaign_id) qs.set("campaign_id", params.campaign_id);
+  if (params?.search) qs.set("search", params.search);
+  if (params?.limit) qs.set("limit", String(params.limit));
+  const query = qs.toString();
+  return controlApi<MonitoringCallRecord[]>(`/v1/monitoring/calls${query ? `?${query}` : ""}`);
 }
 
 export async function updateCampaign(
