@@ -16,6 +16,7 @@ export type CampaignDetail = CampaignRecord & {
     timezone: string; start_at: string; end_at: string;
     retry_minutes: number; max_attempts_per_recipient: number;
   };
+  notes?: string | null;
   created_at: string;
   completed_at?: string | null;
   completion_reason?: string | null;
@@ -43,6 +44,7 @@ export type AuditEventRecord = {
 };
 export type QualityCallRecord = {
   uuid: string; updated_at: string; updated_local: string; size_bytes: number;
+  campaign_name?: string | null; agent_name?: string | null;
 };
 export type ConversationEvent = {
   time: string; kind: "client" | "agent" | "system" | "voicemail"; text: string;
@@ -357,6 +359,16 @@ export async function createAgentProfile(payload: {
 }): Promise<AgentProfileRecord> {
   return controlApi<AgentProfileRecord>("/v1/agent-profiles", {
     method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload),
+  });
+}
+
+export async function updateCampaign(
+  id: string,
+  payload: { name?: string; notes?: string; schedule?: CampaignCreatePayload["schedule"] },
+): Promise<CampaignRecord> {
+  return controlApi<CampaignRecord>(`/v1/campaigns/${encodeURIComponent(id)}`, {
+    method: "PATCH", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
   });
 }
 

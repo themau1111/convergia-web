@@ -26,11 +26,17 @@ export default async function CampaignDetailPage({ params }: { params: Promise<{
     getCampaignPreflight(id).catch(() => null),
   ]);
 
+  const canEdit = campaign.status === "paused" &&
+    ["owner", "admin", "operator"].includes(membership.role);
+
   return (
     <main className="campaign-detail-shell">
       <header className="campaign-detail-header">
         <div><Link className="back-link" href="/">← Volver a campañas</Link><p className="eyebrow">Detalle operativo</p><h1>{campaign.name}</h1><p className="muted">{campaign.objective === "payment_reminder" ? "Recordatorio de pago" : "Seguimiento de acuerdo"}</p></div>
-        <span className={`detail-status ${campaign.status}`}>{statusLabels[campaign.status] ?? campaign.status}</span>
+        <div className="detail-header-end">
+          {canEdit && <Link href={`/app/campaigns/${id}/edit`} className="secondary-action">Editar campaña</Link>}
+          <span className={`detail-status ${campaign.status}`}>{statusLabels[campaign.status] ?? campaign.status}</span>
+        </div>
       </header>
 
       <section className="detail-summary-grid" aria-label="Configuración congelada">
