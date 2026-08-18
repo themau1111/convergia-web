@@ -2,11 +2,13 @@ import Link from "next/link";
 import { revalidatePath } from "next/cache";
 
 import { ConfirmationButton } from "@/components/confirmation-button";
+import { ManualCallForm } from "./manual-call-form";
+import { RecipientCallButton } from "./recipient-call-button";
 
 import {
   createLocalPocClient, createLocalPocPortfolio, deactivateLocalPocClient,
-  getDataSources, getLocalPocClients, getLocalPortfolioAgentConfig, getPortfolios, startLocalPocTestCall,
-  startManualTestCall, startPortfolioTestCalls, syncLocalPocPortfolios,
+  getDataSources, getLocalPocClients, getLocalPortfolioAgentConfig, getPortfolios,
+  startPortfolioTestCalls, syncLocalPocPortfolios,
   type LocalClientRecord, type LocalPortfolioAgentConfig, updateLocalPocClient,
   updateLocalPortfolioAgentConfig,
 } from "@/lib/control-api";
@@ -18,12 +20,6 @@ const DEFAULT_AGENT = {
 const value = (data: FormData, key: string) => String(data.get(key) ?? "").trim();
 const required = (data: FormData, key: string) => { const result = value(data, key); if (!result) throw new Error(`missing_${key}`); return result; };
 const numeric = (data: FormData, key: string) => Number(value(data, key) || 0);
-const agentFrom = (data: FormData) => ({
-  agent_name: value(data, "agent_name") || DEFAULT_AGENT.agent_name,
-  company_name: value(data, "company_name") || DEFAULT_AGENT.company_name,
-  personality: value(data, "personality") || DEFAULT_AGENT.personality,
-  ...(value(data, "voice_id") ? { voice_id: value(data, "voice_id") } : {}),
-});
 
 export default async function LocalOperationsPage() {
   const [sources, portfolios] = await Promise.all([getDataSources(), getPortfolios()]);
@@ -42,8 +38,6 @@ export default async function LocalOperationsPage() {
   async function addClient(data: FormData) { "use server"; await createLocalPocClient(required(data, "portfolio_id"), { nombre_cliente: required(data, "nombre_cliente"), telefono: required(data, "telefono"), dia_pago: value(data, "dia_pago"), saldo_pendiente: numeric(data, "saldo_pendiente"), articulo: value(data, "articulo"), pagos_atrasados: numeric(data, "pagos_atrasados"), modalidad: value(data, "modalidad"), cuota_semanal: numeric(data, "cuota_semanal") }); revalidatePath("/app/settings/catalogs"); }
   async function editClient(data: FormData) { "use server"; await updateLocalPocClient(required(data, "portfolio_id"), numeric(data, "client_id"), { nombre_cliente: required(data, "nombre_cliente"), telefono: required(data, "telefono"), dia_pago: value(data, "dia_pago"), saldo_pendiente: numeric(data, "saldo_pendiente"), articulo: value(data, "articulo"), pagos_atrasados: numeric(data, "pagos_atrasados"), modalidad: value(data, "modalidad"), cuota_semanal: numeric(data, "cuota_semanal") }); revalidatePath("/app/settings/catalogs"); }
   async function deactivateClient(data: FormData) { "use server"; await deactivateLocalPocClient(required(data, "portfolio_id"), numeric(data, "client_id")); revalidatePath("/app/settings/catalogs"); }
-  async function callClient(data: FormData) { "use server"; if (value(data, "confirmed") !== "yes") throw new Error("confirmation_required"); await startLocalPocTestCall(required(data, "portfolio_id"), numeric(data, "client_id")); }
-  async function callManual(data: FormData) { "use server"; if (value(data, "confirmed") !== "yes") throw new Error("confirmation_required"); await startManualTestCall({ nombre_cliente: value(data, "nombre_cliente"), telefono: required(data, "telefono"), dia_pago: value(data, "dia_pago"), saldo_pendiente: numeric(data, "saldo_pendiente"), articulo: value(data, "articulo"), pagos_atrasados: numeric(data, "pagos_atrasados"), modalidad: value(data, "modalidad"), cuota_semanal: numeric(data, "cuota_semanal"), agent: agentFrom(data) }); }
   async function callPortfolio(data: FormData) { "use server"; if (value(data, "confirmed") !== "yes") throw new Error("confirmation_required"); await startPortfolioTestCalls(required(data, "portfolio_id"), required(data, "confirmation_name")); }
   async function savePortfolioAgent(data: FormData) { "use server"; await updateLocalPortfolioAgentConfig(required(data, "portfolio_id"), { company_name: required(data, "company_name"), agent_name: required(data, "agent_name"), personality: required(data, "personality"), ...(value(data, "voice_id") ? { voice_id: value(data, "voice_id") } : {}) }); revalidatePath("/app/settings/catalogs"); }
 
@@ -51,7 +45,7 @@ export default async function LocalOperationsPage() {
     <header className="members-header"><div><p className="eyebrow">Laboratorio operativo</p><h1>Pruebas y carteras</h1><p className="muted">Consulta destinatarios locales, administra datos ficticios y ejecuta llamadas controladas.</p></div><Link href="/">← Volver al pulso</Link></header>
     <section className="local-ops-summary"><article><small>Carteras locales</small><strong>{localPortfolios.length}</strong></article><article><small>Destinatarios activos</small><strong>{total}</strong></article><article><small>Origen</small><strong>SQLite POC</strong></article></section>
 
-    <section className="manual-call-card"><div><p className="eyebrow">Llamada rápida</p><h2>Llama sin registrar a la persona</h2><p className="muted">El número y sus datos se usan sólo para esta llamada; no se agregan a ninguna cartera.</p></div><form action={callManual}><div className="form-grid"><label>Teléfono<input name="telefono" required placeholder="8112345678" /></label><label>Nombre opcional<input name="nombre_cliente" /></label></div><details><summary>Agregar datos de cobranza y personalidad</summary><div className="form-grid advanced-call-fields"><label>Empresa<input name="company_name" placeholder={DEFAULT_AGENT.company_name} /></label><label>Agente<input name="agent_name" placeholder={DEFAULT_AGENT.agent_name} /></label><label className="wide-field">Personalidad<textarea name="personality" placeholder={DEFAULT_AGENT.personality} /></label><label>Saldo<input name="saldo_pendiente" type="number" min="0" step=".01" /></label><label>Producto<input name="articulo" /></label><label>Día de pago<input name="dia_pago" /></label><label>Pagos atrasados<input name="pagos_atrasados" type="number" min="0" /></label><label>Modalidad<input name="modalidad" /></label><label>Cuota<input name="cuota_semanal" type="number" min="0" step=".01" /></label><label>ID de voz<input name="voice_id" /></label></div></details><div className="call-submit-row"><label className="call-confirm"><input type="checkbox" name="confirmed" value="yes" required /> Confirmo una llamada real</label><button className="test-call-button">Iniciar llamada ↗</button></div></form></section>
+    <section className="manual-call-card"><div><p className="eyebrow">Llamada rápida</p><h2>Llama sin registrar a la persona</h2><p className="muted">El número y sus datos se usan sólo para esta llamada; no se agregan a ninguna cartera.</p></div><ManualCallForm /></section>
 
     <section className="portfolio-browser">
       <div className="section-heading"><div><p className="eyebrow">Destinatarios registrados</p><h2>Carteras locales</h2></div><span>{total} personas disponibles</span></div>
@@ -78,7 +72,7 @@ export default async function LocalOperationsPage() {
                     <button className="secondary-action wide-field">Guardar cambios</button>
                   </form>
                   <div className="recipient-row-actions">
-                    <form action={callClient} className="recipient-call-form"><input type="hidden" name="portfolio_id" value={portfolio.id} /><input type="hidden" name="client_id" value={client.id} /><div><strong>Llamada individual</strong><small>Usará la identidad configurada para {portfolio.name}.</small></div><label className="call-confirm"><input type="checkbox" name="confirmed" value="yes" required /> Confirmo una llamada real</label><button className="test-call-button">Llamar ahora</button></form>
+                    <RecipientCallButton portfolioId={portfolio.id} clientId={client.id} portfolioName={portfolio.name} />
                     <form action={deactivateClient} className="recipient-deactivate-form"><input type="hidden" name="portfolio_id" value={portfolio.id} /><input type="hidden" name="client_id" value={client.id} /><div><strong>Retirar de esta cartera</strong><small>Dejará de aparecer en pruebas y lotes.</small></div><ConfirmationButton className="danger-action" title={`¿Desactivar a ${client.nombre_cliente}?`} description={`Dejará de aparecer en las pruebas y llamadas de ${portfolio.name}. Sus datos no se eliminarán de forma definitiva.`} confirmLabel="Desactivar destinatario">Desactivar destinatario</ConfirmationButton></form>
                   </div>
                 </div>
