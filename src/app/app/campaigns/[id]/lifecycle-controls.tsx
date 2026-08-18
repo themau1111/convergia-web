@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
+import { toast } from "sonner";
 
 import { ConfirmationButton } from "@/components/confirmation-button";
 import { changeCampaignLifecycle, type LifecycleState } from "./actions";
@@ -16,6 +17,15 @@ export function LifecycleControls({ campaignId, status, canManage, preflightRead
   const action = changeCampaignLifecycle.bind(null, campaignId);
   const [state, formAction, pending] = useActionState<LifecycleState, FormData>(action, {});
   const options = transitions[status] ?? [];
+
+  useEffect(() => {
+    if (state.ok) {
+      toast.success("Estado actualizado", { description: state.ok });
+    } else if (state.error) {
+      toast.error("No se pudo cambiar el estado", { description: state.error });
+    }
+  }, [state]);
+
   if (!canManage || !options.length) return null;
 
   return (
@@ -23,7 +33,6 @@ export function LifecycleControls({ campaignId, status, canManage, preflightRead
       <div><p className="eyebrow">Control administrativo</p><strong>Cambiar ciclo de campaña</strong><small>Estas acciones no inician llamadas ni activan el dispatcher.</small></div>
       <label>Razón operativa <input name="reason" maxLength={300} placeholder="Opcional, recomendada para pausa o cancelación" /></label>
       <div className="lifecycle-actions">{options.map((option) => { const needsPreflight = option.status === "scheduled" || option.status === "running"; const disabled = pending || (needsPreflight && !preflightReady); return option.danger ? <ConfirmationButton disabled={disabled} className="danger-action" name="status" value={option.status} key={option.status} title="¿Cancelar esta campaña?" description="La campaña quedará cancelada y esta acción no podrá revertirse desde la interfaz." confirmLabel="Cancelar campaña">{option.label}</ConfirmationButton> : <button disabled={disabled} title={needsPreflight && !preflightReady ? "Resuelve la prevalidación antes de continuar" : undefined} className="secondary-action" name="status" value={option.status} key={option.status}>{option.label}</button>; })}</div>
-      {state.error && <p className="form-error" role="alert">{state.error}</p>}
     </form>
   );
 }

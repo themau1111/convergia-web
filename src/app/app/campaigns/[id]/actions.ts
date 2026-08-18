@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 
 import { changeCampaignStatus } from "@/lib/control-api";
 
-export type LifecycleState = { error?: string };
+export type LifecycleState = { error?: string; ok?: string };
 const allowed = new Set(["scheduled", "running", "paused", "cancelled"]);
 
 export async function changeCampaignLifecycle(
@@ -23,7 +23,7 @@ export async function changeCampaignLifecycle(
     );
     revalidatePath(`/app/campaigns/${campaignId}`);
     revalidatePath("/");
-    return {};
+    return { ok: `Campaña marcada como ${status}.` };
   } catch {
     return { error: "No fue posible cambiar el estado. Revisa la transición y tus permisos." };
   }
