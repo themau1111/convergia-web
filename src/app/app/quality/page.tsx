@@ -55,12 +55,14 @@ export default async function QualityPage({ searchParams }: { searchParams: Prom
               const params = new URLSearchParams(filterQuery); params.set("call", item.uuid);
               return (
                 <Link className={item.uuid === filters.call ? "active" : ""} href={`/app/quality?${params}`} key={item.uuid}>
-                  <strong>{new Date(item.updated_at).toLocaleDateString("es-MX")}</strong>
-                  <small>{item.updated_local.slice(11, 19)} · {Math.ceil(item.size_bytes / 1024)} KB</small>
-                  {(item.campaign_name || item.agent_name) && (
-                    <span className="quality-call-meta">{[item.campaign_name, item.agent_name].filter(Boolean).join(" · ")}</span>
-                  )}
-                  <code title={item.uuid}>{item.uuid.slice(0, 8)}</code>
+                  <div className="qcall-top">
+                    <strong>{new Date(item.updated_at).toLocaleDateString("es-MX")}</strong>
+                    <small>{item.updated_local.slice(11, 19)} · {Math.ceil(item.size_bytes / 1024)} KB</small>
+                  </div>
+                  <div className="qcall-bottom">
+                    <span className="quality-call-meta">{[item.campaign_name, item.agent_name].filter(Boolean).join(" · ") || <>&nbsp;</>}</span>
+                    <code title={item.uuid}>{item.uuid.slice(0, 8)}</code>
+                  </div>
                 </Link>
               );
             })}
