@@ -59,12 +59,10 @@ export default async function CampaignDetailPage({ params }: { params: Promise<{
 
         <article className="detail-card">
           <div className="section-heading"><div><p className="eyebrow">Actividad técnica</p><h2>Intentos recientes</h2></div><span>{attempts.length}</span></div>
-          <div role="table" aria-label="Intentos de llamada">
+          <div className="attempt-table" role="table" aria-label="Intentos de llamada">
             <div className="attempt-head" role="row"><span>Estado</span><span>Intento</span><span>Inicio</span><span>Referencia</span></div>
-            <div className="attempt-table">
-              {attempts.map((attempt) => <div className="attempt-row" role="row" key={attempt.id}><span><i className={`status-dot ${attempt.technical_status}`} />{statusLabels[attempt.technical_status] ?? attempt.technical_status}</span><span>#{attempt.attempt_number}</span><span>{formatDate(attempt.started_at ?? attempt.created_at)}</span><code>{attempt.call_uuid.slice(0, 8)}</code></div>)}
-              {!attempts.length && <p className="empty-state">Aún no hay intentos registrados.</p>}
-            </div>
+            {attempts.map((attempt) => <div className="attempt-row" role="row" key={attempt.id}><span><i className={`status-dot ${attempt.technical_status}`} />{statusLabels[attempt.technical_status] ?? attempt.technical_status}</span><span>#{attempt.attempt_number}</span><span>{formatDate(attempt.started_at ?? attempt.created_at)}</span><code>{attempt.call_uuid.slice(0, 8)}</code></div>)}
+            {!attempts.length && <p className="empty-state">Aún no hay intentos registrados.</p>}
           </div>
         </article>
       </section>
