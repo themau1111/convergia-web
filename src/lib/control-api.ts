@@ -182,8 +182,8 @@ export async function getCampaigns(): Promise<CampaignRecord[]> {
   return controlApi<CampaignRecord[]>("/v1/campaigns");
 }
 
-export async function getQualityCalls(): Promise<QualityCallRecord[]> {
-  return controlApi<QualityCallRecord[]>("/v1/quality/calls?limit=200");
+export async function getQualityCalls(limit = 200): Promise<QualityCallRecord[]> {
+  return controlApi<QualityCallRecord[]>(`/v1/quality/calls?limit=${limit}`);
 }
 
 export async function getQualityConversation(callUuid: string): Promise<QualityConversation> {

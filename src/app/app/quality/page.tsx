@@ -1,6 +1,7 @@
 import Link from "next/link";
 
-import { getMonitoringCalls, getQualityConversation } from "@/lib/control-api";
+import { getMonitoringCalls, getQualityCalls, getQualityConversation } from "@/lib/control-api";
+import type { MonitoringCallRecord, QualityCallRecord } from "@/lib/control-api";
 import { QualityPoller } from "./quality-poller";
 
 const kindLabel = { client: "Cliente", agent: "Agente", system: "Sistema", voicemail: "Buzón" } as const;
@@ -13,6 +14,54 @@ type MonitoringFilters = {
   date_from?: string;
   date_to?: string;
 };
+
+/** Entrada unificada para la lista de calidad. */
+type QualityListItem = {
+  id: string;
+  call_uuid: string;
+  contact_name: string | null;
+  campaign_name: string | null;
+  agent_name: string | null;
+  round_number: number;
+  telephony_result: string | null;
+  labels: { id: string; name: string }[];
+  created_at: string;
+  started_at: string | null;
+  /** true cuando la entrada viene sólo de logs (llamada manual sin registro en BD) */
+  is_manual: boolean;
+};
+
+function fromMonitoring(r: MonitoringCallRecord): QualityListItem {
+  return {
+    id: r.id,
+    call_uuid: r.call_uuid,
+    contact_name: r.contact_name,
+    campaign_name: r.campaign_name,
+    agent_name: r.agent_name,
+    round_number: r.round_number,
+    telephony_result: r.telephony_result,
+    labels: r.labels,
+    created_at: r.created_at,
+    started_at: r.started_at,
+    is_manual: false,
+  };
+}
+
+function fromQualityLog(r: QualityCallRecord): QualityListItem {
+  return {
+    id: r.uuid,
+    call_uuid: r.uuid,
+    contact_name: null,
+    campaign_name: r.campaign_name ?? null,
+    agent_name: r.agent_name ?? null,
+    round_number: 1,
+    telephony_result: null,
+    labels: [],
+    created_at: r.updated_at,
+    started_at: null,
+    is_manual: true,
+  };
+}
 
 function matchesFilters(
   item: { created_at: string; campaign_name?: string | null; agent_name?: string | null },
@@ -32,10 +81,24 @@ function matchesFilters(
 export default async function QualityPage({ searchParams }: { searchParams: Promise<MonitoringFilters> }) {
   const filters = await searchParams;
 
-  const allCalls = await getMonitoringCalls({
-    search: filters.search || undefined,
-    limit: 200,
-  });
+  const [monitoringCalls, qualitySummaries] = await Promise.all([
+    getMonitoringCalls({ search: filters.search || undefined, limit: 200 }),
+    getQualityCalls(200).catch(() => [] as import("@/lib/control-api").QualityCallRecord[]),
+  ]);
+
+  // UUIDs ya presentes en monitoring (llamadas de campaña)
+  const monitoringUuids = new Set(monitoringCalls.map((r) => r.call_uuid));
+
+  // Llamadas manuales: presentes en quality/calls pero no en monitoring
+  const manualCalls = qualitySummaries
+    .filter((r) => !monitoringUuids.has(r.uuid))
+    .map(fromQualityLog);
+
+  // Fusión ordenada por created_at DESC
+  const allCalls: QualityListItem[] = [
+    ...monitoringCalls.map(fromMonitoring),
+    ...manualCalls,
+  ].sort((a, b) => b.created_at.localeCompare(a.created_at));
 
   const calls = allCalls.filter((item) => matchesFilters(item, filters));
 
@@ -114,14 +177,19 @@ export default async function QualityPage({ searchParams }: { searchParams: Prom
                   key={item.id}
                 >
                   <div className="qcall-top">
-                    <strong>{item.contact_name ?? "Contacto desconocido"}</strong>
+                    <strong>{item.contact_name ?? (item.is_manual ? "Sin registro" : "Contacto desconocido")}</strong>
                     <small>{dateLabel} · {timeLabel}</small>
                   </div>
                   <div className="qcall-bottom">
                     <span className="quality-call-meta">
-                      {[item.campaign_name, item.agent_name].filter(Boolean).join(" · ") || <>&nbsp;</>}
+                      {item.is_manual
+                        ? <em style={{ fontStyle: "normal", color: "var(--muted)" }}>Llamada manual</em>
+                        : [item.campaign_name, item.agent_name].filter(Boolean).join(" · ") || <>&nbsp;</>
+                      }
                     </span>
-                    <span style={{ fontSize: 11, color: "var(--muted)" }}>r{item.round_number}</span>
+                    {!item.is_manual && (
+                      <span style={{ fontSize: 11, color: "var(--muted)" }}>r{item.round_number}</span>
+                    )}
                   </div>
                   {(item.telephony_result || item.labels.length > 0) && (
                     <div className="monitoring-labels">
