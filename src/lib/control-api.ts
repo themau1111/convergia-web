@@ -154,6 +154,7 @@ export type CampaignCreatePayload = {
   };
   notes: string;
   dialer?: DialerConfig;
+  draft?: boolean;
 };
 
 async function controlApi<T>(path: string, init?: RequestInit): Promise<T> {

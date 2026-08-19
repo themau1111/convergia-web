@@ -86,30 +86,35 @@ export function CampaignWizard({
     setStep((current) => Math.min(steps.length - 1, current + 1));
   }
 
-  function create() {
+  function buildPayload(asDraft: boolean) {
+    return {
+      name: draft.name.trim(),
+      objective: draft.objective,
+      portfolio_id: draft.portfolioId,
+      agent_profile_version_id: draft.agentProfileVersionId,
+      dialer: {
+        rounds: draft.rounds,
+        cooldown_minutes: draft.cooldownMinutes,
+        telephony_filter: draft.telephonyFilter,
+        label_filter: draft.labelFilter,
+      },
+      schedule: {
+        timezone: draft.timezone,
+        start_at: scheduledIso(draft.startAt, draft.timezone),
+        end_at: scheduledIso(draft.endAt, draft.timezone),
+        retry_minutes: draft.retryMinutes,
+        max_attempts_per_recipient: draft.maxAttempts,
+      },
+      notes: draft.notes.trim(),
+      draft: asDraft,
+    };
+  }
+
+  function create(asDraft = false) {
     setError("");
     startTransition(async () => {
       try {
-        await submitCampaign({
-          name: draft.name.trim(),
-          objective: draft.objective,
-          portfolio_id: draft.portfolioId,
-          agent_profile_version_id: draft.agentProfileVersionId,
-          dialer: {
-            rounds: draft.rounds,
-            cooldown_minutes: draft.cooldownMinutes,
-            telephony_filter: draft.telephonyFilter,
-            label_filter: draft.labelFilter,
-          },
-          schedule: {
-            timezone: draft.timezone,
-            start_at: scheduledIso(draft.startAt, draft.timezone),
-            end_at: scheduledIso(draft.endAt, draft.timezone),
-            retry_minutes: draft.retryMinutes,
-            max_attempts_per_recipient: draft.maxAttempts,
-          },
-          notes: draft.notes.trim(),
-        });
+        await submitCampaign(buildPayload(asDraft));
       } catch {
         setError("No fue posible crear la campaña. Revisa los datos e inténtalo de nuevo.");
       }
@@ -328,9 +333,14 @@ export function CampaignWizard({
             {step < lastStep ? (
               <button type="button" className="primary-action" onClick={next}>Continuar →</button>
             ) : (
-              <button type="button" className="primary-action" disabled={pending} onClick={create}>
-                {pending ? "Creando…" : "Crear campaña"}
-              </button>
+              <>
+                <button type="button" className="secondary-action" disabled={pending} onClick={() => create(true)}>
+                  Guardar borrador
+                </button>
+                <button type="button" className="primary-action" disabled={pending} onClick={() => create(false)}>
+                  {pending ? "Creando…" : "Crear campaña →"}
+                </button>
+              </>
             )}
           </div>
         </section>
