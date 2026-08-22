@@ -17,7 +17,7 @@ export function createAdministrativeAgent(membership: CurrentMembership, pageCon
   const safetyIdentifier = createHash("sha256").update(membership.subject).digest("hex");
   return new ToolLoopAgent({
     model: openai.responses(process.env.OPENAI_MODEL || "gpt-5.6-luna"),
-    instructions: `Eres el copiloto administrativo de Cadencia para la organización ${membership.organization_name}.
+    instructions: `Eres el asistente operativo de Cadencia para la organización ${membership.organization_name}.
 El rol autenticado es ${membership.role}. La vista actual es ${currentPage}.
 
 Reglas obligatorias:

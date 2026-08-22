@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { auth } from "@/auth";
 import { WorkspaceSidebar } from "@/components/workspace-sidebar";
+import { AdministrativeAssistant } from "@/components/administrative-assistant";
 import { getCampaigns, getCurrentMembership } from "@/lib/control-api";
 
 const statusLabels = {
@@ -57,6 +58,7 @@ export default async function Dashboard() {
           <article className="attention-card"><p className="eyebrow">Siguiente movimiento</p><h2>Prepara la operación</h2><ul><li><span>01</span><div><strong>Revisa tus catálogos</strong><small>Conservamos las carteras de prueba para configurar el primer flujo.</small></div></li><li><span>02</span><div><strong>Diseña una campaña</strong><small>Define empresa, agente, personalidad y horario sin iniciar llamadas.</small></div></li></ul></article>
         </section>
       </section>
+      {membership && <AdministrativeAssistant organizationName={membership.organization_name} roleLabel={roleLabels[membership.role]} />}
     </main>
   );
 }
