@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { auth, signIn } from "@/auth";
 import { redirect } from "next/navigation";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export default async function LoginPage() {
   if (await auth()) redirect("/");
@@ -18,6 +19,7 @@ export default async function LoginPage() {
         <small>Control, contexto y trazabilidad en tiempo real.</small>
       </section>
       <section className="login-panel">
+        <ThemeToggle />
         <form className="login-card" action={login}>
           <span className="login-step">Acceso al workspace</span>
           <p className="eyebrow">Bienvenido</p><h2>Tu operación empieza aquí.</h2><p className="muted">Usa la cuenta autorizada por tu organización para entrar al panel.</p>

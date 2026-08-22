@@ -3,6 +3,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 
 import { WorkspaceNav } from "@/components/workspace-nav";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export function WorkspaceSidebarFrame({
   campaignCount,
@@ -38,6 +39,7 @@ export function WorkspaceSidebarFrame({
       <aside className={`sidebar${open ? " mobile-open" : ""}`} id="workspace-menu">
         <div className="sidebar-brand-row">
           <div className="brand"><span className="brand-mark">C</span><span>cadencia</span></div>
+          <ThemeToggle />
           <button aria-label="Cerrar menú" className="drawer-close" onClick={() => setOpen(false)} type="button">×</button>
         </div>
         <WorkspaceNav campaignCount={campaignCount} onNavigate={() => setOpen(false)} />
