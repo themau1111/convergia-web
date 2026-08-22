@@ -71,6 +71,7 @@ export function AdministrativeAssistant({ organizationName, roleLabel }: { organ
   const [mounted, setMounted] = useState(false);
   const [input, setInput] = useState("");
   const panelRef = useRef<HTMLElement>(null);
+  const launcherRef = useRef<HTMLButtonElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const transport = useMemo(() => new DefaultChatTransport({
@@ -105,8 +106,16 @@ export function AdministrativeAssistant({ organizationName, roleLabel }: { organ
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") hideAssistant();
     };
+    const onPointerDown = (event: PointerEvent) => {
+      const target = event.target as Node;
+      if (!panelRef.current?.contains(target) && !launcherRef.current?.contains(target)) hideAssistant();
+    };
     window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      document.removeEventListener("pointerdown", onPointerDown);
+    };
   }, [open]);
 
   async function submit(text: string) {
@@ -129,6 +138,7 @@ export function AdministrativeAssistant({ organizationName, roleLabel }: { organ
         aria-label={open ? `Cerrar ${ASSISTANT_NAME.toLowerCase()}` : `Abrir ${ASSISTANT_NAME.toLowerCase()}`}
         className={`assistant-launcher ${open ? "is-open" : ""}`}
         onClick={() => open ? hideAssistant() : showAssistant()}
+        ref={launcherRef}
         type="button"
       >
         <BotIcon aria-hidden="true" />
