@@ -2,6 +2,7 @@ import Link from "next/link";
 import { auth, signIn } from "@/auth";
 import { redirect } from "next/navigation";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { LoginSubmit } from "@/components/login-submit";
 
 export default async function LoginPage() {
   if (await auth()) redirect("/");
@@ -23,7 +24,7 @@ export default async function LoginPage() {
         <form className="login-card" action={login}>
           <span className="login-step">Acceso al workspace</span>
           <p className="eyebrow">Bienvenido</p><h2>Tu operación empieza aquí.</h2><p className="muted">Usa la cuenta autorizada por tu organización para entrar al panel.</p>
-          <button type="submit" className="login-button">Entrar a Cadencia <span>↗</span></button>
+          <LoginSubmit />
           <div className="form-meta"><span>Identidad protegida por Auth0</span><Link href="/forgot-password" prefetch={false}>Recuperar acceso</Link></div>
           <p className="security-note">Cadencia nunca recibe tu contraseña. Auth0 administra el inicio de sesión, recuperación y factores de seguridad.</p>
         </form>
