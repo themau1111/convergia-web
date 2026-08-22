@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Toaster } from "sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -12,8 +13,10 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="es">
       <body>
-        {children}
-        <Toaster position="bottom-right" richColors closeButton duration={4000} />
+        <TooltipProvider>
+          {children}
+          <Toaster position="bottom-right" richColors closeButton duration={4000} />
+        </TooltipProvider>
       </body>
     </html>
   );

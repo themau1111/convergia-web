@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useState } from "react";
 import { createAgentAction, type AgentFormState } from "./actions";
 
 const SCRIPT_VARS = "{{nombre_cliente}}, {{saldo_pendiente}}, {{dia_pago}}, {{articulo}}, {{pagos_atrasados}}, {{modalidad}}, {{cuota_semanal}}, {{campaign_name}}, {{company_name}}, {{agent_name}}";
@@ -26,12 +26,8 @@ export function AgentForm() {
   const [profileKey, setProfileKey] = useState("");
   const [profileKeyEdited, setProfileKeyEdited] = useState(false);
 
-  useEffect(() => {
-    if (!profileKeyEdited) {
-      const generated = [slugify(companyName), slugify(agentName)].filter(Boolean).join("-");
-      setProfileKey(generated);
-    }
-  }, [agentName, companyName, profileKeyEdited]);
+  const generatedProfileKey = [slugify(companyName), slugify(agentName)].filter(Boolean).join("-");
+  const visibleProfileKey = profileKeyEdited ? profileKey : generatedProfileKey;
 
   return (
     <form action={formAction} className="campaign-edit-form">
@@ -62,7 +58,7 @@ export function AgentForm() {
             Clave de perfil
             <input
               name="profile_key"
-              value={profileKey}
+              value={visibleProfileKey}
               onChange={(e) => { setProfileKey(e.target.value); setProfileKeyEdited(true); }}
               placeholder="financiera-horizonte-valeria"
               pattern="[a-z0-9\-]+"
