@@ -5,6 +5,7 @@ import {
   startManualTestCall,
   type TestAgentOptions,
 } from "@/lib/control-api";
+import { MANUAL_CALL_DEFAULTS } from "./manual-call-defaults";
 
 export type CallState = { status?: "ok" | "error"; message?: string; call_uuid?: string };
 
@@ -40,14 +41,14 @@ export async function callManualAction(
     return { status: "error", message: "Debes confirmar antes de iniciar la llamada." };
   try {
     const result = await startManualTestCall({
-      nombre_cliente: value(data, "nombre_cliente"),
+      nombre_cliente: value(data, "nombre_cliente") || MANUAL_CALL_DEFAULTS.nombre_cliente,
       telefono,
-      dia_pago: value(data, "dia_pago") || undefined,
-      saldo_pendiente: numeric(data, "saldo_pendiente"),
-      articulo: value(data, "articulo") || undefined,
-      pagos_atrasados: numeric(data, "pagos_atrasados"),
-      modalidad: value(data, "modalidad") || undefined,
-      cuota_semanal: numeric(data, "cuota_semanal"),
+      dia_pago: value(data, "dia_pago") || MANUAL_CALL_DEFAULTS.dia_pago,
+      saldo_pendiente: value(data, "saldo_pendiente") ? numeric(data, "saldo_pendiente") : MANUAL_CALL_DEFAULTS.saldo_pendiente,
+      articulo: value(data, "articulo") || MANUAL_CALL_DEFAULTS.articulo,
+      pagos_atrasados: value(data, "pagos_atrasados") ? numeric(data, "pagos_atrasados") : MANUAL_CALL_DEFAULTS.pagos_atrasados,
+      modalidad: value(data, "modalidad") || MANUAL_CALL_DEFAULTS.modalidad,
+      cuota_semanal: value(data, "cuota_semanal") ? numeric(data, "cuota_semanal") : MANUAL_CALL_DEFAULTS.cuota_semanal,
       agent: agentFrom(data),
     });
     return { status: "ok", call_uuid: result.call_uuid };

@@ -3,6 +3,7 @@
 import { useActionState, useEffect } from "react";
 import { toast } from "sonner";
 import { callManualAction, type CallState } from "./actions";
+import { MANUAL_CALL_DEFAULTS } from "./manual-call-defaults";
 
 const DEFAULT_AGENT_PLACEHOLDERS = {
   company_name: "la institución",
@@ -34,8 +35,8 @@ export function ManualCallForm() {
           <input name="telefono" required placeholder="8112345678" />
         </label>
         <label>
-          Nombre opcional
-          <input name="nombre_cliente" />
+          Nombre de prueba
+          <input name="nombre_cliente" defaultValue={MANUAL_CALL_DEFAULTS.nombre_cliente} />
         </label>
       </div>
       <details>
@@ -44,12 +45,12 @@ export function ManualCallForm() {
           <label>Empresa<input name="company_name" placeholder={DEFAULT_AGENT_PLACEHOLDERS.company_name} /></label>
           <label>Agente<input name="agent_name" placeholder={DEFAULT_AGENT_PLACEHOLDERS.agent_name} /></label>
           <label className="wide-field">Personalidad<textarea name="personality" placeholder={DEFAULT_AGENT_PLACEHOLDERS.personality} /></label>
-          <label>Saldo<input name="saldo_pendiente" type="number" min="0" step=".01" /></label>
-          <label>Producto<input name="articulo" /></label>
-          <label>Día de pago<input name="dia_pago" /></label>
-          <label>Pagos atrasados<input name="pagos_atrasados" type="number" min="0" /></label>
-          <label>Modalidad<input name="modalidad" /></label>
-          <label>Cuota<input name="cuota_semanal" type="number" min="0" step=".01" /></label>
+          <label>Saldo<input name="saldo_pendiente" type="number" min="0.01" step=".01" defaultValue={MANUAL_CALL_DEFAULTS.saldo_pendiente} /></label>
+          <label>Producto<input name="articulo" defaultValue={MANUAL_CALL_DEFAULTS.articulo} /></label>
+          <label>Día de pago<input name="dia_pago" defaultValue={MANUAL_CALL_DEFAULTS.dia_pago} /></label>
+          <label>Pagos atrasados<input name="pagos_atrasados" type="number" min="0" defaultValue={MANUAL_CALL_DEFAULTS.pagos_atrasados} /></label>
+          <label>Modalidad<input name="modalidad" defaultValue={MANUAL_CALL_DEFAULTS.modalidad} /></label>
+          <label>Cuota<input name="cuota_semanal" type="number" min="0.01" step=".01" defaultValue={MANUAL_CALL_DEFAULTS.cuota_semanal} /></label>
           <label>ID de voz<input name="voice_id" /></label>
         </div>
       </details>
