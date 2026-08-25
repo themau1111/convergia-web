@@ -2,7 +2,7 @@
 
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { createCsvPortfolio } from "@/lib/control-api";
+import { createCsvPortfolioAction } from "./actions";
 
 export function CreatePortfolioForm() {
   const [open, setOpen] = useState(false);
@@ -18,7 +18,7 @@ export function CreatePortfolioForm() {
     setError("");
     startTransition(async () => {
       try {
-        await createCsvPortfolio(name);
+        await createCsvPortfolioAction(name);
         router.refresh();
         setOpen(false);
         if (nameRef.current) nameRef.current.value = "";
