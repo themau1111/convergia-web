@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { createAgentProfile } from "@/lib/control-api";
+import { createAgentProfile, createAgentLabel } from "@/lib/control-api";
 
 export type AgentFormState = { error?: string };
 
@@ -54,5 +54,19 @@ export async function createAgentAction(
       return { error: "No tienes permisos para crear agentes." };
     return { error: "No fue posible crear el agente. Revisa los datos e inténtalo de nuevo." };
   }
+
+  // Crear etiquetas pendientes definidas en el formulario
+  const labelsJson = String(data.get("labels_json") ?? "[]").trim();
+  try {
+    const labels: { name: string; criteria: string }[] = JSON.parse(labelsJson);
+    for (const [i, label] of labels.entries()) {
+      if (label.name?.trim() && label.criteria?.trim()) {
+        await createAgentLabel(agentId, { name: label.name.trim(), criteria: label.criteria.trim(), position: i });
+      }
+    }
+  } catch {
+    // Las etiquetas son opcionales; no bloquear la redirección si fallan
+  }
+
   redirect(`/app/agents/${agentId}`);
 }

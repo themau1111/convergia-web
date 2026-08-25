@@ -1,17 +1,26 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { getAgentProfile, listAgentLabels } from "@/lib/control-api";
+import { getAgentProfile, listAgentLabels, getAllAgentLabels } from "@/lib/control-api";
 import { AddLabelForm, DeleteLabelForm } from "./label-forms";
 
 export default async function AgentDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const [agent, labels] = await Promise.all([
+  const [agent, labels, allOrgLabels] = await Promise.all([
     getAgentProfile(id).catch(() => null),
     listAgentLabels(id).catch(() => []),
+    getAllAgentLabels().catch(() => []),
   ]);
 
   if (!agent) notFound();
+
+  // Biblioteca: etiquetas de otros perfiles no duplicadas por nombre con las actuales
+  const existingNames = new Set(labels.map((l) => l.name.toLowerCase()));
+  const library = allOrgLabels.filter(
+    (l, i, arr) =>
+      !existingNames.has(l.name.toLowerCase()) &&
+      arr.findIndex((x) => x.name.toLowerCase() === l.name.toLowerCase()) === i,
+  );
 
   return (
     <main className="campaign-detail-shell">
@@ -63,7 +72,9 @@ export default async function AgentDetailPage({ params }: { params: Promise<{ id
 
         <section className="edit-section">
           <p className="eyebrow">Etiquetas de detección</p>
-          <p className="muted" style={{ marginBottom: 16, fontSize: 13 }}>Las etiquetas clasifican automáticamente los resultados de las llamadas según el criterio definido.</p>
+          <p className="muted" style={{ marginBottom: 16, fontSize: 13 }}>
+            Las etiquetas clasifican automáticamente los resultados de las llamadas según el criterio definido.
+          </p>
           {labels.length > 0 ? (
             <div className="agent-labels-list">
               {labels.map((label) => (
@@ -81,8 +92,10 @@ export default async function AgentDetailPage({ params }: { params: Promise<{ id
           )}
 
           <div style={{ marginTop: 20, paddingTop: 16, borderTop: "1px solid var(--line)" }}>
-            <p style={{ margin: "0 0 12px", fontSize: 12, fontWeight: 700, color: "var(--muted)", textTransform: "uppercase", letterSpacing: ".1em" }}>Agregar etiqueta</p>
-            <AddLabelForm agentId={id} />
+            <p style={{ margin: "0 0 12px", fontSize: 12, fontWeight: 700, color: "var(--muted)", textTransform: "uppercase", letterSpacing: ".1em" }}>
+              Agregar etiqueta
+            </p>
+            <AddLabelForm agentId={id} library={library} />
           </div>
         </section>
       </div>

@@ -1,8 +1,10 @@
 import Link from "next/link";
 
+import { getAllAgentLabels } from "@/lib/control-api";
 import { AgentForm } from "./agent-form";
 
-export default function NewAgentPage() {
+export default async function NewAgentPage() {
+  const library = await getAllAgentLabels().catch(() => []);
   return (
     <main className="campaign-detail-shell">
       <header className="campaign-detail-header">
@@ -13,7 +15,7 @@ export default function NewAgentPage() {
           <p className="muted">Define la identidad, personalidad y script de conversación del agente.</p>
         </div>
       </header>
-      <AgentForm />
+      <AgentForm library={library} />
     </main>
   );
 }

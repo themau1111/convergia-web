@@ -350,6 +350,13 @@ body { background:transparent; }
 .label-chip--telephony { background:#e8eaf6; color:#3949ab; }
 .monitoring-labels { display:flex; flex-wrap:wrap; gap:4px; margin-top:5px; }
 
+/* Label library chips (agent form & detail) */
+.label-library-heading { margin:0 0 8px; font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.08em; }
+.label-library-list { display:flex; flex-wrap:wrap; gap:6px; }
+.label-library-chip { display:inline-flex; align-items:center; padding:4px 12px; border-radius:99px; border:1px solid var(--line); background:var(--paper); color:var(--ink); font-size:12px; font-weight:500; cursor:pointer; transition:background .12s,border-color .12s; white-space:nowrap; }
+.label-library-chip:hover { background:var(--card); border-color:var(--mint); color:var(--ink); }
+.labels-picker { display:grid; gap:0; }
+
 /* Upload contacts */
 .portfolio-upload-panel { margin:0 20px 8px; overflow:hidden; border:1px solid #d9d2ef; border-radius:14px; background:#f7f4ff; }
 .portfolio-upload-panel>summary { display:flex; align-items:center; justify-content:space-between; gap:18px; padding:16px 18px; cursor:pointer; list-style:none; }
@@ -409,6 +416,8 @@ body { background:transparent; }
 [data-theme="dark"] .soft-accent { background:linear-gradient(145deg,#252039,#191723); }
 [data-theme="dark"] .campaign-row,[data-theme="dark"] .quality-line,[data-theme="dark"] .attention-card li,[data-theme="dark"] .member-row,[data-theme="dark"] .review-list div,[data-theme="dark"] .execution-list>div,[data-theme="dark"] .attempt-head,[data-theme="dark"] .attempt-row,[data-theme="dark"] .agent-label-row { border-color:var(--line); }
 [data-theme="dark"] .attempt-head { background:var(--card); }
+[data-theme="dark"] .label-library-chip { background:#1e1b2d; border-color:var(--line); color:#e0dbf5; }
+[data-theme="dark"] .label-library-chip:hover { background:#29253d; border-color:#5b5a8a; }
 [data-theme="dark"] input,[data-theme="dark"] select,[data-theme="dark"] textarea { border-color:var(--input); background:#211e2c; color:var(--ink); }
 [data-theme="dark"] input::placeholder,[data-theme="dark"] textarea::placeholder { color:#888294; }
 [data-theme="dark"] input:focus,[data-theme="dark"] select:focus,[data-theme="dark"] textarea:focus { border-color:var(--ring); box-shadow:0 0 0 3px #6655d533; }

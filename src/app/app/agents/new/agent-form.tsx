@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useActionState, useState } from "react";
 import { createAgentAction, type AgentFormState } from "./actions";
+import { LabelsPicker } from "./labels-picker";
+import type { AgentLabelRecord } from "@/lib/control-api";
 
 const SCRIPT_VARS = "{{nombre_cliente}}, {{saldo_pendiente}}, {{dia_pago}}, {{articulo}}, {{pagos_atrasados}}, {{modalidad}}, {{cuota_semanal}}, {{campaign_name}}, {{company_name}}, {{agent_name}}";
 
@@ -16,7 +18,7 @@ function slugify(value: string) {
     .slice(0, 80);
 }
 
-export function AgentForm() {
+export function AgentForm({ library = [] }: { library?: AgentLabelRecord[] }) {
   const [state, formAction, pending] = useActionState<AgentFormState, FormData>(
     createAgentAction,
     {},
@@ -95,6 +97,16 @@ export function AgentForm() {
             <textarea name="flow_scenarios" rows={6} placeholder="Si el cliente dice que ya pagó: confirmar fecha y monto y agradecer. Si el cliente pide tiempo: ofrecer extensión de hasta 5 días…" style={{ minHeight: 140 }} />
           </label>
         </div>
+      </section>
+
+      <section className="edit-section">
+        <p className="eyebrow">Etiquetas de comportamiento</p>
+        <p className="muted" style={{ marginBottom: 16, fontSize: 13 }}>
+          Las etiquetas clasifican automáticamente los resultados de las llamadas según lo que ocurra en la conversación.
+          Por ejemplo: <em>falta de pago</em>, <em>no toma la llamada</em>, <em>promesa de pago</em>.
+          Puedes agregarlas ahora o después de crear el agente.
+        </p>
+        <LabelsPicker library={library} />
       </section>
 
       {state.error && (

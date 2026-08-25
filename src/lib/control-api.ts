@@ -408,6 +408,10 @@ export async function listAgentLabels(versionId: string): Promise<AgentLabelReco
   return controlApi<AgentLabelRecord[]>(`/v1/agent-profiles/${encodeURIComponent(versionId)}/labels`);
 }
 
+export async function getAllAgentLabels(): Promise<AgentLabelRecord[]> {
+  return controlApi<AgentLabelRecord[]>("/v1/agent-labels");
+}
+
 export async function createAgentLabel(
   versionId: string,
   payload: { name: string; criteria: string; position?: number },
