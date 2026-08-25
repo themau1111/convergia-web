@@ -7,11 +7,12 @@ const items = [
   ["01", "Pulso", "/"],
   ["02", "Campañas", "/app/campaigns"],
   ["03", "Agentes", "/app/agents"],
-  ["04", "Pruebas y carteras", "/app/settings/catalogs"],
-  ["05", "Resultados", "/app/results"],
-  ["06", "Calidad", "/app/quality"],
-  ["07", "Equipo", "/app/settings/members"],
-  ["08", "Actividad", "/app/settings/audit"],
+  ["04", "Carteras", "/app/carteras"],
+  ["05", "Pruebas y carteras", "/app/settings/catalogs"],
+  ["06", "Resultados", "/app/results"],
+  ["07", "Calidad", "/app/quality"],
+  ["08", "Equipo", "/app/settings/members"],
+  ["09", "Actividad", "/app/settings/audit"],
 ] as const;
 
 export function WorkspaceNav({ campaignCount, onNavigate }: { campaignCount?: number; onNavigate?: () => void }) {

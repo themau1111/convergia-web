@@ -412,6 +412,44 @@ export async function getAllAgentLabels(): Promise<AgentLabelRecord[]> {
   return controlApi<AgentLabelRecord[]>("/v1/agent-labels");
 }
 
+// ── Carteras CSV ─────────────────────────────────────────────────────────────
+
+export type CsvPortfolioRecord = {
+  id: string;
+  name: string;
+  contact_count: number;
+  created_at: string;
+};
+
+export type CsvContactRecord = {
+  id: string;
+  position: number;
+  telefono: string;
+  nombre: string;
+  variable_1: string | null;
+  variable_2: string | null;
+  variable_3: string | null;
+  variable_4: string | null;
+  variable_5: string | null;
+  created_at: string;
+};
+
+export async function getCsvPortfolios(): Promise<CsvPortfolioRecord[]> {
+  return controlApi<CsvPortfolioRecord[]>("/v1/csv-portfolios");
+}
+
+export async function getCsvPortfolio(id: string): Promise<CsvPortfolioRecord> {
+  return controlApi<CsvPortfolioRecord>(`/v1/csv-portfolios/${encodeURIComponent(id)}`);
+}
+
+export async function createCsvPortfolio(name: string): Promise<CsvPortfolioRecord> {
+  return controlApi<CsvPortfolioRecord>("/v1/csv-portfolios", { method: "POST", body: JSON.stringify({ name }) });
+}
+
+export async function getCsvContacts(portfolioId: string): Promise<CsvContactRecord[]> {
+  return controlApi<CsvContactRecord[]>(`/v1/csv-portfolios/${encodeURIComponent(portfolioId)}/contacts`);
+}
+
 export async function createAgentLabel(
   versionId: string,
   payload: { name: string; criteria: string; position?: number },
