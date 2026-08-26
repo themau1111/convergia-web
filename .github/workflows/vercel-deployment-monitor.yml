@@ -1,0 +1,47 @@
+name: Monitor Vercel deployment
+
+on:
+  repository_dispatch:
+    types:
+      - vercel.deployment.ready
+      - vercel.deployment.success
+      - vercel.deployment.error
+      - vercel.deployment.failed
+      - vercel.deployment.canceled
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Deployment environment to inspect
+        required: true
+        default: all
+        type: choice
+        options:
+          - all
+          - production
+          - preview
+      deployment_id:
+        description: Optional Vercel deployment ID or URL (defaults to the latest deployment)
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  monitor:
+    name: Inspect Vercel deployment
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      VERCEL_DISPATCH_PAYLOAD: ${{ toJson(github.event.client_payload) }}
+      VERCEL_DEPLOYMENT_INPUT: ${{ github.event.inputs.deployment_id }}
+      VERCEL_ENVIRONMENT_INPUT: ${{ github.event.inputs.environment }}
+    steps:
+      - name: Check out monitoring script
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Wait for and summarize deployment
+        run: node .github/scripts/monitor-vercel-deployment.mjs
