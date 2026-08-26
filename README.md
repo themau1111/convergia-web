@@ -18,10 +18,12 @@ Requiere Node.js 22 y npm.
 
 ```bash
 npm install
+cp .env.local.example .env.local
 npm run dev
 ```
 
-La configuración local parte de `.env.example`. No confirmes archivos `.env`.
+La configuración local parte de `.env.local.example`. Completa las credenciales del
+tenant Auth0 Development en `.env.local`; no confirmes ese archivo.
 
 Para habilitar el acceso se requieren issuer, audience de la API, cliente OIDC y
 `AUTH_SECRET`; las

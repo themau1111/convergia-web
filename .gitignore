@@ -6,6 +6,7 @@ out/
 output/
 .env*
 !.env.example
+!.env.local.example
 npm-debug.log*
 .DS_Store
 .vercel
