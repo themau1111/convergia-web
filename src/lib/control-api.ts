@@ -104,6 +104,7 @@ export type SqlDataSourcePlan = {
 };
 export type PortfolioRecord = {
   id: string; data_source_id: string; external_key: string; name: string;
+  adapter_type?: string;
   estimated_recipients?: number | null;
 };
 export type LocalClientRecord = {
@@ -443,7 +444,11 @@ export async function getCsvPortfolio(id: string): Promise<CsvPortfolioRecord> {
 }
 
 export async function createCsvPortfolio(name: string): Promise<CsvPortfolioRecord> {
-  return controlApi<CsvPortfolioRecord>("/v1/csv-portfolios", { method: "POST", body: JSON.stringify({ name }) });
+  return controlApi<CsvPortfolioRecord>("/v1/csv-portfolios", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name }),
+  });
 }
 
 export async function getCsvContacts(portfolioId: string): Promise<CsvContactRecord[]> {

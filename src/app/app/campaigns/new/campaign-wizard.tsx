@@ -177,19 +177,39 @@ export function CampaignWizard({
               <p className="muted">Selecciona la cartera con los contactos de esta campaña.</p>
               {portfolios.length ? (
                 <fieldset>
-                  {portfolios.map((item) => (
-                    <label className={`choice ${draft.portfolioId === item.id ? "active" : ""}`} key={item.id}>
-                      <input type="radio" checked={draft.portfolioId === item.id} onChange={() => setDraft({ ...draft, portfolioId: item.id })} />
-                      <span>
-                        <strong>{item.name}</strong>
-                        <small>{item.estimated_recipients ?? "Sin estimación"} destinatarios · {item.external_key}</small>
-                      </span>
-                    </label>
-                  ))}
+                  {portfolios.map((item) => {
+                    const isCsv = item.adapter_type === "csv_upload";
+                    const recipientLabel = item.estimated_recipients != null
+                      ? `${item.estimated_recipients} contactos`
+                      : "Sin estimación";
+                    const sourceLabel = isCsv ? "CSV" : item.external_key;
+                    return (
+                      <label className={`choice ${draft.portfolioId === item.id ? "active" : ""}`} key={item.id}>
+                        <input type="radio" checked={draft.portfolioId === item.id} onChange={() => setDraft({ ...draft, portfolioId: item.id })} />
+                        <span>
+                          <strong>
+                            {item.name}
+                            {isCsv && (
+                              <span style={{
+                                marginLeft: 8, fontSize: 10, fontWeight: 600,
+                                padding: "1px 6px", borderRadius: 4,
+                                background: "var(--accent, #6366f1)", color: "#fff",
+                                verticalAlign: "middle", letterSpacing: "0.04em",
+                              }}>CSV</span>
+                            )}
+                          </strong>
+                          <small>{recipientLabel} · {sourceLabel}</small>
+                        </span>
+                      </label>
+                    );
+                  })}
                 </fieldset>
               ) : (
                 <div className="empty-state">
-                  No hay carteras disponibles. <Link href="/app/settings/catalogs">Crea una cartera primero.</Link>
+                  No hay carteras disponibles.{" "}
+                  <Link href="/app/carteras">Crea una cartera CSV</Link>
+                  {" "}o{" "}
+                  <Link href="/app/settings/catalogs">configura una fuente de datos.</Link>
                 </div>
               )}
             </>
