@@ -4,7 +4,6 @@ on:
   repository_dispatch:
     types:
       - vercel.deployment.ready
-      - vercel.deployment.success
       - vercel.deployment.error
       - vercel.deployment.failed
       - vercel.deployment.canceled
