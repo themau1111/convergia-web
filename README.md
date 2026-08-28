@@ -64,5 +64,6 @@ compartir la clave de Server Actions durante el build y coordinar caché/revalid
 según la guía de self-hosting de la versión instalada. Frente a un contenedor propio
 se recomienda un proxy inverso o load balancer que aplique límites y timeouts.
 
-La especificación completa vive en
-`../convergia-poc/docs/PLAN_PRODUCTO_WEB_Y_AGENTE.md`.
+El mapa técnico y operativo de este repositorio comienza en
+[`ai-docs/00-index.md`](ai-docs/00-index.md). Las decisiones compartidas se resumen
+localmente; el contrato ejecutado de FastAPI conserva autoridad sobre sus endpoints.

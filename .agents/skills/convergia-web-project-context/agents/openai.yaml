@@ -1,0 +1,4 @@
+interface:
+  display_name: "Convergia Web Project Context"
+  short_description: "Carga contexto compacto del frontend"
+  default_prompt: "Usa $convergia-web-project-context para orientarte antes de trabajar en este repositorio."
