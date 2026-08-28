@@ -2,6 +2,15 @@
 
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { createCsvPortfolioAction } from "./actions";
 
 type UploadResult = {
@@ -69,73 +78,86 @@ export function CreatePortfolioForm() {
     });
   }
 
-  if (!open) {
-    return (
-      <button className="primary-action" onClick={() => setOpen(true)}>
-        Nueva cartera <span>+</span>
-      </button>
-    );
-  }
-
   return (
-    <form onSubmit={submit} className="csv-create-form">
-      <label>
-        Nombre de la cartera
-        <input
-          ref={nameRef}
-          type="text"
-          placeholder="Cobranza enero 2025"
-          maxLength={120}
-          required
-          autoFocus
-        />
-      </label>
+    <Dialog open={open} onOpenChange={(nextOpen) => nextOpen ? setOpen(true) : reset()}>
+      <DialogTrigger asChild>
+        <button className="primary-action" type="button">
+          Nueva cartera <span>+</span>
+        </button>
+      </DialogTrigger>
+      <DialogContent className="csv-create-dialog" showCloseButton={false}>
+        <DialogClose asChild>
+          <button className="csv-dialog-close" type="button" aria-label="Cerrar">×</button>
+        </DialogClose>
+        <DialogHeader className="csv-create-dialog-header">
+          <p className="eyebrow">Nueva cartera</p>
+          <DialogTitle>Crea y carga en un solo paso</DialogTitle>
+          <DialogDescription>
+            Puedes añadir el archivo ahora o crear una cartera vacía para completarla después.
+          </DialogDescription>
+        </DialogHeader>
 
-      <label>
-        Archivo CSV o Excel <span style={{ fontWeight: 400, color: "var(--muted)" }}>(opcional — puedes subirlo después)</span>
-        <input
-          ref={fileRef}
-          type="file"
-          accept=".csv,.xlsx,.xls"
-        />
-      </label>
-      <p className="muted" style={{ fontSize: 12, margin: "-4px 0 0" }}>
-        Columnas esperadas: <strong>Telefono</strong>, <strong>Nombre</strong>, Variable 1 … Variable 5
-      </p>
+        <form onSubmit={submit} className="csv-create-form">
+          <label>
+            Nombre de la cartera
+            <input
+              ref={nameRef}
+              type="text"
+              placeholder="Cobranza enero 2025"
+              maxLength={120}
+              required
+              autoFocus
+            />
+          </label>
 
-      {error && <p className="form-error" role="alert">{error}</p>}
+          <label>
+            Archivo CSV o Excel <span className="csv-label-optional">Opcional</span>
+            <input
+              className="csv-file-input"
+              ref={fileRef}
+              type="file"
+              accept=".csv,.xlsx,.xls"
+            />
+          </label>
+          <p className="csv-form-help">
+            Columnas esperadas: <strong>Telefono</strong>, <strong>Nombre</strong>, Variable 1 … Variable 5.
+          </p>
 
-      {uploadResult && (
-        <div className="upload-result">
-          <strong>{uploadResult.inserted} contactos importados</strong>
-          {uploadResult.skipped > 0 && <span> · {uploadResult.skipped} omitidos</span>}
-          {uploadResult.errors.length > 0 && (
-            <>
-              <span> · {uploadResult.errors.length} con error</span>
-              <ul style={{ margin: "8px 0 0", paddingLeft: 16, fontSize: 12, color: "#9b432d" }}>
-                {uploadResult.errors.slice(0, 5).map((err, i) => (
-                  <li key={i}>Fila {err.row}: {err.reason}</li>
-                ))}
-                {uploadResult.errors.length > 5 && <li>… y {uploadResult.errors.length - 5} más</li>}
-              </ul>
-            </>
+          {error && <p className="form-error" role="alert">{error}</p>}
+
+          {uploadResult && (
+            <div className="upload-result csv-upload-result" role="status">
+              <strong>{uploadResult.inserted} contactos importados</strong>
+              {uploadResult.skipped > 0 && <span> · {uploadResult.skipped} omitidos</span>}
+              {uploadResult.errors.length > 0 && (
+                <>
+                  <span> · {uploadResult.errors.length} con error</span>
+                  <ul className="csv-upload-errors">
+                    {uploadResult.errors.slice(0, 5).map((err, i) => (
+                      <li key={i}>Fila {err.row}: {err.reason}</li>
+                    ))}
+                    {uploadResult.errors.length > 5 && <li>… y {uploadResult.errors.length - 5} más</li>}
+                  </ul>
+                </>
+              )}
+              <button type="button" className="secondary-action" onClick={reset}>
+                Cerrar
+              </button>
+            </div>
           )}
-          <button type="button" className="secondary-action" style={{ marginTop: 10 }} onClick={reset}>
-            Cerrar
-          </button>
-        </div>
-      )}
 
-      {!uploadResult && (
-        <div style={{ display: "flex", gap: 10 }}>
-          <button type="button" className="secondary-action" onClick={reset}>
-            Cancelar
-          </button>
-          <button type="submit" className="primary-action" disabled={pending}>
-            {pending ? "Creando…" : "Crear cartera"}
-          </button>
-        </div>
-      )}
-    </form>
+          {!uploadResult && (
+            <div className="csv-form-actions">
+              <button type="button" className="secondary-action" onClick={reset} disabled={pending}>
+                Cancelar
+              </button>
+              <button type="submit" className="primary-action" disabled={pending}>
+                {pending ? "Creando…" : "Crear cartera"}
+              </button>
+            </div>
+          )}
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }

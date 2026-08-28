@@ -56,14 +56,15 @@ export function UploadCsvContactsForm({ portfolioId, portfolioName }: { portfoli
       <label>
         Archivo de contactos
         <input
+          className="csv-file-input"
           ref={inputRef}
           type="file"
           accept=".csv,.xlsx,.xls"
           required
         />
       </label>
-      <p className="muted" style={{ fontSize: 12, margin: "-4px 0 0" }}>
-        Columnas: <strong>Telefono</strong>, <strong>Nombre</strong>, Variable 1 … Variable 5 · Formatos: CSV o XLSX
+      <p className="csv-form-help">
+        Columnas: <strong>Telefono</strong>, <strong>Nombre</strong>, Variable 1 … Variable 5. Formatos: CSV, XLSX o XLS.
       </p>
       <button type="submit" className="secondary-action" disabled={pending}>
         {pending ? "Importando…" : `Importar a "${portfolioName}"`}
@@ -72,13 +73,13 @@ export function UploadCsvContactsForm({ portfolioId, portfolioName }: { portfoli
       {uploadError && <p className="form-error" role="alert">{uploadError}</p>}
 
       {result && (
-        <div className="upload-result">
+        <div className="upload-result csv-upload-result" role="status">
           <strong>{result.inserted} contactos importados</strong>
           {result.skipped > 0 && <span> · {result.skipped} omitidos</span>}
           {result.errors.length > 0 && (
             <>
               <span> · {result.errors.length} con error</span>
-              <ul style={{ margin: "8px 0 0", paddingLeft: 16, fontSize: 12, color: "#9b432d" }}>
+              <ul className="csv-upload-errors">
                 {result.errors.slice(0, 8).map((err, i) => (
                   <li key={i}>Fila {err.row}: {err.reason}</li>
                 ))}

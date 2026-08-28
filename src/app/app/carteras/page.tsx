@@ -11,6 +11,8 @@ const TEMPLATE_BLOB = `data:text/csv;charset=utf-8,${encodeURIComponent(`${TEMPL
 
 export default async function CarterasPage() {
   const portfolios = await getCsvPortfolios().catch(() => [] as CsvPortfolioRecord[]);
+  const totalContacts = portfolios.reduce((total, portfolio) => total + portfolio.contact_count, 0);
+  const readyPortfolios = portfolios.filter((portfolio) => portfolio.contact_count > 0).length;
 
   const portfolioContacts: Map<string, CsvContactRecord[]> = new Map();
   await Promise.all(
@@ -21,15 +23,14 @@ export default async function CarterasPage() {
   );
 
   return (
-    <main className="members-shell">
-      <header className="members-header">
+    <main className="members-shell carteras-page">
+      <header className="members-header carteras-header">
         <div>
           <p className="eyebrow">Marcación</p>
           <h1>Carteras CSV</h1>
           <p className="muted">
-            Sube archivos CSV o Excel con tus contactos y úsalos en campañas.
-            Las variables 1–5 quedan disponibles en el script del agente como{" "}
-            <code style={{ fontSize: 11 }}>{"{{variable_1}}"}</code> … <code style={{ fontSize: 11 }}>{"{{variable_5}}"}</code>.
+            Importa contactos desde CSV o Excel y úsalos en tus campañas. Las variables 1–5 quedan disponibles en el script del agente como{" "}
+            <code>{"{{variable_1}}"}</code> … <code>{"{{variable_5}}"}</code>.
           </p>
         </div>
         <div className="header-actions">
@@ -45,13 +46,38 @@ export default async function CarterasPage() {
         </div>
       </header>
 
+      <section className="carteras-summary" aria-label="Resumen de carteras">
+        <article>
+          <span>Carteras creadas</span>
+          <strong>{portfolios.length}</strong>
+          <small>Listas para organizar por campaña</small>
+        </article>
+        <article>
+          <span>Contactos cargados</span>
+          <strong>{totalContacts.toLocaleString("es-MX")}</strong>
+          <small>Disponibles para la marcación</small>
+        </article>
+        <article>
+          <span>Carteras listas</span>
+          <strong>{readyPortfolios}</strong>
+          <small>{portfolios.length - readyPortfolios} sin contactos</small>
+        </article>
+      </section>
+
       {portfolios.length === 0 ? (
-        <div className="empty-state">
+        <div className="empty-state csv-empty-state">
           <strong>Aún no hay carteras.</strong>
           <span>Crea tu primera cartera y sube un archivo CSV con tus contactos.</span>
         </div>
       ) : (
-        <div className="portfolio-stack">
+        <section className="csv-portfolio-stack" aria-labelledby="carteras-disponibles">
+          <div className="carteras-section-heading">
+            <div>
+              <p className="eyebrow">Biblioteca de contactos</p>
+              <h2 id="carteras-disponibles">Carteras disponibles</h2>
+            </div>
+            <span>{portfolios.length} {portfolios.length === 1 ? "cartera" : "carteras"}</span>
+          </div>
           {portfolios.map((portfolio) => {
             const contacts = portfolioContacts.get(portfolio.id) ?? [];
             const vars = ["variable_1", "variable_2", "variable_3", "variable_4", "variable_5"] as const;
@@ -62,31 +88,42 @@ export default async function CarterasPage() {
             return (
               <details className="csv-portfolio-panel" key={portfolio.id}>
                 <summary>
-                  <span>
+                  <span className="csv-portfolio-summary-main">
                     <strong>{portfolio.name}</strong>
-                    <small>{portfolio.contact_count} contactos · creada {new Date(portfolio.created_at).toLocaleDateString("es-MX")}</small>
+                    <small>{portfolio.contact_count.toLocaleString("es-MX")} contactos · creada {new Date(portfolio.created_at).toLocaleDateString("es-MX")}</small>
                   </span>
-                  <b>{portfolio.contact_count > 0 ? `${portfolio.contact_count} listos` : "Vacía"}</b>
+                  <b className={portfolio.contact_count > 0 ? "is-ready" : "is-empty"}>
+                    {portfolio.contact_count > 0 ? `${portfolio.contact_count.toLocaleString("es-MX")} listos` : "Vacía"}
+                  </b>
                 </summary>
 
                 <div className="csv-portfolio-body">
-                  {/* Upload form */}
                   <section className="csv-portfolio-section">
-                    <p className="eyebrow">Importar contactos</p>
+                    <div className="csv-section-heading">
+                      <div>
+                        <p className="eyebrow">Importar contactos</p>
+                        <h3>Actualiza esta cartera</h3>
+                        <p>Agrega un nuevo archivo CSV o Excel. Conservaremos las variables que incluyas en cada fila.</p>
+                      </div>
+                    </div>
                     <UploadCsvContactsForm portfolioId={portfolio.id} portfolioName={portfolio.name} />
                   </section>
 
-                  {/* Contact preview */}
                   {contacts.length > 0 && (
                     <section className="csv-portfolio-section">
-                      <p className="eyebrow">
-                        Vista previa · {contacts.length} contactos
+                      <div className="csv-section-heading csv-preview-heading">
+                        <div>
+                          <p className="eyebrow">Vista previa</p>
+                          <h3>{contacts.length.toLocaleString("es-MX")} contactos cargados</h3>
+                        </div>
                         {usedVars.length > 0 && (
-                          <span style={{ fontWeight: 400, color: "var(--muted)", marginLeft: 8 }}>
-                            Variables activas: {usedVars.map((v) => v.replace("_", " ")).join(", ")}
+                          <span className="csv-variable-list" aria-label="Variables activas">
+                            {usedVars.map((variable) => (
+                              <span className="csv-variable-chip" key={variable}>{variable.replace("_", " ")}</span>
+                            ))}
                           </span>
                         )}
-                      </p>
+                      </div>
                       <div className="csv-contacts-table-wrap">
                         <table className="csv-contacts-table">
                           <thead>
@@ -113,7 +150,7 @@ export default async function CarterasPage() {
                           </tbody>
                         </table>
                         {contacts.length > 50 && (
-                          <p className="muted" style={{ padding: "8px 12px", fontSize: 12 }}>
+                          <p className="csv-preview-note">
                             Mostrando 50 de {contacts.length} contactos.
                           </p>
                         )}
@@ -124,7 +161,7 @@ export default async function CarterasPage() {
               </details>
             );
           })}
-        </div>
+        </section>
       )}
     </main>
   );
