@@ -2,6 +2,13 @@ import "server-only";
 
 import { auth } from "@/auth";
 
+export class ControlApiError extends Error {
+  constructor(public readonly code: string) {
+    super(code);
+    this.name = "ControlApiError";
+  }
+}
+
 export type CampaignRecord = {
   id: string;
   name: string;
@@ -160,12 +167,12 @@ export type CampaignCreatePayload = {
 
 async function controlApi<T>(path: string, init?: RequestInit): Promise<T> {
   const session = await auth();
-  if (!session?.accessToken) throw new Error("missing_session");
+  if (!session?.accessToken) throw new ControlApiError("missing_session");
   if (session.accessTokenExpiresAt && session.accessTokenExpiresAt * 1000 <= Date.now()) {
-    throw new Error("expired_session");
+    throw new ControlApiError("expired_session");
   }
   const baseUrl = process.env.CONTROL_API_URL?.replace(/\/$/, "");
-  if (!baseUrl) throw new Error("missing_control_api_url");
+  if (!baseUrl) throw new ControlApiError("missing_control_api_url");
   const response = await fetch(`${baseUrl}${path}`, {
     ...init,
     cache: "no-store",
@@ -175,9 +182,16 @@ async function controlApi<T>(path: string, init?: RequestInit): Promise<T> {
       ...(init?.headers ?? {}),
     },
   });
-  if (!response.ok) throw new Error(`control_api_${response.status}`);
+  if (!response.ok) {
+    console.warn(JSON.stringify({ event: "control_api_failure", status: response.status }));
+    throw new ControlApiError(`control_api_${response.status}`);
+  }
   if (response.status === 204) return undefined as T;
   return response.json() as Promise<T>;
+}
+
+export function controlApiFailureCode(error: unknown): string | null {
+  return error instanceof ControlApiError ? error.code : null;
 }
 
 export async function getCampaigns(): Promise<CampaignRecord[]> {

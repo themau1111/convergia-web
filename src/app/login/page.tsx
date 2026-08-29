@@ -4,8 +4,9 @@ import { redirect } from "next/navigation";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LoginSubmit } from "@/components/login-submit";
 
-export default async function LoginPage() {
-  if (await auth()) redirect("/");
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ reason?: string }> }) {
+  const { reason } = await searchParams;
+  if (await auth() && !reason) redirect("/");
   async function login() {
     "use server";
     await signIn("oidc", { redirectTo: "/" });
@@ -24,6 +25,8 @@ export default async function LoginPage() {
         <form className="login-card" action={login}>
           <span className="login-step">Acceso al workspace</span>
           <p className="eyebrow">Bienvenido</p><h2>Tu operación empieza aquí.</h2><p className="muted">Usa la cuenta autorizada por tu organización para entrar al panel.</p>
+          {reason === "session" && <p className="session-notice" role="status">Tu sesión ya no es válida o venció. Inicia sesión de nuevo para continuar.</p>}
+          {reason === "access" && <p className="session-notice" role="status">Inicia sesión con una cuenta que tenga acceso a este workspace.</p>}
           <LoginSubmit />
           <div className="form-meta"><span>Identidad protegida por Auth0</span><Link href="/forgot-password" prefetch={false}>Recuperar acceso</Link></div>
           <p className="security-note">Cadencia nunca recibe tu contraseña. Auth0 administra el inicio de sesión, recuperación y factores de seguridad.</p>
