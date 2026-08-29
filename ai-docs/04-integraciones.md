@@ -1,7 +1,7 @@
 ---
 type: integrations
 status: current
-updated: 2026-08-26
+updated: 2026-08-29
 ---
 # Integraciones
 
@@ -17,6 +17,11 @@ en el mismo cambio de la web.
 `src/auth.ts` acepta configuración `AUTH_OIDC_*` y compatibilidad con variables Auth0.
 El audience representa la API de control. Contraseñas, MFA y recuperación pertenecen
 al proveedor de identidad; la web sólo inicia esos flujos.
+
+En las rutas `/app`, un 401 de la API o una sesión sin access token redirige a
+`/login?reason=session`. Un 403 se presenta como acceso restringido, sin convertirlo
+en un error genérico de React. Los demás fallos conservan una referencia de soporte y
+el BFF registra únicamente su código HTTP.
 
 ## OpenAI
 

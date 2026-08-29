@@ -1,6 +1,7 @@
-import { getCurrentMembership } from "@/lib/control-api";
+import { controlApiFailureCode, getCurrentMembership } from "@/lib/control-api";
 import { AdministrativeAssistant } from "@/components/administrative-assistant";
 import { WorkspaceSidebar } from "@/components/workspace-sidebar";
+import { redirect } from "next/navigation";
 
 const roleLabels = {
   owner: "Propietario",
@@ -11,13 +12,23 @@ const roleLabels = {
 } as const;
 
 export default async function WorkspaceLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  const membership = await getCurrentMembership().catch(() => null);
-  const roleLabel = membership ? roleLabels[membership.role] : undefined;
+  let membership: Awaited<ReturnType<typeof getCurrentMembership>>;
+  try {
+    membership = await getCurrentMembership();
+  } catch (error) {
+    const code = controlApiFailureCode(error);
+    if (code === "missing_session" || code === "expired_session" || code === "control_api_401") {
+      redirect("/login?reason=session");
+    }
+    if (code === "control_api_403") redirect("/access");
+    throw error;
+  }
+  const roleLabel = roleLabels[membership.role];
   return (
     <div className="app-shell">
       <WorkspaceSidebar roleLabel={roleLabel} />
       {children}
-      {membership && <AdministrativeAssistant organizationName={membership.organization_name} roleLabel={roleLabel ?? membership.role} />}
+      <AdministrativeAssistant organizationName={membership.organization_name} roleLabel={roleLabel} />
     </div>
   );
 }
