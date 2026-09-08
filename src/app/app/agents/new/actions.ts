@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { createAgentProfile, createAgentLabel } from "@/lib/control-api";
+import { paymentOptionsFromFormData } from "../payment-options";
 
 export type AgentFormState = { error?: string };
 
@@ -44,6 +45,7 @@ export async function createAgentAction(
       ...(script ? { script } : {}),
       ...(flowScenarios ? { flow_scenarios: flowScenarios } : {}),
       ...(objective ? { objective } : {}),
+      payment_options: paymentOptionsFromFormData(data),
     });
     agentId = agent.id;
   } catch (err) {
