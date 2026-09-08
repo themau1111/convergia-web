@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { saveAgentEdit, type AgentEditState } from "./actions";
 import type { AgentProfileRecord } from "@/lib/control-api";
+import { PaymentOptionsForm } from "../../payment-options-form";
 
 const SCRIPT_VARS = "{{nombre_cliente}}, {{saldo_pendiente}}, {{dia_pago}}, {{articulo}}, {{pagos_atrasados}}, {{modalidad}}, {{cuota_semanal}}, {{campaign_name}}, {{company_name}}, {{agent_name}}";
 
@@ -66,6 +67,8 @@ export function EditAgentForm({ agent }: { agent: AgentProfileRecord }) {
           </label>
         </div>
       </section>
+
+      <PaymentOptionsForm paymentOptions={agent.payment_options} />
 
       {state.error && <p className="form-error" role="alert">{state.error}</p>}
 

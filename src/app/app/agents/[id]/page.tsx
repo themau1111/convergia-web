@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { getAgentProfile, listAgentLabels, getAllAgentLabels } from "@/lib/control-api";
 import { AddLabelForm, DeleteLabelForm } from "./label-forms";
+import { normalizePaymentOptions } from "../payment-options";
 
 export default async function AgentDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -13,6 +14,7 @@ export default async function AgentDetailPage({ params }: { params: Promise<{ id
   ]);
 
   if (!agent) notFound();
+  const paymentOptions = normalizePaymentOptions(agent.payment_options);
 
   // Biblioteca: etiquetas de otros perfiles no duplicadas por nombre con las actuales
   const existingNames = new Set(labels.map((l) => l.name.toLowerCase()));
@@ -69,6 +71,17 @@ export default async function AgentDetailPage({ params }: { params: Promise<{ id
             <pre style={{ margin: 0, whiteSpace: "pre-wrap", fontFamily: "inherit", lineHeight: 1.6, fontSize: 13 }}>{agent.flow_scenarios}</pre>
           </section>
         )}
+
+        <section className="edit-section">
+          <p className="eyebrow">Opciones de pago autorizadas</p>
+          <dl className="review-list">
+            <div><dt>Métodos</dt><dd>{paymentOptions.payment_methods.length ? paymentOptions.payment_methods.join(", ") : "No configurados"}</dd></div>
+            <div><dt>Pago parcial</dt><dd>{paymentOptions.partial_payment.enabled ? `Sí${paymentOptions.partial_payment.minimum_amount ? `, mínimo ${paymentOptions.partial_payment.minimum_amount}` : ""}` : "No"}</dd></div>
+            <div><dt>Diferimiento</dt><dd>{paymentOptions.deferral.enabled ? `Sí${paymentOptions.deferral.max_days ? `, hasta ${paymentOptions.deferral.max_days} días` : ""}` : "No"}</dd></div>
+            <div><dt>Parcialidades</dt><dd>{paymentOptions.installments.enabled ? `Sí${paymentOptions.installments.max_installments ? `, hasta ${paymentOptions.installments.max_installments}` : ""}${paymentOptions.installments.frequency ? ` (${paymentOptions.installments.frequency})` : ""}` : "No"}</dd></div>
+            <div><dt>Intentos de negociación</dt><dd>{paymentOptions.max_negotiation_attempts}</dd></div>
+          </dl>
+        </section>
 
         <section className="edit-section">
           <p className="eyebrow">Etiquetas de detección</p>

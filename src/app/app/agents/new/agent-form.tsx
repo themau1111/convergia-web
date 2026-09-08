@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useActionState, useState } from "react";
 import { createAgentAction, type AgentFormState } from "./actions";
 import { LabelsPicker } from "./labels-picker";
+import { PaymentOptionsForm } from "../payment-options-form";
 import type { AgentLabelRecord } from "@/lib/control-api";
 
 const SCRIPT_VARS = "{{nombre_cliente}}, {{saldo_pendiente}}, {{dia_pago}}, {{articulo}}, {{pagos_atrasados}}, {{modalidad}}, {{cuota_semanal}}, {{campaign_name}}, {{company_name}}, {{agent_name}}";
@@ -81,6 +82,8 @@ export function AgentForm({ library = [] }: { library?: AgentLabelRecord[] }) {
           </label>
         </div>
       </section>
+
+      <PaymentOptionsForm />
 
       <section className="edit-section">
         <p className="eyebrow">Script de conversación</p>

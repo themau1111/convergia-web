@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { updateAgentProfile } from "@/lib/control-api";
+import { paymentOptionsFromFormData } from "../../payment-options";
 
 export type AgentEditState = { error?: string; ok?: string };
 
@@ -31,6 +32,7 @@ export async function saveAgentEdit(
       ...(script ? { script } : {}),
       ...(flowScenarios ? { flow_scenarios: flowScenarios } : {}),
       ...(objective ? { objective } : {}),
+      payment_options: paymentOptionsFromFormData(data),
     });
     revalidatePath(`/app/agents/${agentId}`);
     revalidatePath("/app/agents");
