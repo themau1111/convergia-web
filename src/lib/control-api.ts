@@ -33,6 +33,7 @@ export type CampaignPreflight = {
   healthcheck_ok: boolean; eligible_recipients: number; count_truncated: boolean;
   invalid_recipients: number;
   issues: Array<"data_source_not_ready" | "adapter_not_configured" | "healthcheck_failed" | "no_eligible_recipients" | "invalid_recipients" | "recipient_count_truncated">;
+  adapter_type?: string | null;
 };
 export type CampaignExecutionRecord = {
   id: string; campaign_id: string; status: "pending" | "running" | "completed" | "cancelled" | "failed";
