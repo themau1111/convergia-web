@@ -34,6 +34,7 @@ export type CampaignPreflight = {
   invalid_recipients: number;
   issues: Array<"data_source_not_ready" | "adapter_not_configured" | "healthcheck_failed" | "no_eligible_recipients" | "invalid_recipients" | "recipient_count_truncated">;
   adapter_type?: string | null;
+  debug_error?: string | null;
 };
 export type CampaignExecutionRecord = {
   id: string; campaign_id: string; status: "pending" | "running" | "completed" | "cancelled" | "failed";
