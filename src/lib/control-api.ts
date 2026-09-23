@@ -127,10 +127,22 @@ export type TestAgentOptions = {
   agent_name: string; company_name: string; personality: string; voice_id?: string | null;
 };
 export type LocalPortfolioAgentConfig = TestAgentOptions & { updated_at?: string | null };
+export type PaymentOptions = {
+  payment_methods: string[];
+  partial_payment: { enabled: boolean; minimum_amount?: number };
+  deferral: { enabled: boolean; max_days?: number };
+  installments: {
+    enabled: boolean;
+    max_installments?: number;
+    frequency?: "weekly" | "biweekly" | "monthly";
+  };
+  max_negotiation_attempts: number;
+};
 export type AgentProfileRecord = {
   id: string; organization_id: string; profile_key: string; version: number;
   agent_name: string; company_name: string; personality: string;
   script: string; flow_scenarios: string; objective: string;
+  payment_options: PaymentOptions;
   voice_id: string | null; created_at: string;
 };
 export type AgentLabelRecord = {
@@ -398,6 +410,7 @@ export async function createAgentProfile(payload: {
   profile_key: string; agent_name: string; company_name: string;
   personality: string; voice_id?: string | null;
   script?: string; flow_scenarios?: string; objective?: string;
+  payment_options?: PaymentOptions;
 }): Promise<AgentProfileRecord> {
   return controlApi<AgentProfileRecord>("/v1/agent-profiles", {
     method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload),
@@ -413,7 +426,7 @@ export async function updateAgentProfile(
   payload: {
     agent_name?: string; company_name?: string; personality?: string;
     voice_id?: string | null; script?: string; flow_scenarios?: string;
-    objective?: string; profile_key?: string;
+    objective?: string; profile_key?: string; payment_options?: PaymentOptions;
   },
 ): Promise<AgentProfileRecord> {
   return controlApi<AgentProfileRecord>(`/v1/agent-profiles/${encodeURIComponent(id)}`, {
