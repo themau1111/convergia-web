@@ -551,3 +551,11 @@ export async function revokeMember(id: string): Promise<void> {
 export async function revokeInvitation(id: string): Promise<void> {
   return controlApi<void>(`/v1/member-invitations/${encodeURIComponent(id)}`, { method: "DELETE" });
 }
+
+export async function resendInvitation(id: string): Promise<{ delivery_status: "sent" | "not_configured" | "failed" }> {
+  return controlApi(`/v1/member-invitations/${encodeURIComponent(id)}/resend`, { method: "POST" });
+}
+
+export async function preAcceptInvitation(id: string): Promise<void> {
+  return controlApi<void>(`/v1/member-invitations/${encodeURIComponent(id)}/pre-accept`, { method: "POST" });
+}
