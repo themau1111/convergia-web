@@ -445,6 +445,8 @@ body { background:transparent; }
 [data-theme="dark"] html,[data-theme="dark"] body { background:var(--paper); color:var(--ink); }
 [data-theme="dark"] .workspace,[data-theme="dark"] .members-shell,[data-theme="dark"] .campaign-detail-shell,[data-theme="dark"] .wizard-shell { background:var(--paper); color:var(--ink); }
 [data-theme="dark"] .sidebar { background:linear-gradient(180deg,#151220,#211a36); color:#f4f1fa; }
+[data-theme="dark"] .menu-toggle { border-color:#ffffff1f; background:#ffffff0b; }
+[data-theme="dark"] .menu-toggle span { background:#f4f1fa; }
 [data-theme="dark"] .nav-item { color:#aaa3c3; }[data-theme="dark"] .nav-item.active,[data-theme="dark"] .nav-item:hover { border-color:#ffffff14; background:#ffffff0d; color:#fff; }
 [data-theme="dark"] .sidebar-footer { border-color:#ffffff14; }[data-theme="dark"] .organization small,[data-theme="dark"] .sidebar-footer .text-button { color:#aaa3c3; }
 [data-theme="dark"] .mobile-workspace-bar { border-color:var(--line); background:#17151fe8; }[data-theme="dark"] .mobile-workspace-bar .brand { color:var(--ink); }
