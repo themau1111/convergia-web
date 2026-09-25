@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: process.env.VERCEL ? undefined : "standalone",
-  deploymentId: process.env.DEPLOYMENT_VERSION,
+  deploymentId: process.env.VERCEL ? undefined : process.env.DEPLOYMENT_VERSION,
   reactStrictMode: true,
   poweredByHeader: false,
   experimental: {
