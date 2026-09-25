@@ -7,6 +7,8 @@ updated: 2026-08-26
 
 - `src/app/` - rutas, layouts, páginas, Server Actions y handlers HTTP.
 - `src/app/app/` - espacio autenticado del producto.
+- `src/app/app/surveys/` - listado y resultados agregados separados de campañas de
+  tipo encuesta; no contiene reglas metodológicas, microdatos ni marcación.
 - `src/app/api/auth/` - handlers de Auth.js.
 - `src/app/api/assistant/` - streaming del copiloto administrativo.
 - `src/app/api/upload-*` - proxy server-side de cargas hacia FastAPI.

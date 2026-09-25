@@ -1,5 +1,6 @@
 import "server-only";
 
+import { cookies } from "next/headers";
 import { auth } from "@/auth";
 
 export class ControlApiError extends Error {
@@ -13,7 +14,13 @@ export type CampaignRecord = {
   id: string;
   name: string;
   objective: "payment_reminder" | "agreement_follow_up";
+  campaign_type: "collections" | "survey";
   status: "draft" | "scheduled" | "running" | "paused" | "completed" | "cancelled" | "failed";
+};
+export type SurveyAggregateRecord = {
+  question_key: string;
+  total: number;
+  buckets: { answer: Record<string, unknown>; count: number }[];
 };
 export type CampaignDetail = CampaignRecord & {
   organization_id: string;
@@ -33,6 +40,8 @@ export type CampaignPreflight = {
   healthcheck_ok: boolean; eligible_recipients: number; count_truncated: boolean;
   invalid_recipients: number;
   issues: Array<"data_source_not_ready" | "adapter_not_configured" | "healthcheck_failed" | "no_eligible_recipients" | "invalid_recipients" | "recipient_count_truncated">;
+  adapter_type?: string | null;
+  debug_error?: string | null;
 };
 export type CampaignExecutionRecord = {
   id: string; campaign_id: string; status: "pending" | "running" | "completed" | "cancelled" | "failed";
@@ -62,6 +71,7 @@ export type QualityConversation = {
 
 export type MemberRole = "owner" | "admin" | "operator" | "analyst" | "viewer";
 export type CurrentMembership = { subject: string; organization_id: string; organization_name: string; role: MemberRole };
+export type Workspace = CurrentMembership & { key: "collections" | "survey"; label: string };
 export type MemberRecord = {
   id: string;
   email?: string | null;
@@ -166,6 +176,7 @@ export type DialerConfig = {
 export type CampaignCreatePayload = {
   name: string;
   objective: "payment_reminder" | "agreement_follow_up";
+  campaign_type?: "collections" | "survey";
   portfolio_id: string;
   agent_profile_version_id: string;
   schedule: {
@@ -177,13 +188,26 @@ export type CampaignCreatePayload = {
   draft?: boolean;
 };
 
-async function controlApi<T>(path: string, init?: RequestInit): Promise<T> {
+const WORKSPACE_COOKIE = "convergia_workspace";
+
+function workspaceUrl(key: "collections" | "survey") {
+  const value = key === "survey" ? process.env.SURVEY_CONTROL_API_URL : process.env.CONTROL_API_URL;
+  return value?.replace(/\/$/, "") || null;
+}
+
+async function selectedWorkspace(): Promise<"collections" | "survey"> {
+  const selected = (await cookies()).get(WORKSPACE_COOKIE)?.value;
+  return selected === "survey" && workspaceUrl("survey") ? "survey" : "collections";
+}
+
+async function controlApi<T>(path: string, init?: RequestInit, workspace?: "collections" | "survey"): Promise<T> {
+  const targetWorkspace = workspace ?? await selectedWorkspace();
   const session = await auth();
   if (!session?.accessToken) throw new ControlApiError("missing_session");
   if (session.accessTokenExpiresAt && session.accessTokenExpiresAt * 1000 <= Date.now()) {
     throw new ControlApiError("expired_session");
   }
-  const baseUrl = process.env.CONTROL_API_URL?.replace(/\/$/, "");
+  const baseUrl = workspaceUrl(targetWorkspace);
   if (!baseUrl) throw new ControlApiError("missing_control_api_url");
   const response = await fetch(`${baseUrl}${path}`, {
     ...init,
@@ -201,6 +225,24 @@ async function controlApi<T>(path: string, init?: RequestInit): Promise<T> {
   if (response.status === 204) return undefined as T;
   return response.json() as Promise<T>;
 }
+
+export async function getAvailableWorkspaces(): Promise<Workspace[]> {
+  const candidates: Array<["collections" | "survey", string]> = [["collections", "Cobranza"], ["survey", "Encuesta Nuevo León 2027"]];
+  const results = await Promise.all(candidates.map(async ([key, label]) => {
+    if (!workspaceUrl(key)) return null;
+    try { return { ...(await controlApi<CurrentMembership>("/v1/me", undefined, key)), key, label }; }
+    catch { return null; }
+  }));
+  return results.filter((workspace): workspace is Workspace => workspace !== null);
+}
+
+export async function getSelectedWorkspace(): Promise<Workspace | null> {
+  const selected = await selectedWorkspace();
+  const workspaces = await getAvailableWorkspaces();
+  return workspaces.find((workspace) => workspace.key === selected) ?? workspaces[0] ?? null;
+}
+
+export { WORKSPACE_COOKIE };
 
 export function controlApiFailureCode(error: unknown): string | null {
   return error instanceof ControlApiError ? error.code : null;
@@ -220,6 +262,12 @@ export async function getQualityConversation(callUuid: string): Promise<QualityC
 
 export async function getCampaign(id: string): Promise<CampaignDetail> {
   return controlApi<CampaignDetail>(`/v1/campaigns/${encodeURIComponent(id)}`);
+}
+
+export async function getSurveyResults(id: string): Promise<SurveyAggregateRecord[]> {
+  return controlApi<SurveyAggregateRecord[]>(
+    `/v1/campaigns/${encodeURIComponent(id)}/survey/results`,
+  );
 }
 
 export async function getCampaignPreflight(id: string): Promise<CampaignPreflight> {
@@ -561,4 +609,12 @@ export async function revokeMember(id: string): Promise<void> {
 
 export async function revokeInvitation(id: string): Promise<void> {
   return controlApi<void>(`/v1/member-invitations/${encodeURIComponent(id)}`, { method: "DELETE" });
+}
+
+export async function resendInvitation(id: string): Promise<{ delivery_status: "sent" | "not_configured" | "failed" }> {
+  return controlApi(`/v1/member-invitations/${encodeURIComponent(id)}/resend`, { method: "POST" });
+}
+
+export async function preAcceptInvitation(id: string): Promise<void> {
+  return controlApi<void>(`/v1/member-invitations/${encodeURIComponent(id)}/pre-accept`, { method: "POST" });
 }
