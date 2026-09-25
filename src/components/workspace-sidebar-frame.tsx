@@ -7,9 +7,11 @@ import { ThemeToggle } from "@/components/theme-toggle";
 
 export function WorkspaceSidebarFrame({
   campaignCount,
+  workspace,
   footer,
 }: {
   campaignCount?: number;
+  workspace?: string;
   footer: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
@@ -42,7 +44,7 @@ export function WorkspaceSidebarFrame({
           <ThemeToggle />
           <button aria-label="Cerrar menú" className="drawer-close" onClick={() => setOpen(false)} type="button">×</button>
         </div>
-        <WorkspaceNav campaignCount={campaignCount} onNavigate={() => setOpen(false)} />
+        <WorkspaceNav campaignCount={campaignCount} workspace={workspace} onNavigate={() => setOpen(false)} />
         {footer}
       </aside>
     </>
