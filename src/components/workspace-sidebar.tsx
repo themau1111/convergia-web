@@ -23,8 +23,14 @@ export async function WorkspaceSidebar({ campaignCount, roleLabel }: { campaignC
     <WorkspaceSidebarFrame campaignCount={campaignCount} workspace={selected?.key} footer={
       <div className="sidebar-footer">
         <div className="organization"><span className="avatar">{initials}</span><div><strong>{selected?.organization_name || "Sin espacio"}</strong><small>{roleLabel || "Acceso operativo"}</small></div></div>
-        {workspaces.length > 1 && <form action={switchWorkspace}><label className="sr-only" htmlFor="workspace">Espacio de trabajo</label><select id="workspace" name="workspace" defaultValue={selected?.key}><>{workspaces.map((workspace) => <option key={workspace.key} value={workspace.key}>{workspace.label}</option>)}</></select><button className="text-button" type="submit">Cambiar espacio</button></form>}
-        <form action={logout}><button className="text-button" type="submit">Cerrar sesión</button></form>
+        {workspaces.length > 1 && <form className="workspace-switcher" action={switchWorkspace}>
+          <label htmlFor="workspace">Espacio de trabajo</label>
+          <div className="workspace-switcher-controls">
+            <select id="workspace" name="workspace" defaultValue={selected?.key}>{workspaces.map((workspace) => <option key={workspace.key} value={workspace.key}>{workspace.label}</option>)}</select>
+            <button className="workspace-switch-button" type="submit">Cambiar</button>
+          </div>
+        </form>}
+        <form className="sidebar-session" action={logout}><button className="text-button" type="submit">Cerrar sesión</button></form>
       </div>
     } />
   );
