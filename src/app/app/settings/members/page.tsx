@@ -10,6 +10,8 @@ import {
   getMembers,
   inviteMember,
   type MemberRole,
+  preAcceptInvitation,
+  resendInvitation,
   revokeInvitation,
   revokeMember,
 } from "@/lib/control-api";
@@ -28,8 +30,8 @@ function readRole(value: FormDataEntryValue | null): MemberRole {
   return role as MemberRole;
 }
 
-export default async function MembersPage({ searchParams }: { searchParams: Promise<{ invitation?: string }> }) {
-  const { invitation } = await searchParams;
+export default async function MembersPage({ searchParams }: { searchParams: Promise<{ invitation?: string; resend?: string }> }) {
+  const { invitation, resend } = await searchParams;
   const [membership, members] = await Promise.all([
     getCurrentMembership(),
     getMembers().catch(() => null),
@@ -60,6 +62,21 @@ export default async function MembersPage({ searchParams }: { searchParams: Prom
     revalidatePath("/app/settings/members");
   }
 
+  async function resendEmail(formData: FormData) {
+    "use server";
+    const id = String(formData.get("id"));
+    const result = await resendInvitation(id);
+    revalidatePath("/app/settings/members");
+    redirect(`/app/settings/members?resend=${result.delivery_status}`);
+  }
+
+  async function preAccept(formData: FormData) {
+    "use server";
+    const id = String(formData.get("id"));
+    await preAcceptInvitation(id);
+    revalidatePath("/app/settings/members");
+  }
+
   return (
     <main className="members-shell">
       <header className="members-header">
@@ -76,6 +93,9 @@ export default async function MembersPage({ searchParams }: { searchParams: Prom
           {invitation === "sent" && <p className="form-success" role="status">Invitación creada y correo enviado.</p>}
           {invitation === "not_configured" && <p className="form-warning" role="status">Invitación creada. El remitente de correo aún no está configurado.</p>}
           {invitation === "failed" && <p className="form-warning" role="status">Invitación creada, pero el correo no pudo enviarse. Puedes reintentar cuando el remitente esté disponible.</p>}
+          {resend === "sent" && <p className="form-success" role="status">Correo de invitación reenviado.</p>}
+          {resend === "not_configured" && <p className="form-warning" role="status">No se pudo reenviar: el remitente de correo no está configurado.</p>}
+          {resend === "failed" && <p className="form-warning" role="status">El reenvío falló. Intenta de nuevo más tarde.</p>}
           <p className="security-note">El acceso se activa cuando la persona inicia sesión con este correo verificado en el proveedor de identidad.</p>
         </form>
 
@@ -91,7 +111,26 @@ export default async function MembersPage({ searchParams }: { searchParams: Prom
                     <select name="role" defaultValue={member.role} aria-label={`Rol de ${member.email}`}>{roles.filter((role) => canAssignOwner || role.value !== "owner").map((role) => <option value={role.value} key={role.value}>{role.label}</option>)}</select>
                     <button type="submit" className="secondary-action">Guardar</button>
                   </form>
-                ) : <span className="status-pill">Pendiente · {roles.find((role) => role.value === member.role)?.label}</span>}
+                ) : (
+                  <span className="status-pill">Pendiente · {roles.find((role) => role.value === member.role)?.label}</span>
+                )}
+                {member.status === "pending" && (
+                  <form action={resendEmail} className="member-actions">
+                    <input type="hidden" name="id" value={member.id} />
+                    <button type="submit" className="secondary-action">Reenviar</button>
+                  </form>
+                )}
+                {member.status === "pending" && (
+                  <form action={preAccept}>
+                    <input type="hidden" name="id" value={member.id} />
+                    <ConfirmationButton
+                      className="secondary-action"
+                      title="¿Aceptar invitación manualmente?"
+                      description="Se creará acceso inmediato para esta persona. La próxima vez que inicie sesión, su cuenta quedará vinculada automáticamente."
+                      confirmLabel="Aceptar"
+                    >Aceptar</ConfirmationButton>
+                  </form>
+                )}
                 <form action={revoke}>
                   <input type="hidden" name="id" value={member.id} /><input type="hidden" name="status" value={member.status} />
                   <ConfirmationButton

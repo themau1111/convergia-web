@@ -40,6 +40,8 @@ export type CampaignPreflight = {
   healthcheck_ok: boolean; eligible_recipients: number; count_truncated: boolean;
   invalid_recipients: number;
   issues: Array<"data_source_not_ready" | "adapter_not_configured" | "healthcheck_failed" | "no_eligible_recipients" | "invalid_recipients" | "recipient_count_truncated">;
+  adapter_type?: string | null;
+  debug_error?: string | null;
 };
 export type CampaignExecutionRecord = {
   id: string; campaign_id: string; status: "pending" | "running" | "completed" | "cancelled" | "failed";
@@ -607,4 +609,12 @@ export async function revokeMember(id: string): Promise<void> {
 
 export async function revokeInvitation(id: string): Promise<void> {
   return controlApi<void>(`/v1/member-invitations/${encodeURIComponent(id)}`, { method: "DELETE" });
+}
+
+export async function resendInvitation(id: string): Promise<{ delivery_status: "sent" | "not_configured" | "failed" }> {
+  return controlApi(`/v1/member-invitations/${encodeURIComponent(id)}/resend`, { method: "POST" });
+}
+
+export async function preAcceptInvitation(id: string): Promise<void> {
+  return controlApi<void>(`/v1/member-invitations/${encodeURIComponent(id)}/pre-accept`, { method: "POST" });
 }
