@@ -229,10 +229,9 @@ async function controlApi<T>(path: string, init?: RequestInit, workspace?: "coll
 export async function getAvailableWorkspaces(): Promise<Workspace[]> {
   const candidates: Array<["collections" | "survey", string]> = [["collections", "Cobranza"], ["survey", "Encuesta Nuevo León 2027"]];
   const results = await Promise.all(candidates.map(async ([key, label]) => {
-    const url = workspaceUrl(key);
-    if (!url) { console.warn(JSON.stringify({ event: "workspace_skip", key, reason: "no_url" })); return null; }
+    if (!workspaceUrl(key)) return null;
     try { return { ...(await controlApi<CurrentMembership>("/v1/me", undefined, key)), key, label }; }
-    catch (err) { console.warn(JSON.stringify({ event: "workspace_unavailable", key, url, error: String(err) })); return null; }
+    catch { return null; }
   }));
   return results.filter((workspace): workspace is Workspace => workspace !== null);
 }
