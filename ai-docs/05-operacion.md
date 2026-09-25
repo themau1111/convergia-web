@@ -1,7 +1,7 @@
 ---
 type: operations
 status: current
-updated: 2026-08-26
+updated: 2026-09-23
 ---
 # Operación
 
@@ -11,6 +11,16 @@ updated: 2026-08-26
 - Usar `npm run dev` para desarrollo.
 - Ejecutar `npm run lint`, `npm run typecheck` y `npm run build` antes de entregar cambios.
 - Verificar `GET /api/health` en el artefacto desplegado.
+- Para la vista de encuestas, conservar resultados agregados y no renderizar valores
+  de respuestas que puedan contener texto libre o datos identificables.
+
+## Limitación local conocida
+
+En macOS ARM, React Doctor puede no iniciar si su dependencia opcional
+`oxc-parser` no obtiene el binding nativo. Además, Turbopack puede fallar al intentar
+enlazar un puerto interno en entornos restringidos. En ambos casos, `npm run lint` y
+`npm run typecheck` siguen siendo verificaciones obligatorias; no modificar lockfiles
+ni dependencias sólo para eludir esas limitaciones locales.
 
 ## Despliegue
 

@@ -15,6 +15,7 @@ pasan por código server-side, que reenvía el access token a la API de control.
 ## Límites
 
 - Next.js posee presentación, navegación, sesión web y adaptación HTTP.
+- El mismo frontend presenta encuestas en una ruta propia; FastAPI conserva la separación por organización, rol y `campaign_type`.
 - FastAPI posee membresía, roles, alcance por organización, validación de dominio,
   persistencia, campañas y acciones telefónicas.
 - El navegador no accede directamente a AMI, AudioSocket, bases externas ni secretos.
