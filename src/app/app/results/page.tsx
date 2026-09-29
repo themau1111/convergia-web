@@ -1,8 +1,10 @@
 import Link from "next/link";
 
-import { getCampaigns } from "@/lib/control-api";
+import { getCampaigns, getSelectedWorkspace } from "@/lib/control-api";
+import { redirect } from "next/navigation";
 
 export default async function ResultsPage() {
+  if ((await getSelectedWorkspace())?.key === "survey") redirect("/app/surveys");
   const campaigns = await getCampaigns();
   const completed = campaigns.filter((campaign) => campaign.status === "completed");
   const active = campaigns.filter((campaign) => campaign.status === "running").length;

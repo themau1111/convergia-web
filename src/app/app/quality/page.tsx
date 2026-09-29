@@ -1,6 +1,7 @@
 import Link from "next/link";
 
-import { getMonitoringCalls, getQualityCalls, getQualityConversation } from "@/lib/control-api";
+import { getMonitoringCalls, getQualityCalls, getQualityConversation, getSelectedWorkspace } from "@/lib/control-api";
+import { redirect } from "next/navigation";
 import type { MonitoringCallRecord, QualityCallRecord } from "@/lib/control-api";
 import { QualityPoller } from "./quality-poller";
 
@@ -79,6 +80,7 @@ function matchesFilters(
 }
 
 export default async function QualityPage({ searchParams }: { searchParams: Promise<MonitoringFilters> }) {
+  if ((await getSelectedWorkspace())?.key === "survey") redirect("/app/surveys");
   const filters = await searchParams;
 
   const [monitoringCalls, qualitySummaries] = await Promise.all([

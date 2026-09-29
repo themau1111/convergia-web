@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
 import { ConfirmationButton } from "@/components/confirmation-button";
 import { ManualCallForm } from "./manual-call-form";
@@ -8,7 +9,7 @@ import { UploadContactsForm } from "./upload-form";
 
 import {
   createLocalPocClient, createLocalPocPortfolio, deactivateLocalPocClient,
-  getDataSources, getLocalPocClients, getLocalPortfolioAgentConfig, getPortfolios,
+  getDataSources, getLocalPocClients, getLocalPortfolioAgentConfig, getPortfolios, getSelectedWorkspace,
   startPortfolioTestCalls, syncLocalPocPortfolios,
   type LocalClientRecord, type LocalPortfolioAgentConfig, updateLocalPocClient,
   updateLocalPortfolioAgentConfig,
@@ -23,6 +24,7 @@ const required = (data: FormData, key: string) => { const result = value(data, k
 const numeric = (data: FormData, key: string) => Number(value(data, key) || 0);
 
 export default async function LocalOperationsPage() {
+  if ((await getSelectedWorkspace())?.key === "survey") redirect("/app/surveys/test-call");
   const [sources, portfolios] = await Promise.all([getDataSources(), getPortfolios()]);
   const localSources = sources.filter((source) => source.adapter_type === "local_poc");
   const sourceIds = new Set(localSources.map((source) => source.id));

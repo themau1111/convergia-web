@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
-import { getCampaign, getCampaignAttempts, getCampaignAuditEvents, getCampaignExecutions, getCampaignPreflight, getCurrentMembership } from "@/lib/control-api";
+import { getCampaign, getCampaignAttempts, getCampaignAuditEvents, getCampaignExecutions, getCampaignPreflight, getCurrentMembership, getSelectedWorkspace } from "@/lib/control-api";
 
 import { LifecycleControls } from "./lifecycle-controls";
 
@@ -17,6 +17,7 @@ const dateTime = new Intl.DateTimeFormat("es-MX", {
 const formatDate = (value?: string | null) => value ? dateTime.format(new Date(value)) : "—";
 
 export default async function CampaignDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  if ((await getSelectedWorkspace())?.key === "survey") redirect("/app/surveys");
   const { id } = await params;
   const campaign = await getCampaign(id).catch(() => null);
   if (!campaign) notFound();

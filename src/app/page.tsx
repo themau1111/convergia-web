@@ -2,7 +2,8 @@ import Link from "next/link";
 import { auth } from "@/auth";
 import { WorkspaceSidebar } from "@/components/workspace-sidebar";
 import { AdministrativeAssistant } from "@/components/administrative-assistant";
-import { getCampaigns, getCurrentMembership } from "@/lib/control-api";
+import { getCampaigns, getCurrentMembership, getSelectedWorkspace } from "@/lib/control-api";
+import { redirect } from "next/navigation";
 
 const statusLabels = {
   draft: "Borrador", scheduled: "Programada", running: "En curso", paused: "Pausada",
@@ -10,6 +11,7 @@ const statusLabels = {
 } as const;
 
 export default async function Dashboard() {
+  if ((await getSelectedWorkspace())?.key === "survey") redirect("/app/surveys");
   const [session, campaigns, membership] = await Promise.all([
     auth(),
     getCampaigns().catch(() => []),

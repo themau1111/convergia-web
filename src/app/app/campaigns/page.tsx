@@ -1,6 +1,7 @@
 import Link from "next/link";
 
-import { getCampaigns } from "@/lib/control-api";
+import { getCampaigns, getSelectedWorkspace } from "@/lib/control-api";
+import { redirect } from "next/navigation";
 
 const labels = {
   draft: "Borrador", scheduled: "Programada", running: "En curso", paused: "Pausada",
@@ -8,6 +9,7 @@ const labels = {
 } as const;
 
 export default async function CampaignsPage() {
+  if ((await getSelectedWorkspace())?.key === "survey") redirect("/app/surveys");
   const campaigns = await getCampaigns();
   return (
     <main className="members-shell compact-view">

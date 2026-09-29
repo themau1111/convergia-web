@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { getCsvPortfolios, getCsvContacts } from "@/lib/control-api";
+import { getCsvPortfolios, getCsvContacts, getSelectedWorkspace } from "@/lib/control-api";
 import type { CsvPortfolioRecord, CsvContactRecord } from "@/lib/control-api";
 import { CreatePortfolioForm } from "./create-portfolio-form";
 import { UploadCsvContactsForm } from "./upload-contacts-form";
@@ -10,6 +10,7 @@ const TEMPLATE_EXAMPLE = "5218112345678,Juan Pérez,Dato 1,Dato 2,Dato 3,Dato 4,
 const TEMPLATE_BLOB = `data:text/csv;charset=utf-8,${encodeURIComponent(`${TEMPLATE_HEADERS}\n${TEMPLATE_EXAMPLE}\n`)}`;
 
 export default async function CarterasPage() {
+  const isSurveyWorkspace = (await getSelectedWorkspace())?.key === "survey";
   const portfolios = await getCsvPortfolios().catch(() => [] as CsvPortfolioRecord[]);
   const totalContacts = portfolios.reduce((total, portfolio) => total + portfolio.contact_count, 0);
   const readyPortfolios = portfolios.filter((portfolio) => portfolio.contact_count > 0).length;
@@ -26,11 +27,10 @@ export default async function CarterasPage() {
     <main className="members-shell carteras-page">
       <header className="members-header carteras-header">
         <div>
-          <p className="eyebrow">Marcación</p>
-          <h1>Carteras CSV</h1>
+          <p className="eyebrow">{isSurveyWorkspace ? "Muestra autorizada" : "Marcación"}</p>
+          <h1>{isSurveyWorkspace ? "Muestra de contactos" : "Carteras CSV"}</h1>
           <p className="muted">
-            Importa contactos desde CSV o Excel y úsalos en tus campañas. Las variables 1–5 quedan disponibles en el script del agente como{" "}
-            <code>{"{{variable_1}}"}</code> … <code>{"{{variable_5}}"}</code>.
+            {isSurveyWorkspace ? "Importa contactos autorizados para la encuesta. Incluye sólo las variables metodológicas necesarias; no se solicitan datos de cobranza." : <>Importa contactos desde CSV o Excel y úsalos en tus campañas. Las variables 1–5 quedan disponibles en el script del agente como <code>{"{{variable_1}}"}</code> … <code>{"{{variable_5}}"}</code>.</>}
           </p>
         </div>
         <div className="header-actions">

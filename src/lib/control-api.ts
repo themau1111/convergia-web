@@ -22,6 +22,16 @@ export type SurveyAggregateRecord = {
   total: number;
   buckets: { answer: Record<string, unknown>; count: number }[];
 };
+export type SurveyQuestion = {
+  id?: string; questionnaire_version_id?: string; question_key: string; position: number;
+  prompt: string; response_kind: "yes_no" | "single_choice" | "multi_text" | "free_text" | "age_or_range";
+  options: string[]; rotate_options: boolean; required: boolean;
+};
+export type SurveyQuestionnaireRecord = {
+  id: string; organization_id: string; questionnaire_key: string; version: number; name: string;
+  introduction_text: string; closing_text: string; status: "draft" | "published" | "retired";
+  questions: SurveyQuestion[]; created_at: string;
+};
 export type CampaignDetail = CampaignRecord & {
   organization_id: string;
   portfolio: PortfolioRecord & { organization_id: string; last_validated_at?: string | null };
@@ -147,7 +157,7 @@ export type PaymentOptions = {
   max_negotiation_attempts: number;
 };
 export type AgentProfileRecord = {
-  id: string; organization_id: string; profile_key: string; version: number;
+  id: string; organization_id: string; profile_key: string; agent_definition_key: "collections" | "survey"; version: number;
   agent_name: string; company_name: string; personality: string;
   script: string; flow_scenarios: string; objective: string;
   payment_options: PaymentOptions;
@@ -250,6 +260,50 @@ export function controlApiFailureCode(error: unknown): string | null {
 
 export async function getCampaigns(): Promise<CampaignRecord[]> {
   return controlApi<CampaignRecord[]>("/v1/campaigns");
+}
+
+export async function getSurveyQuestionnaires(): Promise<SurveyQuestionnaireRecord[]> {
+  return controlApi<SurveyQuestionnaireRecord[]>("/v1/survey-questionnaires");
+}
+
+export async function createSurveyQuestionnaire(payload: {
+  questionnaire_key: string; name: string; introduction_text: string; closing_text: string;
+  questions: Omit<SurveyQuestion, "id" | "questionnaire_version_id">[];
+}): Promise<SurveyQuestionnaireRecord> {
+  return controlApi<SurveyQuestionnaireRecord>("/v1/survey-questionnaires", {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload),
+  });
+}
+
+export async function setSurveyQuestionnaireStatus(
+  id: string, status: "published" | "retired",
+): Promise<SurveyQuestionnaireRecord> {
+  return controlApi<SurveyQuestionnaireRecord>(`/v1/survey-questionnaires/${encodeURIComponent(id)}/status`, {
+    method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status }),
+  });
+}
+
+export async function configureSurveyCampaign(id: string, payload: {
+  questionnaire_version_id: string; rotation_seed: string; methodology?: Record<string, unknown>;
+}): Promise<void> {
+  return controlApi<void>(`/v1/campaigns/${encodeURIComponent(id)}/survey`, {
+    method: "PUT", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ...payload, methodology: payload.methodology ?? {} }),
+  });
+}
+
+export async function startSurveyManualTestCall(payload: { campaign_id: string; telefono: string }): Promise<{ call_uuid: string; status: "originating"; campaign_id: string }> {
+  return controlApi("/v1/survey/test-calls/manual", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ...payload, confirmed: true }),
+  });
+}
+
+export async function startSurveyRegisteredTestCall(payload: { campaign_id: string; external_client_id: string }): Promise<{ call_uuid: string; status: "originating"; campaign_id: string }> {
+  return controlApi(`/v1/survey/campaigns/${encodeURIComponent(payload.campaign_id)}/test-calls/registered`, {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ external_client_id: payload.external_client_id, confirmed: true }),
+  });
 }
 
 export async function getQualityCalls(limit = 200): Promise<QualityCallRecord[]> {
@@ -457,6 +511,7 @@ export async function createAgentProfile(payload: {
   personality: string; voice_id?: string | null;
   script?: string; flow_scenarios?: string; objective?: string;
   payment_options?: PaymentOptions;
+  agent_definition_key?: "collections" | "survey";
 }): Promise<AgentProfileRecord> {
   return controlApi<AgentProfileRecord>("/v1/agent-profiles", {
     method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload),

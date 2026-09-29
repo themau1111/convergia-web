@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
-import { getCampaign, getSurveyResults } from "@/lib/control-api";
+import { getCampaign, getSelectedWorkspace, getSurveyResults } from "@/lib/control-api";
 
 export default async function SurveyResultsPage({ params }: { params: Promise<{ id: string }> }) {
+  if ((await getSelectedWorkspace())?.key !== "survey") redirect("/");
   const { id } = await params;
   const campaign = await getCampaign(id).catch(() => null);
   if (!campaign || campaign.campaign_type !== "survey") notFound();
@@ -18,7 +19,7 @@ export default async function SurveyResultsPage({ params }: { params: Promise<{ 
           <h1>{campaign.name}</h1>
           <p className="muted">Resultados agregados por pregunta. Esta vista no expone respuestas individuales ni texto libre.</p>
         </div>
-        <Link className="secondary-action" href={`/app/campaigns/${id}`}>Ver detalle operativo</Link>
+        <Link className="secondary-action" href="/app/surveys/test-call">Prueba manual</Link>
       </header>
 
       <section className="detail-grid" aria-label="Resultados agregados de encuesta">

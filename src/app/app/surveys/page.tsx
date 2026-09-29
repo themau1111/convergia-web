@@ -1,6 +1,7 @@
 import Link from "next/link";
 
-import { getCampaigns, getSurveyResults } from "@/lib/control-api";
+import { getCampaigns, getSelectedWorkspace, getSurveyResults } from "@/lib/control-api";
+import { redirect } from "next/navigation";
 
 const statusLabels = {
   draft: "Borrador", scheduled: "Programada", running: "En curso", paused: "Pausada",
@@ -8,6 +9,7 @@ const statusLabels = {
 } as const;
 
 export default async function SurveysPage() {
+  if ((await getSelectedWorkspace())?.key !== "survey") redirect("/");
   const surveys = (await getCampaigns()).filter((campaign) => campaign.campaign_type === "survey");
   const resultSets = await Promise.all(surveys.map(async (survey) => ({
     campaignId: survey.id,
@@ -20,9 +22,9 @@ export default async function SurveysPage() {
         <div>
           <p className="eyebrow">Investigación</p>
           <h1>Encuestas</h1>
-          <p className="muted">Cuestionarios versionados y campañas aisladas de la operación de cobranza.</p>
+          <p className="muted">Cuestionarios versionados y campañas de investigación con datos separados.</p>
         </div>
-        <div className="header-actions"><Link href="/app/campaigns">Ver campañas</Link></div>
+        <div className="header-actions"><Link className="primary-action" href="/app/surveys/new">Crear encuesta <span>→</span></Link></div>
       </header>
       <section className="campaign-list">
         {surveys.map((survey) => (
@@ -33,7 +35,7 @@ export default async function SurveysPage() {
             <Link className="icon-button" href={`/app/surveys/${survey.id}`} aria-label={`Ver resultados de ${survey.name}`}>↗</Link>
           </article>
         ))}
-        {!surveys.length && <div className="empty-state"><strong>Aún no hay encuestas configuradas.</strong><span>Primero crea y revisa un cuestionario versionado en la API de control. La interfaz de diseño se habilitará tras el cierre metodológico.</span></div>}
+        {!surveys.length && <div className="empty-state"><strong>Aún no hay encuestas configuradas.</strong><span>Crea un cuestionario, publícalo y configúralo con una muestra autorizada y un entrevistador neutral.</span><Link className="text-button" href="/app/surveys/questionnaires">Crear cuestionario</Link></div>}
       </section>
     </main>
   );

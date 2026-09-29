@@ -1,8 +1,10 @@
 import Link from "next/link";
 
-import { getAgentProfiles } from "@/lib/control-api";
+import { getAgentProfiles, getSelectedWorkspace } from "@/lib/control-api";
+import { redirect } from "next/navigation";
 
 export default async function AgentsPage() {
+  if ((await getSelectedWorkspace())?.key === "survey") redirect("/app/surveys/interviewers");
   const agents = await getAgentProfiles();
   return (
     <main className="members-shell">

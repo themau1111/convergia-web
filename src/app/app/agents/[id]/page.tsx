@@ -1,11 +1,12 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
-import { getAgentProfile, listAgentLabels, getAllAgentLabels } from "@/lib/control-api";
+import { getAgentProfile, listAgentLabels, getAllAgentLabels, getSelectedWorkspace } from "@/lib/control-api";
 import { AddLabelForm, DeleteLabelForm } from "./label-forms";
 import { normalizePaymentOptions } from "../payment-options";
 
 export default async function AgentDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  if ((await getSelectedWorkspace())?.key === "survey") redirect("/app/surveys/interviewers");
   const { id } = await params;
   const [agent, labels, allOrgLabels] = await Promise.all([
     getAgentProfile(id).catch(() => null),

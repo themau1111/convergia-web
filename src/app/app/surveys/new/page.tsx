@@ -1,0 +1,5 @@
+import Link from "next/link";
+import { getAgentProfiles, getPortfolios, getSelectedWorkspace, getSurveyQuestionnaires } from "@/lib/control-api";
+import { redirect } from "next/navigation";
+import { SurveyCampaignForm } from "./campaign-form";
+export default async function NewSurveyPage() { if ((await getSelectedWorkspace())?.key !== "survey") redirect("/"); const [questionnaires, portfolios, profiles] = await Promise.all([getSurveyQuestionnaires(), getPortfolios(), getAgentProfiles()]); return <main className="campaign-detail-shell"><Link className="back-link" href="/app/surveys">← Volver a encuestas</Link><header className="campaign-detail-header"><div><p className="eyebrow">Nueva operación</p><h1>Crear encuesta</h1><p className="muted">Conecta cuestionario, muestra autorizada y entrevistador neutral.</p></div></header><SurveyCampaignForm questionnaires={questionnaires.filter((item) => item.status === "published")} portfolios={portfolios} interviewers={profiles.filter((profile) => profile.agent_definition_key === "survey")} /></main>; }

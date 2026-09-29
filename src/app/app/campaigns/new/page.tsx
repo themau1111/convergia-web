@@ -1,10 +1,12 @@
 import {
-  getAgentProfiles, getPortfolios, getTelephonyResults, listAgentLabels,
+  getAgentProfiles, getPortfolios, getSelectedWorkspace, getTelephonyResults, listAgentLabels,
   type AgentLabelRecord, type TelephonyResultOption,
 } from "@/lib/control-api";
 import { CampaignWizard } from "./campaign-wizard";
+import { redirect } from "next/navigation";
 
 export default async function NewCampaignPage() {
+  if ((await getSelectedWorkspace())?.key === "survey") redirect("/app/surveys/new");
   const [allPortfolios, agentProfiles, telephonyResults] = await Promise.all([
     getPortfolios(),
     getAgentProfiles(),

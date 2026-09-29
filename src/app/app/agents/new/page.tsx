@@ -1,9 +1,11 @@
 import Link from "next/link";
 
-import { getAllAgentLabels } from "@/lib/control-api";
+import { getAllAgentLabels, getSelectedWorkspace } from "@/lib/control-api";
+import { redirect } from "next/navigation";
 import { AgentForm } from "./agent-form";
 
 export default async function NewAgentPage() {
+  if ((await getSelectedWorkspace())?.key === "survey") redirect("/app/surveys/interviewers");
   const library = await getAllAgentLabels().catch(() => []);
   return (
     <main className="campaign-detail-shell">

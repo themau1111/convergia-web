@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
-import { getCampaign, getCurrentMembership } from "@/lib/control-api";
+import { notFound, redirect } from "next/navigation";
+import { getCampaign, getCurrentMembership, getSelectedWorkspace } from "@/lib/control-api";
 import { EditCampaignForm } from "./edit-form";
 
 export default async function EditCampaignPage({ params }: { params: Promise<{ id: string }> }) {
+  if ((await getSelectedWorkspace())?.key === "survey") redirect("/app/surveys");
   const { id } = await params;
   const [campaign, membership] = await Promise.all([
     getCampaign(id).catch(() => null),
