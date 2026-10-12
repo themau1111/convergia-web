@@ -12,6 +12,8 @@ updated: 2026-08-26
 - `src/app/api/auth/` - handlers de Auth.js.
 - `src/app/api/assistant/` - streaming del copiloto administrativo.
 - `src/app/api/upload-*` - proxy server-side de cargas hacia FastAPI.
+- `src/app/app/quality/actions.ts` - Server Action `getRecordingUrlAction` que obtiene la URL firmada de S3 desde FastAPI.
+- `src/app/app/quality/recording-player.tsx` - Componente cliente que carga bajo demanda y reproduce/descarga la grabación WAV.
 - `src/auth.ts` - configuración OIDC y callbacks de sesión/token.
 - `src/proxy.ts` - protección de rutas antes del renderizado.
 - `src/lib/control-api.ts` - tipos y cliente server-side de `/v1`.
