@@ -71,7 +71,9 @@ export type AuditEventRecord = {
 export type QualityCallRecord = {
   uuid: string; updated_at: string; updated_local: string; size_bytes: number;
   campaign_name?: string | null; agent_name?: string | null;
+  recording_available?: boolean;
 };
+export type QualityRecording = { url: string; expires_in: number };
 export type ConversationEvent = {
   time: string; kind: "client" | "agent" | "system" | "voicemail"; text: string;
 };
@@ -178,6 +180,7 @@ export type MonitoringCallRecord = {
   technical_status: string; telephony_result: string | null;
   labels: { id: string; name: string }[];
   created_at: string; started_at: string | null; completed_at: string | null;
+  recording_available?: boolean;
 };
 export type DialerConfig = {
   rounds: number; cooldown_minutes: number;
@@ -312,6 +315,10 @@ export async function getQualityCalls(limit = 200): Promise<QualityCallRecord[]>
 
 export async function getQualityConversation(callUuid: string): Promise<QualityConversation> {
   return controlApi<QualityConversation>(`/v1/quality/calls/${encodeURIComponent(callUuid)}`);
+}
+
+export async function getRecordingUrl(callUuid: string): Promise<QualityRecording> {
+  return controlApi<QualityRecording>(`/v1/quality/calls/${encodeURIComponent(callUuid)}/recording`);
 }
 
 export async function getCampaign(id: string): Promise<CampaignDetail> {

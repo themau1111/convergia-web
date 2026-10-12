@@ -4,6 +4,7 @@ import { getMonitoringCalls, getQualityCalls, getQualityConversation, getSelecte
 import { redirect } from "next/navigation";
 import type { MonitoringCallRecord, QualityCallRecord } from "@/lib/control-api";
 import { QualityPoller } from "./quality-poller";
+import { RecordingPlayer } from "./recording-player";
 
 const kindLabel = { client: "Cliente", agent: "Agente", system: "Sistema", voicemail: "Buzón" } as const;
 
@@ -30,6 +31,7 @@ type QualityListItem = {
   started_at: string | null;
   /** true cuando la entrada viene sólo de logs (llamada manual sin registro en BD) */
   is_manual: boolean;
+  recording_available: boolean;
 };
 
 function fromMonitoring(r: MonitoringCallRecord): QualityListItem {
@@ -45,6 +47,7 @@ function fromMonitoring(r: MonitoringCallRecord): QualityListItem {
     created_at: r.created_at,
     started_at: r.started_at,
     is_manual: false,
+    recording_available: r.recording_available ?? false,
   };
 }
 
@@ -61,6 +64,7 @@ function fromQualityLog(r: QualityCallRecord): QualityListItem {
     created_at: r.updated_at,
     started_at: null,
     is_manual: true,
+    recording_available: r.recording_available ?? false,
   };
 }
 
@@ -236,6 +240,11 @@ export default async function QualityPage({ searchParams }: { searchParams: Prom
                 </div>
                 <code title={selected.uuid}>{selected.uuid.slice(0, 8)}</code>
               </div>
+              {selectedMeta?.recording_available && (
+                <div style={{ margin: "16px 0" }}>
+                  <RecordingPlayer callUuid={selected.uuid} />
+                </div>
+              )}
               <div className="conversation-events">
                 {selected.events.map((event, index) => (
                   <div className={`conversation-event ${event.kind}`} key={`${event.time}-${index}`}>

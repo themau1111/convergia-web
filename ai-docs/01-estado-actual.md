@@ -13,6 +13,7 @@ Vercel o contenedor standalone.
 
 - Login OIDC mediante Auth.js, sesión server-side y protección de `/app`.
 - Campañas, carteras, perfiles de agente, resultados, calidad, miembros y auditoría.
+- Calidad incluye reproducción y descarga de grabaciones mediante URL firmada desde S3.
 - Server Actions y rutas BFF que reenvían el access token a FastAPI.
 - Copiloto administrativo con streaming y tools server-side de sólo lectura.
 - Carga de contactos a través de rutas server-side.
