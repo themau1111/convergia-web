@@ -42,3 +42,37 @@ de caché/revalidación. Un contenedor propio debe estar detrás de HTTPS y un p
 balanceador con límites y timeouts.
 
 Relacionado: [[04-integraciones]], [[06-roadmap]].
+
+## Publicación de grabaciones 2026-10-12
+
+- Producción actualizada con autorización explícita:
+  `dpl_5af3R48biS595QXqRoFZ92rvB7NB`, alias `https://convergia-web.vercel.app`.
+- Lint y TypeScript correctos; build local Webpack y build Vercel Turbopack correctos.
+  Turbopack local falla al abrir un puerto bajo las restricciones del entorno.
+- React Doctor revisó los cinco archivos de código cambiados sin diagnósticos.
+- Playwright verificó el componente real con WAVs sintéticos: cambio de llamada,
+  reintento de fallos, renovación de enlace y reproducción. No se abrió información
+  privada ni se originaron llamadas.
+- Los dos backends externos tienen captura, subida y firma verificadas con WAVs
+  sintéticos; la originación fue habilitada después por autorización explícita del usuario.
+
+## Ajuste de controles de grabación 2026-10-12
+
+- Producción vigente: `dpl_9TNVvhY5WRMwZBCxGqy42tntzWUU`, alias `https://convergia-web.vercel.app`.
+- Reproductor compartido en calidad de cobranza y encuesta: tarjeta compacta, iconos, separación entre audio y acciones, descarga disponible desde el inicio y controles apilados en pantallas pequeñas.
+- Lint, TypeScript, build local Webpack y build Vercel correctos. React Doctor sin diagnósticos en los archivos revisados.
+- Componente real revisado en navegador con datos/WAVs sintéticos: reproducción, cambio de llamada, reintento, renovación y acomodo a 390 px. No se abrieron datos privados ni se originaron llamadas.
+
+## Mensaje de audio 2026-10-12
+
+- Producción vigente: `dpl_FAQf5YhVjQbSWFapw2LaBwCage4L`, alias `https://convergia-web.vercel.app`.
+- Lint, TypeScript, build local/Vercel y `npm run test:recordings` correctos; pruebas verifican autorización antes de solicitar S3, aislamiento, límites y cálculo de ondas.
+- Navegador con componente y estilos reales/WAVs sintéticos: play/pausa, avance, carga bajo demanda, cambio de llamada, reintento, hora local, descarga, móvil y tema oscuro. Sin llamadas reales ni datos privados.
+- React Doctor señaló complejidad del componente, una advertencia de lifetime de Blob y captions. La URL se revoca en el cleanup de desmontaje/cambio por key; no es una fuga confirmada. El WAV es audio sin video, con controles accesibles y conversación textual separada en calidad de cobranza; no se inventaron pistas de captions. La advertencia de complejidad es de mantenibilidad, no un fallo de funcionamiento.
+
+## Cierre Git 2026-10-12
+
+Código y pruebas de grabaciones se publican en Git; CI incluye `test:recordings`
+además de lint, TypeScript y build. Capturas, WAVs sintéticos y descargas temporales
+de navegador permanecen fuera del repositorio. La publicación en Git no modifica
+la originación de los backends.

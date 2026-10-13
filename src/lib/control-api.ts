@@ -69,7 +69,7 @@ export type AuditEventRecord = {
   entity_id: string; metadata: Record<string, unknown>; created_at: string;
 };
 export type QualityCallRecord = {
-  uuid: string; updated_at: string; updated_local: string; size_bytes: number;
+  uuid: string; updated_at: string; updated_local: string; size_bytes: number; completed_at?: string | null;
   campaign_name?: string | null; agent_name?: string | null;
   recording_available?: boolean;
 };
@@ -78,7 +78,7 @@ export type ConversationEvent = {
   time: string; kind: "client" | "agent" | "system" | "voicemail"; text: string;
 };
 export type QualityConversation = {
-  uuid: string; truncated: boolean; events: ConversationEvent[];
+  uuid: string; truncated: boolean; events: ConversationEvent[]; completed_at?: string | null;
 };
 
 export type MemberRole = "owner" | "admin" | "operator" | "analyst" | "viewer";
@@ -317,8 +317,8 @@ export async function getQualityConversation(callUuid: string): Promise<QualityC
   return controlApi<QualityConversation>(`/v1/quality/calls/${encodeURIComponent(callUuid)}`);
 }
 
-export async function getRecordingUrl(callUuid: string): Promise<QualityRecording> {
-  return controlApi<QualityRecording>(`/v1/quality/calls/${encodeURIComponent(callUuid)}/recording`);
+export async function getRecordingUrl(callUuid: string, download = false): Promise<QualityRecording> {
+  return controlApi<QualityRecording>(`/v1/quality/calls/${encodeURIComponent(callUuid)}/recording${download ? "?download=true" : ""}`);
 }
 
 export async function getCampaign(id: string): Promise<CampaignDetail> {

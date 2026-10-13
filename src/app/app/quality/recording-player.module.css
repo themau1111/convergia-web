@@ -1,0 +1,38 @@
+.message {
+  align-self: flex-end;
+  flex: 0 0 auto;
+  width: min(360px, 100%);
+  margin-top: 8px;
+  padding: 16px 14px 11px;
+  border: 1px solid var(--line);
+  border-radius: 20px 20px 5px 20px;
+  background: var(--card);
+  color: var(--ink);
+  box-shadow: 0 2px 6px #00000004;
+}
+.heading { display: flex; align-items: center; gap: 11px; margin-bottom: 12px; }
+.callIcon { display: grid; place-items: center; flex: 0 0 auto; width: 40px; height: 40px; border-radius: 50%; background: #fce8e8; color: #b66969; }
+.heading > div { display: grid; gap: 4px; }
+.heading strong { font-size: 14px; font-weight: 600; }
+.heading time, .heading div > span { color: var(--muted); font-size: 12px; }
+.controls { display: flex; align-items: center; gap: 8px; }
+.iconButton { display: grid; place-items: center; flex: 0 0 auto; width: 36px; height: 40px; border: 0; border-radius: 8px; padding: 0; background: transparent; color: var(--muted); cursor: pointer; }
+.iconButton:hover:not(:disabled) { background: var(--paper); color: var(--green); }
+.iconButton:focus-visible, .waveform:focus-within { outline: 2px solid var(--green); outline-offset: 2px; }
+.iconButton:disabled { opacity: .55; cursor: wait; }
+.track { flex: 1; min-width: 0; }
+.waveform { position: relative; height: 44px; border-radius: 4px; }
+.waveform svg { display: block; width: 100%; height: 100%; }
+.unplayed { fill: var(--line); }
+.played { fill: var(--green); }
+.waveform input { position: absolute; inset: 0; margin: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+.waveform input:disabled { cursor: default; }
+.duration { display: block; margin: 2px 0 0; color: var(--muted); font-size: 10px; font-variant-numeric: tabular-nums; }
+.message audio { display: none; }
+.error { margin-top: 10px; font-size: 11px; line-height: 1.5; }
+.error p { margin: 0; color: var(--destructive); }
+.error button { display: inline-flex; align-items: center; gap: 5px; margin-top: 4px; border: 0; padding: 4px 0; background: none; color: var(--green); cursor: pointer; font: inherit; text-decoration: underline; }
+.spinner { animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+:global([data-theme="dark"]) .callIcon { background: #432b34; color: #e6a1ad; }
+@media (prefers-reduced-motion: reduce) { .spinner { animation: none; } }

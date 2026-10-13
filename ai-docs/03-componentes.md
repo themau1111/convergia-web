@@ -13,7 +13,9 @@ updated: 2026-08-26
 - `src/app/api/assistant/` - streaming del copiloto administrativo.
 - `src/app/api/upload-*` - proxy server-side de cargas hacia FastAPI.
 - `src/app/app/quality/actions.ts` - Server Action `getRecordingUrlAction` que obtiene la URL firmada de S3 desde FastAPI.
-- `src/app/app/quality/recording-player.tsx` - Componente cliente que carga bajo demanda y reproduce/descarga la grabación WAV.
+- `src/app/app/quality/recording-player.tsx` - Mensaje de llamada finalizada compartido por calidad de cobranza/encuesta: play/pausa, avance sobre ondas reales, duración, hora e icono; en cobranza es el último elemento del scroll conversacional. Audio bajo demanda, reintento y descarga WAV como attachment.
+- `src/app/app/quality/recording-waveform.ts` - RMS de 48 barras a partir del WAV decodificado; conserva silencio, no fabrica una forma de onda.
+- `src/app/api/recordings/[callUuid]/route.ts` - BFF privado que obtiene autorización de FastAPI antes de servir audio, sin CORS público ni caché compartida.
 - `src/auth.ts` - configuración OIDC y callbacks de sesión/token.
 - `src/proxy.ts` - protección de rutas antes del renderizado.
 - `src/lib/control-api.ts` - tipos y cliente server-side de `/v1`.
