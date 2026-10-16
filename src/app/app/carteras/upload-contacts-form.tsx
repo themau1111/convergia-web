@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 
 type UploadResult = {
   inserted: number;
+  updated?: number;
+  unchanged?: number;
   skipped: number;
   errors: { row: number; reason: string }[];
 };
@@ -59,13 +61,14 @@ export function UploadCsvContactsForm({ portfolioId, portfolioName }: { portfoli
           className="csv-file-input"
           ref={inputRef}
           type="file"
-          accept=".csv,.xlsx,.xls"
+          accept=".csv,.xlsx"
           required
         />
       </label>
       <p className="csv-form-help">
-        Columnas: <strong>Telefono</strong>, <strong>Nombre</strong>, Variable 1 … Variable 5. Formatos: CSV, XLSX o XLS.
+        Columnas: <strong>Telefono</strong>, <strong>Nombre</strong>, <strong>Saldo</strong> (o Total 2), Subcredito y Variable 1 … Variable 5. Formatos: CSV o XLSX.
       </p>
+      <p className="csv-form-help">Reimportar actualiza el mismo crédito y teléfono sin duplicarlos. Conserva Subcredito cuando haya varias deudas por contacto. Los recordatorios requieren saldo positivo.</p>
       <button type="submit" className="secondary-action" disabled={pending}>
         {pending ? "Importando…" : `Importar a "${portfolioName}"`}
       </button>
@@ -74,7 +77,9 @@ export function UploadCsvContactsForm({ portfolioId, portfolioName }: { portfoli
 
       {result && (
         <div className="upload-result csv-upload-result" role="status">
-          <strong>{result.inserted} contactos importados</strong>
+          <strong>{result.inserted} contactos nuevos</strong>
+          {(result.updated ?? 0) > 0 && <span> · {result.updated} actualizados</span>}
+          {(result.unchanged ?? 0) > 0 && <span> · {result.unchanged} sin cambios</span>}
           {result.skipped > 0 && <span> · {result.skipped} omitidos</span>}
           {result.errors.length > 0 && (
             <>

@@ -15,6 +15,8 @@ import { createCsvPortfolioAction } from "./actions";
 
 type UploadResult = {
   inserted: number;
+  updated?: number;
+  unchanged?: number;
   skipped: number;
   errors: { row: number; reason: string }[];
 };
@@ -116,18 +118,20 @@ export function CreatePortfolioForm() {
               className="csv-file-input"
               ref={fileRef}
               type="file"
-              accept=".csv,.xlsx,.xls"
+              accept=".csv,.xlsx"
             />
           </label>
           <p className="csv-form-help">
-            Columnas esperadas: <strong>Telefono</strong>, <strong>Nombre</strong>, Variable 1 … Variable 5.
+            Columnas esperadas: <strong>Telefono</strong>, <strong>Nombre</strong>, <strong>Saldo</strong> (o Total 2), Subcredito y Variable 1 … Variable 5.
           </p>
 
           {error && <p className="form-error" role="alert">{error}</p>}
 
           {uploadResult && (
             <div className="upload-result csv-upload-result" role="status">
-              <strong>{uploadResult.inserted} contactos importados</strong>
+              <strong>{uploadResult.inserted} contactos nuevos</strong>
+              {(uploadResult.updated ?? 0) > 0 && <span> · {uploadResult.updated} actualizados</span>}
+              {(uploadResult.unchanged ?? 0) > 0 && <span> · {uploadResult.unchanged} sin cambios</span>}
               {uploadResult.skipped > 0 && <span> · {uploadResult.skipped} omitidos</span>}
               {uploadResult.errors.length > 0 && (
                 <>

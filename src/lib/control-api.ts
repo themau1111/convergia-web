@@ -170,7 +170,7 @@ export type AgentLabelRecord = {
   name: string; criteria: string; position: number; created_at: string;
 };
 export type ContactUploadResult = {
-  inserted: number; skipped: number; errors: { row: number; reason: string }[];
+  inserted: number; updated?: number; unchanged?: number; skipped: number; errors: { row: number; reason: string }[];
 };
 export type TelephonyResultOption = { value: string; label: string };
 export type MonitoringCallRecord = {

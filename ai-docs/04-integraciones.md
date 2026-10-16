@@ -1,7 +1,7 @@
 ---
 type: integrations
 status: current
-updated: 2026-10-12
+updated: 2026-10-15
 ---
 # Integraciones
 
@@ -63,3 +63,13 @@ Descarga conserva la URL firmada con attachment mediante Server Action.
 `completed_at` nullable proviene del intento o del evento explícito de cierre del
 backend; se presenta en America/Mexico_City. Sin timestamp, muestra grabación
 disponible y no inventa una hora a partir del mtime del archivo.
+
+## Importación de cobranza
+
+Las vistas de carteras envían CSV/XLSX a `/v1/csv-portfolios/{id}/upload` mediante
+BFF. Muestran contactos nuevos, actualizados, sin cambios y omitidos; aceptan
+respuestas previas sin los contadores opcionales. La identidad de reimportación
+pertenece a FastAPI: cartera, crédito y teléfono; sin crédito usa teléfono y nombre.
+La ayuda reconoce `Total 2` y `Subcredito`; no ofrece XLS binario sin lector.
+El detalle de cobranza aclara que un recordatorio puede bloquearse por saldo no positivo.
+Estos cambios no alteran las rutas ni muestras de Encuestas. Publicación pendiente.
