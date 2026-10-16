@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test:recordings": "node --test tests/recording-audio.test.mjs"
+    "test:recordings": "node --test tests/recording-audio.test.mjs",
+    "test:imports": "node --test tests/collections-import-bff.test.mjs"
   },
   "dependencies": {
     "@ai-sdk/openai": "^4.0.45",

@@ -2,6 +2,8 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
+import { cookies } from "next/headers";
+import { WORKSPACE_COOKIE } from "@/lib/control-api";
 
 export async function POST(request: NextRequest) {
   const session = await auth();
@@ -9,7 +11,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "No autenticado" }, { status: 401 });
   }
 
-  const baseUrl = process.env.CONTROL_API_URL?.replace(/\/$/, "");
+  const isSurvey = (await cookies()).get(WORKSPACE_COOKIE)?.value === "survey";
+  const baseUrl = (isSurvey ? process.env.SURVEY_CONTROL_API_URL : process.env.CONTROL_API_URL)?.replace(/\/$/, "");
   if (!baseUrl) {
     return NextResponse.json({ error: "Configuración incompleta" }, { status: 500 });
   }

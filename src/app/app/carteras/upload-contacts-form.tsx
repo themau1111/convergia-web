@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { CollectionsImportWizard } from "./collections-import-wizard";
 
 type UploadResult = {
   inserted: number;
@@ -11,7 +12,11 @@ type UploadResult = {
   errors: { row: number; reason: string }[];
 };
 
-export function UploadCsvContactsForm({ portfolioId, portfolioName }: { portfolioId: string; portfolioName: string }) {
+export function UploadCsvContactsForm({ portfolioId, portfolioName, isSurveyWorkspace = false }: { portfolioId: string; portfolioName: string; isSurveyWorkspace?: boolean }) {
+  return isSurveyWorkspace ? <LegacyUploadCsvContactsForm portfolioId={portfolioId} portfolioName={portfolioName} /> : <CollectionsImportWizard portfolioId={portfolioId} portfolioName={portfolioName} />;
+}
+
+function LegacyUploadCsvContactsForm({ portfolioId, portfolioName }: { portfolioId: string; portfolioName: string }) {
   const [result, setResult] = useState<UploadResult | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
@@ -66,9 +71,8 @@ export function UploadCsvContactsForm({ portfolioId, portfolioName }: { portfoli
         />
       </label>
       <p className="csv-form-help">
-        Columnas: <strong>Telefono</strong>, <strong>Nombre</strong>, <strong>Saldo</strong> (o Total 2), Subcredito y Variable 1 … Variable 5. Formatos: CSV o XLSX.
+        Columnas: <strong>Telefono</strong>, <strong>Nombre</strong> y las variables autorizadas de la muestra. Formatos: CSV o XLSX.
       </p>
-      <p className="csv-form-help">Reimportar actualiza el mismo crédito y teléfono sin duplicarlos. Conserva Subcredito cuando haya varias deudas por contacto. Los recordatorios requieren saldo positivo.</p>
       <button type="submit" className="secondary-action" disabled={pending}>
         {pending ? "Importando…" : `Importar a "${portfolioName}"`}
       </button>

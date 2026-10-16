@@ -1,0 +1,26 @@
+.wizard{display:grid;gap:18px;min-width:0;color:var(--ink)}
+.label{display:grid;gap:7px;font-size:13px;font-weight:650;min-width:0}
+.label input:not([type=file]),.label select,.column select{width:100%;min-width:0;min-height:42px;border:1px solid var(--line,#d8d3e4);border-radius:9px;background:var(--surface,#fff);color:var(--ink);padding:9px 11px;font:inherit}
+.label input:focus-visible,.label select:focus-visible,.column select:focus-visible{outline:2px solid var(--accent,#7968eb);outline-offset:2px}
+.section{display:grid;gap:14px;padding:18px;border:1px solid var(--line,#d8d3e4);border-radius:12px;min-width:0}
+.section legend,.section h4{font-size:15px;font-weight:750;margin:0;padding:0 5px}
+.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:12px;align-items:end}
+.mapping{display:grid;gap:8px}
+.column{display:grid;grid-template-columns:minmax(0,1fr) minmax(180px,1fr);gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line,#d8d3e4);font-size:13px}
+.column span{display:grid;gap:4px;min-width:0;overflow-wrap:anywhere}
+.column small{color:var(--muted);font-size:11px}
+.counts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:0}
+.counts div{padding:12px;border-radius:8px;background:color-mix(in srgb,var(--ink) 5%,transparent)}
+.counts dt{font-size:11px;color:var(--muted)}
+.counts dd{font-size:23px;font-weight:700;margin:5px 0 0}
+.note,.warning{font-size:12px;line-height:1.6;margin:0;padding:10px 12px;border-radius:8px;background:color-mix(in srgb,var(--ink) 6%,transparent)}
+.warning{border-left:3px solid #b88431}
+.checkbox{display:flex;gap:9px;align-items:center;font-size:13px}
+.checkbox input{width:17px;height:17px;flex:none}
+.errors{padding-left:20px;font-size:12px;line-height:1.7;max-height:240px;overflow:auto}
+.result{display:grid;gap:12px;padding:16px;border:1px solid #6a9e80;border-radius:12px}
+.result h4,.result p{margin:0;font-size:13px}
+.wizard button:disabled{opacity:.55;cursor:not-allowed}
+.wizard button{max-width:100%;white-space:normal}
+:global([data-theme=dark]) .label input:not([type=file]),:global([data-theme=dark]) .label select,:global([data-theme=dark]) .column select{background:#211e2c;border-color:#464052;color:#f3f1f6}
+@media(max-width:640px){.controls{grid-template-columns:1fr}.column{grid-template-columns:1fr;gap:8px}.counts{grid-template-columns:repeat(2,minmax(0,1fr))}.section{padding:13px}.wizard{gap:14px}}

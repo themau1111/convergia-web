@@ -77,3 +77,22 @@ el 2026-10-15 (`df76a84`, `dpl_5ZMLPDiAdHN9v8Nf3UHXnERq6ckg`), con alias
 `https://convergia-web.vercel.app`. Lint, tipos y build Webpack correctos; formulario
 verificado con datos sintéticos en escritorio/móvil. El importador FastAPI conserva
 la autoridad sobre coincidencias y validación; la web no inicia llamadas al cargar.
+
+## Asistente de formatos de cobranza
+
+El alta y actualización de carteras de Cobranza usan `CollectionsImportWizard`:
+analizar hoja/encabezados, revisar equivalencias y separador decimal, previsualizar
+conteos y confirmar. Permite recordar un formato del cliente cuando coinciden columnas.
+
+`/api/collections-import/[...path]` sólo reenvía analyze/preview/confirm a
+`/v1/collections-import`; exige sesión, origen válido, rutas acotadas y archivo <=4 MiB.
+Bloquea el workspace survey y nunca expone el access token al componente.
+Errores 409 de revisión obsoleta o cartera activa se muestran sin cambiar campañas.
+
+Encuestas conserva los formularios de muestra anteriores. Su BFF
+`/api/upload-csv-contacts` elige `SURVEY_CONTROL_API_URL` y falla si falta;
+no cae al servidor de cobranza. La plantilla de muestra omite saldo/crédito.
+
+`tests/collections-import-bff.test.mjs` verifica sesión, rutas, tamaño, errores y
+separación de servidores; el navegador se verifica con una API sintética en memoria.
+Implementación local verificada; publicación de esta ampliación pendiente.

@@ -5,12 +5,10 @@ import type { CsvPortfolioRecord, CsvContactRecord } from "@/lib/control-api";
 import { CreatePortfolioForm } from "./create-portfolio-form";
 import { UploadCsvContactsForm } from "./upload-contacts-form";
 
-const TEMPLATE_HEADERS = "Telefono,Nombre,Variable 1,Variable 2,Variable 3,Variable 4,Variable 5";
-const TEMPLATE_EXAMPLE = "5218112345678,Juan Pérez,Dato 1,Dato 2,Dato 3,Dato 4,Dato 5";
-const TEMPLATE_BLOB = `data:text/csv;charset=utf-8,${encodeURIComponent(`${TEMPLATE_HEADERS}\n${TEMPLATE_EXAMPLE}\n`)}`;
-
 export default async function CarterasPage() {
   const isSurveyWorkspace = (await getSelectedWorkspace())?.key === "survey";
+  const templateHeaders = isSurveyWorkspace ? "Telefono,Nombre,Variable 1,Variable 2,Variable 3,Variable 4,Variable 5" : "Telefono,Nombre,Subcredito,Saldo,Variable 1,Variable 2,Variable 3,Variable 4,Variable 5";
+  const templateBlob = `data:text/csv;charset=utf-8,${encodeURIComponent(`${templateHeaders}\n`)}`;
   const portfolios = await getCsvPortfolios().catch(() => [] as CsvPortfolioRecord[]);
   const totalContacts = portfolios.reduce((total, portfolio) => total + portfolio.contact_count, 0);
   const readyPortfolios = portfolios.filter((portfolio) => portfolio.contact_count > 0).length;
@@ -36,13 +34,13 @@ export default async function CarterasPage() {
         <div className="header-actions">
           <Link href="/">← Volver al pulso</Link>
           <a
-            href={TEMPLATE_BLOB}
+            href={templateBlob}
             download="plantilla_cartera.csv"
             className="secondary-action"
           >
             Descargar plantilla CSV
           </a>
-          <CreatePortfolioForm />
+          <CreatePortfolioForm isSurveyWorkspace={isSurveyWorkspace} />
         </div>
       </header>
 
@@ -106,7 +104,7 @@ export default async function CarterasPage() {
                         <p>Agrega un nuevo archivo CSV o Excel. Conservaremos las variables que incluyas en cada fila.</p>
                       </div>
                     </div>
-                    <UploadCsvContactsForm portfolioId={portfolio.id} portfolioName={portfolio.name} />
+                    <UploadCsvContactsForm portfolioId={portfolio.id} portfolioName={portfolio.name} isSurveyWorkspace={isSurveyWorkspace} />
                   </section>
 
                   {contacts.length > 0 && (

@@ -12,6 +12,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { createCsvPortfolioAction } from "./actions";
+import { CreateCollectionPortfolioForm } from "./create-collection-portfolio-form";
 
 type UploadResult = {
   inserted: number;
@@ -21,7 +22,11 @@ type UploadResult = {
   errors: { row: number; reason: string }[];
 };
 
-export function CreatePortfolioForm() {
+export function CreatePortfolioForm({ isSurveyWorkspace = false }: { isSurveyWorkspace?: boolean }) {
+  return isSurveyWorkspace ? <LegacyCreatePortfolioForm /> : <CreateCollectionPortfolioForm />;
+}
+
+function LegacyCreatePortfolioForm() {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState("");
   const [uploadResult, setUploadResult] = useState<UploadResult | null>(null);
@@ -122,7 +127,7 @@ export function CreatePortfolioForm() {
             />
           </label>
           <p className="csv-form-help">
-            Columnas esperadas: <strong>Telefono</strong>, <strong>Nombre</strong>, <strong>Saldo</strong> (o Total 2), Subcredito y Variable 1 … Variable 5.
+            Columnas esperadas: <strong>Telefono</strong>, <strong>Nombre</strong> y las variables autorizadas de la muestra.
           </p>
 
           {error && <p className="form-error" role="alert">{error}</p>}
