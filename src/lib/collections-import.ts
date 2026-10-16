@@ -12,3 +12,9 @@ export type ImportPreview = ImportResult & {
   distinct_credits: number; credits_with_multiple_phones: number; zero_balance_contacts: number;
   can_confirm: boolean; blocked_reason: string | null;
 };
+
+export type ImportAiSuggestion = {
+  header_signature: string;
+  status: "suggested" | "no_suggestions" | "unavailable" | "disabled" | "rate_limited";
+  candidates: { column_index: number; field: "nombre" | "telefono" | "source_account_id" | "saldo_pendiente" }[];
+};

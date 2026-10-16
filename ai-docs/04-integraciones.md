@@ -101,3 +101,18 @@ Seis pruebas del BFF, cuatro regresiones de grabaciones, lint, tipos, build Webp
 local y build estándar de Vercel correctos. Backend de cobranza `5ab27d8`, migración 23,
 salud y disponibilidad verificadas, con originación previa restaurada. La comprobación
 del flujo se hizo con datos sintéticos; no se originaron llamadas de prueba.
+
+
+### Propuestas IA para encabezados nuevos
+
+El asistente de carteras incorpora un botón explícito que explica qué envía a OpenAI:
+sólo etiquetas seleccionadas, sin archivo ni filas. El BFF permite `suggest-mapping`
+hacia el backend de cobranza, con la misma sesión y bloqueo de Encuestas.
+`CollectionsImportAi` presenta propuestas tipadas para revisar; aplicar sólo completa
+campos libres, conserva asignaciones y nunca selecciona el saldo. El usuario elige
+saldo y confirma la previsualización existente; la IA no importa ni llama.
+Error/rechazo/límite de IA conservan el flujo manual. La respuesta se vincula a la
+firma de encabezados y se descarta si cambió. Proveedor, credencial, cuotas y validación
+pertenecen al backend; el navegador no recibe claves ni contacta al proveedor.
+Verificación local: siete pruebas BFF, lint, tipos y navegador móvil/escritorio.
+Publicación de esta ampliación pendiente.

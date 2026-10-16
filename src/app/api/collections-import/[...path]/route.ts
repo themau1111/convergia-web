@@ -16,7 +16,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const origin = request.headers.get("origin");
   if (origin && origin !== request.nextUrl.origin) return NextResponse.json({ error: "Origen no permitido" }, { status: 403 });
   const { path } = await params;
-  const valid = (path.length === 1 && path[0] === "analyze") ||
+  const valid = (path.length === 1 && ["analyze", "suggest-mapping"].includes(path[0])) ||
     (path.length === 2 && /^[0-9a-f-]{36}$/i.test(path[0]) && ["preview", "confirm"].includes(path[1]));
   if (!valid) return NextResponse.json({ error: "Ruta no encontrada" }, { status: 404 });
   const base = process.env.CONTROL_API_URL?.replace(/\/$/, "");

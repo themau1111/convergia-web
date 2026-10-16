@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { ImportAnalysis, ImportMapping, ImportOptions, ImportPreview, ImportResult, ImportSheet } from "@/lib/collections-import";
+import { CollectionsImportAi } from "./collections-import-ai";
 import styles from "./collections-import-wizard.module.css";
 
 const fields = [
@@ -158,6 +159,19 @@ export function CollectionsImportWizard({ portfolioId, portfolioName }: { portfo
           }}><option value="">Asignación sugerida</option>{analysis.profiles.map((p) => <option key={p.id} value={p.id} disabled={p.header_signature !== sheet.header_signature}>{p.name}{p.header_signature !== sheet.header_signature ? " — columnas diferentes" : ""}</option>)}</select>
         </label>}
         {profileId && <p className={styles.note}>Se reconoció un formato guardado con las mismas columnas. Puedes revisar sus equivalencias.</p>}
+        {file && <CollectionsImportAi key={`${sheet.name}:${sheet.header_row}:${sheet.header_signature}`} file={file} sheet={sheet} disabled={busy || headerRow !== sheet.header_row} onApply={(candidates) => {
+          invalidate(); setProfileId("");
+          setMapping((current) => {
+            const next = { ...current };
+            const used = new Set(Object.values(current).flat());
+            for (const candidate of candidates) {
+              if (candidate.field === "saldo_pendiente" || used.has(candidate.column_index) || next[candidate.field]?.length) continue;
+              next[candidate.field] = candidates.filter((c) => c.field === candidate.field && !used.has(c.column_index)).map((c) => c.column_index).slice(0, candidate.field === "telefono" ? 5 : 1);
+              for (const index of next[candidate.field]) used.add(index);
+            }
+            return next;
+          });
+        }} />}
         <div className={styles.mapping}>
           {sheet.columns.map((column) => <label className={styles.column} key={column.index}>
             <span><strong>{column.header}</strong><small>Columna {column.index + 1}</small></span>

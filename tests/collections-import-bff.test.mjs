@@ -77,3 +77,12 @@ test('legacy sample upload targets survey backend and never falls back to collec
   assert.equal((await route.POST(request(form()))).status,500);
   assert.equal(route.calls.length,0);
 });
+
+test('AI mapping route forwards only file and bounded import metadata to collections',async()=>{
+  const route=load(guided);const body=form();body.set('sheet','Synthetic');body.set('header_row','4');body.set('provider','do-not-forward');
+  const response=await route.POST(request(body),{params:Promise.resolve({path:['suggest-mapping']})});
+  assert.equal(response.status,200);assert.equal(route.calls[0].url,'https://collections.invalid/v1/collections-import/suggest-mapping');
+  assert.equal(route.calls[0].init.body.get('sheet'),'Synthetic');assert.equal(route.calls[0].init.body.get('header_row'),'4');assert.equal(route.calls[0].init.body.get('provider'),null);
+  const survey=load(guided,{workspace:'survey'});
+  assert.equal((await survey.POST(request(body),{params:Promise.resolve({path:['suggest-mapping']})})).status,403);assert.equal(survey.calls.length,0);
+});
