@@ -115,4 +115,8 @@ Error/rechazo/límite de IA conservan el flujo manual. La respuesta se vincula a
 firma de encabezados y se descarta si cambió. Proveedor, credencial, cuotas y validación
 pertenecen al backend; el navegador no recibe claves ni contacta al proveedor.
 Verificación local: siete pruebas BFF, lint, tipos y navegador móvil/escritorio.
-Publicación de esta ampliación pendiente.
+Publicado el 2026-10-16: `f9a9e69`, despliegue
+`dpl_FJ3nU8kmpZ8znkQRAaAPoMzFLzFp` Ready en `https://convergia-web.vercel.app`.
+Backend IA `453b05f`, salud/disponibilidad correctas y originación previa restaurada.
+Ocho evals reales con encabezados ficticios: 11 propuestas aceptadas correctas de 11;
+11 de 12 equivalencias esperadas. No garantiza precisión general; se mantiene revisión.
