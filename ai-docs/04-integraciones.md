@@ -72,4 +72,8 @@ respuestas previas sin los contadores opcionales. La identidad de reimportación
 pertenece a FastAPI: cartera, crédito y teléfono; sin crédito usa teléfono y nombre.
 La ayuda reconoce `Total 2` y `Subcredito`; no ofrece XLS binario sin lector.
 El detalle de cobranza aclara que un recordatorio puede bloquearse por saldo no positivo.
-Estos cambios no alteran las rutas ni muestras de Encuestas. Publicación pendiente.
+Estos cambios no alteran las rutas ni muestras de Encuestas. Publicados en producción
+el 2026-10-15 (`df76a84`, `dpl_5ZMLPDiAdHN9v8Nf3UHXnERq6ckg`), con alias
+`https://convergia-web.vercel.app`. Lint, tipos y build Webpack correctos; formulario
+verificado con datos sintéticos en escritorio/móvil. El importador FastAPI conserva
+la autoridad sobre coincidencias y validación; la web no inicia llamadas al cargar.
