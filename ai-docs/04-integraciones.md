@@ -1,7 +1,7 @@
 ---
 type: integrations
 status: current
-updated: 2026-10-15
+updated: 2026-10-16
 ---
 # Integraciones
 
@@ -95,4 +95,9 @@ no cae al servidor de cobranza. La plantilla de muestra omite saldo/crédito.
 
 `tests/collections-import-bff.test.mjs` verifica sesión, rutas, tamaño, errores y
 separación de servidores; el navegador se verifica con una API sintética en memoria.
-Implementación local verificada; publicación de esta ampliación pendiente.
+Publicado el 2026-10-16: frontend `cdcd05b`, despliegue
+`dpl_7qSsfiD4vxyKXCCCo3HJU6tTNRM6` Ready en `https://convergia-web.vercel.app`.
+Seis pruebas del BFF, cuatro regresiones de grabaciones, lint, tipos, build Webpack
+local y build estándar de Vercel correctos. Backend de cobranza `5ab27d8`, migración 23,
+salud y disponibilidad verificadas, con originación previa restaurada. La comprobación
+del flujo se hizo con datos sintéticos; no se originaron llamadas de prueba.
