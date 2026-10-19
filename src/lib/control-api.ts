@@ -159,7 +159,7 @@ export type PaymentOptions = {
   max_negotiation_attempts: number;
 };
 export type AgentProfileRecord = {
-  id: string; organization_id: string; profile_key: string; agent_definition_key: "collections" | "survey"; version: number;
+  id: string; organization_id: string; profile_key: string; agent_definition_key: "collections" | "rac" | "survey"; version: number;
   agent_name: string; company_name: string; personality: string;
   script: string; flow_scenarios: string; objective: string;
   payment_options: PaymentOptions;
@@ -518,7 +518,7 @@ export async function createAgentProfile(payload: {
   personality: string; voice_id?: string | null;
   script?: string; flow_scenarios?: string; objective?: string;
   payment_options?: PaymentOptions;
-  agent_definition_key?: "collections" | "survey";
+  agent_definition_key?: "collections" | "rac" | "survey";
 }): Promise<AgentProfileRecord> {
   return controlApi<AgentProfileRecord>("/v1/agent-profiles", {
     method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload),
@@ -533,7 +533,8 @@ export async function updateAgentProfile(
   id: string,
   payload: {
     agent_name?: string; company_name?: string; personality?: string;
-    voice_id?: string | null; script?: string; flow_scenarios?: string;
+    voice_id?: string | null; agent_definition_key?: "collections" | "rac" | "survey";
+    script?: string; flow_scenarios?: string;
     objective?: string; profile_key?: string; payment_options?: PaymentOptions;
   },
 ): Promise<AgentProfileRecord> {

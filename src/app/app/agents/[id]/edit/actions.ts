@@ -18,6 +18,9 @@ export async function saveAgentEdit(
   const flowScenarios = String(data.get("flow_scenarios") ?? "").trim();
   const objective = String(data.get("objective") ?? "").trim();
   const voiceId = String(data.get("voice_id") ?? "").trim();
+  const rawKey = String(data.get("agent_definition_key") ?? "collections").trim();
+  const agentDefinitionKey = (["collections", "rac", "survey"].includes(rawKey)
+    ? rawKey : "collections") as "collections" | "rac" | "survey";
 
   if (!agentName) return { error: "El nombre del agente es obligatorio." };
   if (!companyName) return { error: "El nombre de la empresa es obligatorio." };
@@ -29,6 +32,7 @@ export async function saveAgentEdit(
       company_name: companyName,
       personality,
       voice_id: voiceId || null,
+      agent_definition_key: agentDefinitionKey,
       ...(script ? { script } : {}),
       ...(flowScenarios ? { flow_scenarios: flowScenarios } : {}),
       ...(objective ? { objective } : {}),

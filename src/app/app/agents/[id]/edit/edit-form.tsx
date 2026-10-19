@@ -44,6 +44,14 @@ export function EditAgentForm({ agent }: { agent: AgentProfileRecord }) {
             Objetivo
             <input name="objective" defaultValue={agent.objective ?? ""} placeholder="Gestión de cobranza y acuerdos de pago" />
           </label>
+          <label>
+            Definición del agente
+            <select name="agent_definition_key" defaultValue={agent.agent_definition_key ?? "collections"}>
+              <option value="collections">collections — Cobranza estándar</option>
+              <option value="rac">rac — Mueblería RAC</option>
+              <option value="survey">survey — Encuestas</option>
+            </select>
+          </label>
           <label className="wide-field">
             Personalidad y estilo
             <textarea name="personality" required defaultValue={agent.personality} maxLength={1000} rows={3} />
