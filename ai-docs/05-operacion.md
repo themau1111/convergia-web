@@ -1,7 +1,7 @@
 ---
 type: operations
 status: current
-updated: 2026-09-23
+updated: 2026-10-20
 ---
 # Operación
 
@@ -76,3 +76,18 @@ Código y pruebas de grabaciones se publican en Git; CI incluye `test:recordings
 además de lint, TypeScript y build. Capturas, WAVs sintéticos y descargas temporales
 de navegador permanecen fuera del repositorio. La publicación en Git no modifica
 la originación de los backends.
+
+## Reportes de cobranza publicados 2026-10-20
+
+- Código web `9b7f9eab140c9852a1146e4ea24ba79e9619d38d`, producción verificada
+  en Vercel como `dpl_6v6B399QsA73qpBBoeYoXyXg25RF`, alias
+  `https://convergia-web.vercel.app`; `/api/health` respondió `ok`.
+- Reporte único por campaña, filtros de campañas/agentes, telefonía separada de
+  etiquetas en intentos y Calidad, y contraste corregido en historial oscuro.
+  Calidad conserva resultados aun sin conversación disponible.
+- Se integró primero el selector remoto de definición de agente sin sobrescribirlo.
+  Lint, TypeScript, 11 pruebas web y build local Webpack correctos; Vercel compiló
+  en producción. UI revisada con datos sintéticos a 1440, 390 y 320 px en ambos
+  temas, incluidas etiquetas largas y tabla con scroll interno.
+- Backend de cobranza publicado y verificado; originación restaurada por
+  autorización explícita. Sin llamadas de prueba. Contratos/UI: [[03-componentes]].
