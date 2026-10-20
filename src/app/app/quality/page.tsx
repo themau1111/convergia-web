@@ -1,3 +1,4 @@
+import { TelephonyResult } from "@/components/telephony-result";
 import Link from "next/link";
 
 import { getMonitoringCalls, getQualityCalls, getQualityConversation, getSelectedWorkspace } from "@/lib/control-api";
@@ -200,16 +201,8 @@ export default async function QualityPage({ searchParams }: { searchParams: Prom
                       <span style={{ fontSize: 11, color: "var(--muted)" }}>r{item.round_number}</span>
                     )}
                   </div>
-                  {(item.telephony_result || item.labels.length > 0) && (
-                    <div className="monitoring-labels">
-                      {item.telephony_result && (
-                        <span className="label-chip label-chip--telephony">{item.telephony_result}</span>
-                      )}
-                      {item.labels.map((label) => (
-                        <span className="label-chip" key={label.id}>{label.name}</span>
-                      ))}
-                    </div>
-                  )}
+                  {!item.is_manual && <div className="quality-outcome"><small>Resultado telefónico</small><TelephonyResult value={item.telephony_result} /></div>}
+                  {item.labels.length > 0 && <div className="quality-label-group"><small>Etiquetas</small><div className="monitoring-labels">{item.labels.map(label => <span className="label-chip" key={label.id}>{label.name}</span>)}</div></div>}
                 </Link>
               );
             })}
@@ -220,7 +213,7 @@ export default async function QualityPage({ searchParams }: { searchParams: Prom
         </aside>
 
         <article className="conversation-viewer">
-          {selected ? (
+          {selectedMeta ? (
             <>
               <div className="conversation-heading">
                 <div>
@@ -230,34 +223,34 @@ export default async function QualityPage({ searchParams }: { searchParams: Prom
                     <small className="quality-conv-meta">
                       {selectedMeta.campaign_name}
                       {selectedMeta.agent_name ? ` · ${selectedMeta.agent_name}` : ""}
-                      {selectedMeta.telephony_result ? ` · ${selectedMeta.telephony_result}` : ""}
                     </small>
                   )}
-                  {selectedMeta && selectedMeta.labels.length > 0 && (
-                    <div className="monitoring-labels" style={{ marginTop: 8 }}>
+                  {!selectedMeta.is_manual && <div className="quality-outcome"><small>Resultado telefónico</small><TelephonyResult value={selectedMeta.telephony_result} /></div>}
+                  {selectedMeta.labels.length > 0 && (
+                    <div className="quality-label-group"><small>Etiquetas</small><div className="monitoring-labels">
                       {selectedMeta.labels.map((label) => (
                         <span className="label-chip" key={label.id}>{label.name}</span>
                       ))}
-                    </div>
+                    </div></div>
                   )}
                 </div>
-                <code title={selected.uuid}>{selected.uuid.slice(0, 8)}</code>
+                <code title={selectedMeta.call_uuid}>{selectedMeta.call_uuid.slice(0, 8)}</code>
               </div>
               <div className="conversation-events">
-                {selected.events.map((event, index) => (
+                {selected?.events.map((event, index) => (
                   <div className={`conversation-event ${event.kind}`} key={`${event.time}-${index}`}>
                     <small>{kindLabel[event.kind]} · {event.time || "sin marca"}</small>
                     <p>{event.text}</p>
                   </div>
                 ))}
                 {selectedMeta?.recording_available && (
-                  <RecordingPlayer key={selected.uuid} callUuid={selected.uuid} finishedAt={selectedMeta.completed_at ?? selected.completed_at ?? null} />
+                  <RecordingPlayer key={selectedMeta.call_uuid} callUuid={selectedMeta.call_uuid} finishedAt={selectedMeta.completed_at ?? selected?.completed_at ?? null} />
                 )}
-                {!selected.events.length && (
-                  <p className="muted">No se detectaron turnos conversacionales en esta llamada.</p>
+                {!selected?.events.length && (
+                  <p className="muted">No hay conversación disponible para esta llamada. Puedes consultar su resultado telefónico y las etiquetas registradas.</p>
                 )}
               </div>
-              {selected.truncated && (
+              {selected?.truncated && (
                 <p className="security-note">La conversación fue recortada para mantener una lectura segura.</p>
               )}
             </>

@@ -17,7 +17,12 @@ export default async function ResultsPage() {
         <article className="metric-card"><p>Operando ahora</p><strong>{active.toString().padStart(2,"0")}</strong><span>En ejecución</span></article>
         <article className="metric-card"><p>Requieren revisión</p><strong>{attention.toString().padStart(2,"0")}</strong><span>Pausadas o con incidencia</span></article>
       </section>
-      <section className="insight-card result-note"><p className="eyebrow">Sin simulaciones</p><h2>{completed.length ? "Consulta cada cierre desde el detalle de campaña." : "Los resultados aparecerán cuando una campaña complete su ciclo."}</h2><p className="muted">Conservamos separación entre estado técnico, resultado conversacional y resultado de negocio.</p><Link className="primary-action" href="/app/campaigns">Ver campañas <span>↗</span></Link></section>
+      <section className="detail-card">
+        <div className="section-heading"><div><p className="eyebrow">Análisis por campaña</p><h2>Consulta resultados y etiquetas</h2></div></div>
+        <p className="muted">Los reportes están disponibles desde el primer intento, sin esperar al cierre. Cada campaña reúne resultados telefónicos, etiquetas del agente y detalle de intentos.</p>
+        <div className="results-campaign-list">{campaigns.map(campaign => <Link key={campaign.id} href={`/app/campaigns/${campaign.id}#results`}><strong>{campaign.name}</strong><span>Ver reporte ↗</span></Link>)}</div>
+        {!campaigns.length && <p className="empty-state">Aún no hay campañas para analizar.</p>}
+      </section>
     </main>
   );
 }

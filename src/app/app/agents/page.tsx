@@ -1,11 +1,14 @@
+import { CollectionFilters, readListQuery, normalizeSearch } from "@/components/collection-filters";
 import Link from "next/link";
 
 import { getAgentProfiles, getSelectedWorkspace } from "@/lib/control-api";
 import { redirect } from "next/navigation";
 
-export default async function AgentsPage() {
+export default async function AgentsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  const query = readListQuery(await searchParams);
   if ((await getSelectedWorkspace())?.key === "survey") redirect("/app/surveys/interviewers");
-  const agents = await getAgentProfiles();
+  const allItems = await getAgentProfiles();
+  const agents = allItems.filter(agent => normalizeSearch(`${agent.agent_name} ${agent.company_name} ${agent.profile_key}`).includes(normalizeSearch(query.q ?? "")));
   return (
     <main className="members-shell">
       <header className="members-header">
@@ -19,6 +22,8 @@ export default async function AgentsPage() {
           <Link className="primary-action" href="/app/agents/new">Nuevo agente <span>↗</span></Link>
         </div>
       </header>
+      <CollectionFilters query={query} action="/app/agents" />
+      <p className="muted list-count" role="status">{agents.length} de {allItems.length} agentes</p>
       <section className="campaign-list">
         {agents.map((agent) => (
           <article className="campaign-row" key={agent.id}>
@@ -39,7 +44,8 @@ export default async function AgentsPage() {
             <Link className="icon-button" href={`/app/agents/${agent.id}`} aria-label={`Abrir ${agent.agent_name}`}>↗</Link>
           </article>
         ))}
-        {!agents.length && (
+        {!agents.length && !!allItems.length && <div className="empty-state"><strong>Sin coincidencias.</strong><span>Prueba otros filtros o limpia la búsqueda.</span></div>}
+        {!allItems.length && (
           <div className="empty-state">
             <strong>Aún no hay agentes.</strong>
             <span>Crea el primer perfil de agente para usarlo en campañas.</span>

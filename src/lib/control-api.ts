@@ -11,6 +11,7 @@ export class ControlApiError extends Error {
 }
 
 export type CampaignRecord = {
+  created_at: string;
   id: string;
   name: string;
   objective: "payment_reminder" | "agreement_follow_up";
@@ -61,6 +62,7 @@ export type CampaignExecutionRecord = {
 export type CampaignCallAttemptRecord = {
   id: string; execution_id: string; campaign_id: string; call_uuid: string;
   attempt_number: number;
+  telephony_result: string | null;
   technical_status: "prepared" | "originating" | "connected" | "completed" | "no_answer" | "failed" | "cancelled";
   error_code?: string | null; created_at: string; started_at?: string | null; completed_at?: string | null;
 };
@@ -680,4 +682,13 @@ export async function resendInvitation(id: string): Promise<{ delivery_status: "
 
 export async function preAcceptInvitation(id: string): Promise<void> {
   return controlApi<void>(`/v1/member-invitations/${encodeURIComponent(id)}/pre-accept`, { method: "POST" });
+}
+
+export type CampaignResults = {
+  total_attempts: number; finished_attempts: number; without_labels: number;
+  telephony: { result: string; count: number }[];
+  labels: { id: string; name: string; criteria: string; count: number }[];
+};
+export async function getCampaignResults(id: string): Promise<CampaignResults> {
+  return controlApi<CampaignResults>(`/v1/campaigns/${encodeURIComponent(id)}/results`);
 }

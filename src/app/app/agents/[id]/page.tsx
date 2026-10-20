@@ -87,7 +87,7 @@ export default async function AgentDetailPage({ params }: { params: Promise<{ id
         <section className="edit-section">
           <p className="eyebrow">Etiquetas de detección</p>
           <p className="muted" style={{ marginBottom: 16, fontSize: 13 }}>
-            Las etiquetas clasifican automáticamente los resultados de las llamadas según el criterio definido.
+            Las etiquetas clasifican la conversación según el criterio definido. Para medir éxito, usa criterios concretos como una promesa de pago confirmada. Buzón y sin contestar se registran por separado como resultados telefónicos.
           </p>
           {labels.length > 0 ? (
             <div className="agent-labels-list">

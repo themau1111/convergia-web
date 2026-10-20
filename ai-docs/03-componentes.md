@@ -1,7 +1,7 @@
 ---
 type: components
 status: current
-updated: 2026-08-26
+updated: 2026-10-20
 ---
 # Componentes
 
@@ -27,3 +27,23 @@ updated: 2026-08-26
 
 Las reglas funcionales no deben desplazarse desde FastAPI hacia componentes de UI.
 Relacionado: [[02-arquitectura]], [[04-integraciones]], [[05-operacion]].
+
+## Cobranza: filtros y reporte
+
+- `src/components/collection-filters.tsx`: formularios GET compartibles; campañas
+  por nombre, estado y fecha de creación inclusiva en America/Mexico_City; agentes
+  por texto parcial de nombre, empresa o clave, ignorando mayúsculas y acentos.
+- `src/components/campaign-report.tsx`: reporte único dentro del detalle de campaña,
+  consumiendo `/v1/campaigns/{id}/results`; agrega todos los intentos y corridas,
+  separa telefonía de etiquetas y muestra criterios, conteos y porcentajes por intento.
+  Las etiquetas son las actuales del perfil; no hay reclasificación histórica.
+- `/app/results` permite abrir el reporte de cualquier campaña desde su primer
+  intento, sin duplicar tablas. El detalle conserva los intentos como desglose técnico.
+- Historial de cambios: estados traducidos y colores semánticos en ambos temas.
+
+- `src/components/telephony-result.tsx` y `src/lib/telephony-results.ts` comparten
+  traducciones y estilos para contestada, buzón, no contestada, ocupado, inválido,
+  fallida, pendiente, cancelada y sin resultado registrado. Aparecen en el reporte,
+  tabla semántica de intentos y Calidad; las etiquetas quedan en un bloque aparte.
+  Contestada no significa promesa de pago. Calidad conserva metadatos si no hay
+  conversación disponible; la tabla tiene scroll horizontal interno en móvil.

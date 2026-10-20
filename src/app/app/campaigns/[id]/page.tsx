@@ -1,7 +1,9 @@
+import { TelephonyResult } from "@/components/telephony-result";
+import { CampaignReport } from "@/components/campaign-report";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
-import { getCampaign, getCampaignAttempts, getCampaignAuditEvents, getCampaignExecutions, getCampaignPreflight, getCurrentMembership, getSelectedWorkspace } from "@/lib/control-api";
+import { getCampaignResults, getCampaign, getCampaignAttempts, getCampaignAuditEvents, getCampaignExecutions, getCampaignPreflight, getCurrentMembership, getSelectedWorkspace } from "@/lib/control-api";
 
 import { LifecycleControls } from "./lifecycle-controls";
 
@@ -21,10 +23,10 @@ export default async function CampaignDetailPage({ params }: { params: Promise<{
   const { id } = await params;
   const campaign = await getCampaign(id).catch(() => null);
   if (!campaign) notFound();
-  const [executions, attempts, auditEvents, membership, preflight] = await Promise.all([
+  const [executions, attempts, auditEvents, membership, preflight, report] = await Promise.all([
     getCampaignExecutions(id).catch(() => []), getCampaignAttempts(id).catch(() => []),
     getCampaignAuditEvents(id).catch(() => []), getCurrentMembership(),
-    getCampaignPreflight(id).catch(() => null),
+    getCampaignPreflight(id).catch(() => null), getCampaignResults(id).catch(() => null),
   ]);
 
   const canEdit = campaign.status === "paused" &&
@@ -33,7 +35,7 @@ export default async function CampaignDetailPage({ params }: { params: Promise<{
   return (
     <main className="campaign-detail-shell">
       <header className="campaign-detail-header">
-        <div><Link className="back-link" href="/">← Volver a campañas</Link><p className="eyebrow">Detalle operativo</p><h1>{campaign.name}</h1><p className="muted">{campaign.objective === "payment_reminder" ? "Recordatorio de pago" : "Seguimiento de acuerdo"}</p></div>
+        <div><Link className="back-link" href="/app/campaigns">← Volver a campañas</Link><p className="eyebrow">Detalle operativo</p><h1>{campaign.name}</h1><p className="muted">{campaign.objective === "payment_reminder" ? "Recordatorio de pago" : "Seguimiento de acuerdo"}</p></div>
         <div className="detail-header-end">
           {canEdit && <Link href={`/app/campaigns/${id}/edit`} className="secondary-action">Editar campaña</Link>}
           <span className={`detail-status ${campaign.status}`}>{statusLabels[campaign.status] ?? campaign.status}</span>
@@ -56,6 +58,8 @@ export default async function CampaignDetailPage({ params }: { params: Promise<{
 
       <LifecycleControls campaignId={id} status={campaign.status} canManage={["owner", "admin", "operator"].includes(membership.role)} preflightReady={preflight?.ready ?? false} />
 
+      <CampaignReport report={report} />
+
       <section className="detail-grid">
         <article className="detail-card">
           <div className="section-heading"><div><p className="eyebrow">Ejecuciones</p><h2>Corridas de campaña</h2></div><span>{executions.length}</span></div>
@@ -66,10 +70,16 @@ export default async function CampaignDetailPage({ params }: { params: Promise<{
         </article>
 
         <article className="detail-card">
-          <div className="section-heading"><div><p className="eyebrow">Actividad técnica</p><h2>Intentos recientes</h2></div><span>{attempts.length}</span></div>
-          <div className="attempt-table" role="table" aria-label="Intentos de llamada">
-            <div className="attempt-head" role="row"><span>Estado</span><span>Intento</span><span>Inicio</span><span>Referencia</span></div>
-            {attempts.map((attempt) => <div className="attempt-row" role="row" key={attempt.id}><span><i className={`status-dot ${attempt.technical_status}`} />{statusLabels[attempt.technical_status] ?? attempt.technical_status}</span><span>#{attempt.attempt_number}</span><span>{formatDate(attempt.started_at ?? attempt.created_at)}</span><code>{attempt.call_uuid.slice(0, 8)}</code></div>)}
+          <div className="section-heading"><div><p className="eyebrow">Actividad técnica</p><h2>Detalle de intentos</h2></div><span>{attempts.length}</span></div>
+          <div className="attempt-table" role="region" aria-label="Intentos de llamada" tabIndex={0}>
+            <table className="campaign-attempts">
+              <thead><tr><th scope="col">Resultado telefónico</th><th scope="col">Estado técnico</th><th scope="col">Intento</th><th scope="col">Inicio</th><th scope="col">Referencia</th></tr></thead>
+              <tbody>{attempts.map(attempt => <tr key={attempt.id}>
+                <td><TelephonyResult value={attempt.telephony_result} /></td>
+                <td><span className="attempt-technical"><i className={`status-dot ${attempt.technical_status}`} />{statusLabels[attempt.technical_status] ?? attempt.technical_status}</span></td>
+                <td>#{attempt.attempt_number}</td><td>{formatDate(attempt.started_at ?? attempt.created_at)}</td><td><code>{attempt.call_uuid.slice(0, 8)}</code></td>
+              </tr>)}</tbody>
+            </table>
             {!attempts.length && <p className="empty-state">Aún no hay intentos registrados.</p>}
           </div>
         </article>
@@ -78,7 +88,7 @@ export default async function CampaignDetailPage({ params }: { params: Promise<{
       <section className="detail-card audit-card">
         <div className="section-heading"><div><p className="eyebrow">Auditoría</p><h2>Historial de cambios</h2></div><span>{auditEvents.length}</span></div>
         <div className="audit-list">
-          {auditEvents.map((event) => <div key={event.id}><div><strong>{event.action === "campaign.created" ? "Campaña creada" : "Estado actualizado"}</strong><small>{formatDate(event.created_at)} · {event.actor_display_name ?? event.actor_subject}</small></div><code>{event.action === "campaign.status_changed" ? `${String(event.metadata.from)} → ${String(event.metadata.to)}` : String(event.metadata.status ?? "draft")}</code><span>{typeof event.metadata.reason === "string" && event.metadata.reason ? event.metadata.reason : "Sin razón adicional"}</span></div>)}
+          {auditEvents.map((event) => <div key={event.id}><div><strong>{event.action === "campaign.created" ? "Campaña creada" : "Estado actualizado"}</strong><small>{formatDate(event.created_at)} · {event.actor_display_name ?? event.actor_subject}</small></div><span className="audit-status">{event.action === "campaign.status_changed" ? `${statusLabels[String(event.metadata.from)] ?? String(event.metadata.from)} → ${statusLabels[String(event.metadata.to)] ?? String(event.metadata.to)}` : statusLabels[String(event.metadata.status ?? "draft")] ?? String(event.metadata.status)}</span><span>{typeof event.metadata.reason === "string" && event.metadata.reason ? event.metadata.reason : "Sin razón adicional"}</span></div>)}
           {!auditEvents.length && <p className="empty-state">No hay eventos de auditoría registrados.</p>}
         </div>
       </section>
