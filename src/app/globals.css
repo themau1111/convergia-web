@@ -562,6 +562,7 @@ body { background:transparent; }
 .report-metrics strong { font:500 32px Georgia,serif; }.report-metrics span,.report-bucket small { color:var(--muted); font-size:12px; line-height:1.5; }
 .report-breakdowns { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:32px; }.report-breakdowns h3 { font-size:16px; margin:0; }.report-breakdowns p { font-size:13px; }
 .report-bucket { display:grid; gap:8px; padding:14px 0; border-bottom:1px solid var(--line); overflow-wrap:anywhere; }.report-bucket>div { display:flex; justify-content:space-between; align-items:baseline; gap:16px; }.report-bucket strong { white-space:nowrap; font-size:13px; }.report-bucket progress { width:100%; height:6px; accent-color:var(--ring); }
+.report-bucket-link { text-decoration:none; color:inherit; cursor:pointer; border-radius:8px; transition:background 0.15s; }.report-bucket-link:hover { background:var(--accent); padding-inline:10px; margin-inline:-10px; }.report-bucket-link:hover strong { color:var(--ring); }
 .report-help { margin:24px 0 0; padding:16px; border-radius:10px; background:var(--accent); color:var(--accent-foreground); font-size:13px; line-height:1.6; }
 .audit-list .audit-status { display:inline-flex; width:fit-content; max-width:100%; padding:8px 12px; border:1px solid var(--line); border-radius:9px; background:var(--accent); color:var(--accent-foreground); font-size:12px; font-weight:700; overflow-wrap:anywhere; }
 .audit-list>div { border-color:var(--line); }.audit-list>div>div { min-width:0; overflow-wrap:anywhere; }

@@ -16,6 +16,7 @@ type MonitoringFilters = {
   agent?: string;
   date_from?: string;
   date_to?: string;
+  telephony_result?: string;
 };
 
 /** Entrada unificada para la lista de calidad. */
@@ -73,17 +74,19 @@ function fromQualityLog(r: QualityCallRecord): QualityListItem {
 }
 
 function matchesFilters(
-  item: { created_at: string; campaign_name?: string | null; agent_name?: string | null },
+  item: { created_at: string; campaign_name?: string | null; agent_name?: string | null; telephony_result?: string | null },
   filters: MonitoringFilters,
 ) {
   const date = item.created_at.slice(0, 10);
   const campaign = filters.campaign?.trim().toLowerCase();
   const agent = filters.agent?.trim().toLowerCase();
+  const telephonyResult = filters.telephony_result?.trim().toLowerCase();
   return (
     (!campaign || (item.campaign_name ?? "").toLowerCase().includes(campaign)) &&
     (!agent || (item.agent_name ?? "").toLowerCase().includes(agent)) &&
     (!filters.date_from || date >= filters.date_from) &&
-    (!filters.date_to || date <= filters.date_to)
+    (!filters.date_to || date <= filters.date_to) &&
+    (!telephonyResult || (item.telephony_result ?? "").toLowerCase() === telephonyResult)
   );
 }
 
@@ -121,7 +124,7 @@ export default async function QualityPage({ searchParams }: { searchParams: Prom
   const selectedMeta = calls.find((item) => item.call_uuid === filters.call);
 
   const filterQuery = new URLSearchParams();
-  for (const key of ["search", "date_from", "date_to", "campaign", "agent"] as const) {
+  for (const key of ["search", "date_from", "date_to", "campaign", "agent", "telephony_result"] as const) {
     if (filters[key]) filterQuery.set(key, filters[key]!);
   }
 
