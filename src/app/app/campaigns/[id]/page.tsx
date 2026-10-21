@@ -58,7 +58,7 @@ export default async function CampaignDetailPage({ params }: { params: Promise<{
 
       <LifecycleControls campaignId={id} status={campaign.status} canManage={["owner", "admin", "operator"].includes(membership.role)} preflightReady={preflight?.ready ?? false} />
 
-      <CampaignReport report={report} campaignName={campaign.name} />
+      <CampaignReport report={report} campaignName={campaign.name} campaignId={id} />
 
       <section className="detail-grid">
         <article className="detail-card">

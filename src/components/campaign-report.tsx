@@ -2,12 +2,13 @@ import Link from "next/link";
 import type { CampaignResults } from "@/lib/control-api";
 import { telephonyResultLabel } from "@/lib/telephony-results";
 
-export function CampaignReport({ report, campaignName }: { report: CampaignResults | null; campaignName?: string }) {
+export function CampaignReport({ report, campaignName, campaignId }: { report: CampaignResults | null; campaignName?: string; campaignId?: string }) {
   if (!report) return <section className="detail-card campaign-report" id="results"><h2>Resultados de campaña</h2><p className="muted" role="status">No se pudo cargar el reporte. Vuelve a intentarlo actualizando la página.</p></section>;
 
   function qualityLink(telephonyResult: string) {
     const params = new URLSearchParams();
-    if (campaignName) params.set("campaign", campaignName);
+    if (campaignId) params.set("campaign_id", campaignId);
+    else if (campaignName) params.set("campaign", campaignName);
     params.set("telephony_result", telephonyResult);
     return `/app/quality?${params}`;
   }

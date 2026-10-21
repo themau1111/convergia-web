@@ -13,6 +13,7 @@ type MonitoringFilters = {
   call?: string;
   search?: string;
   campaign?: string;
+  campaign_id?: string;
   agent?: string;
   date_from?: string;
   date_to?: string;
@@ -95,7 +96,11 @@ export default async function QualityPage({ searchParams }: { searchParams: Prom
   const filters = await searchParams;
 
   const [monitoringCalls, qualitySummaries] = await Promise.all([
-    getMonitoringCalls({ search: filters.search || undefined, limit: 200 }),
+    getMonitoringCalls({
+      search: filters.search || undefined,
+      campaign_id: filters.campaign_id || undefined,
+      limit: filters.campaign_id ? 500 : 200,
+    }),
     getQualityCalls(200).catch(() => [] as import("@/lib/control-api").QualityCallRecord[]),
   ]);
 
@@ -124,7 +129,7 @@ export default async function QualityPage({ searchParams }: { searchParams: Prom
   const selectedMeta = calls.find((item) => item.call_uuid === filters.call);
 
   const filterQuery = new URLSearchParams();
-  for (const key of ["search", "date_from", "date_to", "campaign", "agent", "telephony_result"] as const) {
+  for (const key of ["search", "date_from", "date_to", "campaign", "campaign_id", "agent", "telephony_result"] as const) {
     if (filters[key]) filterQuery.set(key, filters[key]!);
   }
 
