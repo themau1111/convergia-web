@@ -140,6 +140,7 @@ export default async function QualityPage({ searchParams }: { searchParams: Prom
         <div>
           <p className="eyebrow">Supervisión</p>
           <h1>Calidad</h1>
+          <Link href="/app/quality/improvements">Propuestas de mejora semanales</Link>
           <p className="muted">Monitorea llamadas en tiempo real, revisa etiquetas y conversaciones.</p>
         </div>
         <Link href="/">← Volver al pulso</Link>

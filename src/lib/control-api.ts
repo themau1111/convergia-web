@@ -692,3 +692,28 @@ export type CampaignResults = {
 export async function getCampaignResults(id: string): Promise<CampaignResults> {
   return controlApi<CampaignResults>(`/v1/campaigns/${encodeURIComponent(id)}/results`);
 }
+
+
+export type QualityImprovementProposal = {
+  id: string; call_uuid: string; criterion: string; candidate_hash: string;
+  status: "pending" | "approved" | "rejected" | "changes_requested";
+  created_at: string; decided_at: string | null; decided_by: string | null;
+  payload: { title: string; recommendation: string; limitations: string; evaluation_mode: string;
+    metrics: Record<string, number | null>; evidence_ids: number[] };
+};
+export type QualityImprovementInbox = {
+  schedule: "weekly"; timezone: string; pending_proposals: number; total_proposals: number;
+  counts: Record<string, number>;
+  runs: { id: string; started_at: string; completed_at: string | null; status: string;
+    counters: Record<string, number> }[];
+  proposals: QualityImprovementProposal[];
+};
+export function getQualityImprovements(page = 1) {
+  return controlApi<QualityImprovementInbox>(`/v1/quality/improvements?page=${page}`);
+}
+export function decideQualityImprovement(id: string, candidateHash: string, decision: "approved" | "rejected" | "changes_requested") {
+  return controlApi<void>(`/v1/quality/improvements/${encodeURIComponent(id)}/decision`, {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ candidate_hash: candidateHash, decision }),
+  });
+}

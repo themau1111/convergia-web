@@ -1,7 +1,7 @@
 ---
 type: components
 status: current
-updated: 2026-10-20
+updated: 2026-10-21
 ---
 # Componentes
 
@@ -47,3 +47,22 @@ Relacionado: [[02-arquitectura]], [[04-integraciones]], [[05-operacion]].
   tabla semántica de intentos y Calidad; las etiquetas quedan en un bloque aparte.
   Contestada no significa promesa de pago. Calidad conserva metadatos si no hay
   conversación disponible; la tabla tiene scroll horizontal interno en móvil.
+
+- Los resultados telefónicos enlazan a Calidad con `campaign_id` y
+  `telephony_result`; Calidad conserva filtros en la navegación. Monitoring se
+  consulta por campaña (hasta 500 filas), pero la mezcla auxiliar de logs sigue
+  limitada a 200 y no aplica `campaign_id`: el filtro de campaña no garantiza
+  aislamiento de esa mezcla ni cobertura de todos los intentos. La autorización
+  por organización permanece en backend. No existe evaluación periódica en la UI.
+
+## Calidad continua en development
+
+- `/app/quality/improvements`: bandeja paginada y ejecuciones de revisión semanal,
+  enlazada desde Calidad. Consume `/v1/quality/improvements` del backend seleccionado.
+- `improvements/actions.ts`: Server Action autenticada; owner/admin pueden aprobar
+  investigación, rechazar o solicitar ajustes con hash exacto. FastAPI vuelve a
+  validar rol, tenant, estado y hash y guarda auditoría. Analyst sólo consulta.
+- Aprobar una investigación no edita el agente ni despliega código. No hay parches,
+  análisis de audio automático ni notificaciones externas en esta entrega.
+- La UI no instala el timer: muestra ejecuciones persistidas y ausencia de historial
+  si todavía no corre. Errores de API se presentan como bandeja no disponible.
