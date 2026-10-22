@@ -3,7 +3,8 @@ import { notFound, redirect } from "next/navigation";
 
 import { getAgentProfile, listAgentLabels, getAllAgentLabels, getSelectedWorkspace } from "@/lib/control-api";
 import { EditAgentForm } from "./edit-form";
-import { AddLabelForm, DeleteLabelForm } from "../label-forms";
+import styles from "../../agent-forms.module.css";
+import { DeleteLabelForm } from "../label-forms";
 
 export default async function EditAgentPage({ params }: { params: Promise<{ id: string }> }) {
   if ((await getSelectedWorkspace())?.key === "survey") redirect("/app/surveys/interviewers");
@@ -35,14 +36,14 @@ export default async function EditAgentPage({ params }: { params: Promise<{ id: 
         </div>
       </header>
 
-      <EditAgentForm agent={agent} />
+      <EditAgentForm agent={agent} existingLabels={labels} library={library} />
 
       {/* Sección de etiquetas en la vista de edición */}
-      <section className="edit-section" style={{ marginTop: 8 }}>
-        <p className="eyebrow">Etiquetas de comportamiento</p>
+      <section className={`edit-section ${styles.savedLabels}`} style={{ marginTop: 8 }}>
+        <p className="eyebrow">Etiquetas guardadas</p>
         <p className="muted" style={{ marginBottom: 16, fontSize: 13 }}>
-          Las etiquetas clasifican automáticamente los resultados de las llamadas según el criterio definido.
-          Los cambios en etiquetas son inmediatos y no crean una nueva versión del agente.
+          Las etiquetas nuevas se agregan al guardar el formulario de arriba.
+          Eliminar una etiqueta guardada se aplica de inmediato y no crea una nueva versión.
         </p>
 
         {labels.length > 0 ? (
@@ -61,12 +62,6 @@ export default async function EditAgentPage({ params }: { params: Promise<{ id: 
           <p className="muted" style={{ marginBottom: 20 }}>No hay etiquetas configuradas aún.</p>
         )}
 
-        <div style={{ paddingTop: 16, borderTop: "1px solid var(--line)" }}>
-          <p style={{ margin: "0 0 12px", fontSize: 12, fontWeight: 700, color: "var(--muted)", textTransform: "uppercase", letterSpacing: ".1em" }}>
-            Agregar etiqueta
-          </p>
-          <AddLabelForm agentId={id} library={library} />
-        </div>
       </section>
     </main>
   );

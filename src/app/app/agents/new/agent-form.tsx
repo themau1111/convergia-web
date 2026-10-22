@@ -1,5 +1,8 @@
 "use client";
 
+import styles from "../agent-forms.module.css";
+
+import { mergeImportedLabels } from "@/lib/agent-prompt-import";
 import Link from "next/link";
 import { useActionState, useState } from "react";
 import { createAgentAction, type AgentFormState } from "./actions";
@@ -20,7 +23,9 @@ function slugify(value: string) {
     .slice(0, 80);
 }
 
-export function AgentForm({ library = [] }: { library?: AgentLabelRecord[] }) {
+const EMPTY_LIBRARY: AgentLabelRecord[] = [];
+
+export function AgentForm({ library = EMPTY_LIBRARY }: { library?: AgentLabelRecord[] }) {
   const [state, formAction, pending] = useActionState<AgentFormState, FormData>(
     createAgentAction,
     {},
@@ -48,21 +53,15 @@ export function AgentForm({ library = [] }: { library?: AgentLabelRecord[] }) {
     if (fields.flow_scenarios) setFlowScenarios(fields.flow_scenarios);
     if (fields.additional_instructions) setAdditionalInstructions(fields.additional_instructions);
     if (fields.suggested_labels?.length) {
-      setPendingLabels((prev) => {
-        const existing = new Set(prev.map((l) => l.name.toLowerCase()));
-        const newLabels = fields.suggested_labels.filter(
-          (l) => l.name.trim() && l.criteria.trim() && !existing.has(l.name.toLowerCase()),
-        );
-        return [...prev, ...newLabels];
-      });
+      setPendingLabels((prev) => mergeImportedLabels(prev, fields.suggested_labels));
     }
   }
 
   return (
-    <form action={formAction} className="campaign-edit-form">
+    <form action={formAction} className={`campaign-edit-form ${styles.form}`}>
       <section className="edit-section">
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12, marginBottom: 16 }}>
-          <p className="eyebrow" style={{ margin: 0 }}>Identidad del agente</p>
+        <div className={styles.sectionHeading}>
+          <p className="eyebrow">Identidad del agente</p>
           <PromptImportDialog onImport={handleImport} />
         </div>
         <div className="form-grid">
@@ -101,10 +100,19 @@ export function AgentForm({ library = [] }: { library?: AgentLabelRecord[] }) {
             ID de voz (opcional)
             <input name="voice_id" placeholder="Se usará la voz predeterminada" />
           </label>
+          <label>
+            Definición del agente
+            <select name="agent_definition_key" required defaultValue="">
+              <option value="" disabled>Selecciona la definición</option>
+              <option value="collections">Cobranza general</option>
+              <option value="rac">RAC · arrendamiento y devolución</option>
+            </select>
+            <small className="muted">Para Mueblería RAC selecciona RAC. Importar texto no cambia estas reglas.</small>
+          </label>
           <label className="wide-field">
             Objetivo
             <input
-              name="objective"
+              name="objective" maxLength={500}
               value={objective}
               onChange={(e) => setObjective(e.target.value)}
               placeholder="Gestión de cobranza y acuerdos de pago"
@@ -130,13 +138,13 @@ export function AgentForm({ library = [] }: { library?: AgentLabelRecord[] }) {
       <section className="edit-section">
         <p className="eyebrow">Script de conversación</p>
         <p className="muted" style={{ marginBottom: 12, fontSize: 12 }}>
-          Variables disponibles: <code style={{ background: "#f0f1ed", padding: "2px 5px", borderRadius: 4, fontSize: 11 }}>{SCRIPT_VARS}</code>
+          Variables disponibles: <code className={styles.variables}>{SCRIPT_VARS}</code>
         </p>
         <div className="form-grid">
           <label className="wide-field">
             Script principal
             <textarea
-              name="script"
+              name="script" maxLength={4000}
               rows={8}
               value={script}
               onChange={(e) => setScript(e.target.value)}
@@ -147,7 +155,7 @@ export function AgentForm({ library = [] }: { library?: AgentLabelRecord[] }) {
           <label className="wide-field">
             Escenarios de flujo
             <textarea
-              name="flow_scenarios"
+              name="flow_scenarios" maxLength={4000}
               rows={6}
               value={flowScenarios}
               onChange={(e) => setFlowScenarios(e.target.value)}
@@ -155,18 +163,17 @@ export function AgentForm({ library = [] }: { library?: AgentLabelRecord[] }) {
               style={{ minHeight: 140 }}
             />
           </label>
-          {additionalInstructions && (
+
             <label className="wide-field">
-              Instrucciones adicionales <span style={{ fontWeight: 400, color: "var(--muted)" }}>(importadas del prompt)</span>
+              Instrucciones adicionales <span style={{ fontWeight: 400, color: "var(--muted)" }}>(opcional)</span>
               <textarea
-                name="additional_instructions"
+                name="additional_instructions" maxLength={8000}
                 rows={6}
                 value={additionalInstructions}
                 onChange={(e) => setAdditionalInstructions(e.target.value)}
                 style={{ minHeight: 140 }}
               />
             </label>
-          )}
         </div>
       </section>
 

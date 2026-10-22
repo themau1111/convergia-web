@@ -1,7 +1,7 @@
 ---
 type: integrations
 status: current
-updated: 2026-10-16
+updated: 2026-10-22
 ---
 # Integraciones
 
@@ -120,3 +120,45 @@ Publicado el 2026-10-16: `f9a9e69`, despliegue
 Backend IA `453b05f`, salud/disponibilidad correctas y originación previa restaurada.
 Ocho evals reales con encabezados ficticios: 11 propuestas aceptadas correctas de 11;
 11 de 12 equivalencias esperadas. No garantiza precisión general; se mantiene revisión.
+
+## Importación de configuración desde prompt
+
+Corrección local 2026-10-22, pendiente de despliegue. Alta y edición usan
+`PromptImportDialog`: avisa del envío del texto completo a OpenAI, admite hasta
+12000 caracteres y presenta vista previa antes de aplicar. Muestra etiquetas y
+avisa si no hay sugerencias; conserva las etiquetas existentes en edición.
+El usuario revisa la política RAC/cobranza y las opciones de pago explícitamente.
+
+`/api/agents/import-prompt` exige sesión vigente y origen igual al de la petición,
+bloquea Encuestas, limita la lectura a 80000 bytes antes de decodificar JSON y valida
+la respuesta con Zod. Reenvía sólo prompt y credencial de servidor a FastAPI;
+no refleja errores internos ni contenido del proveedor. Timeout 25 s, duración
+máxima de ruta 30 s; el backend tiene un único intento de 18 s. Sin caché de éxito.
+
+Alta/edición envían perfil y `labels` en una sola petición al backend, que garantiza
+atomicidad. Los fallos se presentan al usuario; no se descartan errores de etiquetas.
+La edición puede vaciar textos opcionales y navega al ID de la nueva versión.
+Las propuestas se deduplican por nombre conservando criterios anteriores.
+
+Verificación local: 22 regresiones web, incluidas ocho de BFF/acciones/validación
+(`node --test tests/agent-prompt-import.test.mjs`), lint, tipos y build Webpack.
+React Doctor 0.9.18 sin incidencias (sin puntuación remota disponible). Navegador con
+componentes reales y API/acciones simuladas: alta y edición aplican etiquetas,
+guardado de edición envía propuestas y navega a la nueva versión, aviso sin etiquetas,
+foco en vista previa y móvil de 390 px sin desbordamiento. Consola sin errores ni
+advertencias. Estas pruebas no validan la sesión ni el proveedor del despliegue real.
+Backend y proveedor son autoridades independientes; un build no demuestra la versión
+desplegada.
+
+### Diseño adaptable del importador
+
+Revisión local 2026-10-22: el diálogo usa CSS Modules y colores semánticos para
+ambos temas, con encabezado/acciones visibles y contenido con scroll propio.
+Los formularios pasan a una columna en móvil; sus campos usan 16 px y controles
+con objetivos táctiles de al menos 44 px. Los chips largos admiten saltos de línea,
+los criterios usan textarea y las variables ya no tienen fondo claro fijo.
+En edición las altas de etiquetas se concentran en el formulario; la sección de
+etiquetas guardadas distingue la eliminación inmediata. Sin cambios de contrato.
+Verificación de componentes reales con datos sintéticos: 320×568, 390×844,
+844×390 y 1440×900, temas claro/oscuro, texto largo, foco y acciones visibles.
+No sustituye validación en dispositivos físicos ni del despliegue autenticado.

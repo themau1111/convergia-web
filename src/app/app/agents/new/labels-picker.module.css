@@ -1,0 +1,23 @@
+.picker { min-width:0; }
+.picker :global(.label-library-list) { gap:8px; }
+.picker :global(.label-library-chip) { min-height:44px; max-width:100%; padding:10px 12px; white-space:normal; overflow-wrap:anywhere; text-align:left; line-height:1.4; }
+.picker :global(.agent-label-row) { align-items:flex-start; padding:14px; gap:12px; }
+.picker :global(.agent-label-row)>div { overflow-wrap:anywhere; }
+.picker :global(.agent-label-row) strong { font-size:14px; line-height:1.5; }
+.picker :global(.agent-label-row) small { font-size:13px; line-height:1.6; }
+.remove { flex:none; min-height:44px; min-width:60px; padding:8px; border:1px solid var(--line); border-radius:8px; background:transparent; color:var(--destructive); font:inherit; font-size:13px; cursor:pointer; }
+.remove:hover { background:var(--accent); }
+.picker :global(.form-grid) { grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; }
+.picker :global(.form-grid)>label { min-width:0; margin-top:0; }
+.picker :is(input:not([type=hidden]),textarea) { min-width:0; width:100%; border:1px solid var(--input); border-radius:10px; padding:12px; background:var(--card); color:var(--ink); font:14px/1.5 Arial,sans-serif; }
+.picker textarea { resize:vertical; }
+.picker :is(button,input,textarea):focus-visible { outline:2px solid var(--ring); outline-offset:3px; }
+.add { min-height:44px; margin-top:12px; }
+@media(max-width:640px) {
+  .picker :global(.form-grid) { grid-template-columns:minmax(0,1fr); }
+  .picker :is(input:not([type=hidden]),textarea) { font-size:16px; }
+  .picker :global(.agent-label-row) { flex-wrap:wrap; }
+  .picker :global(.agent-label-row)>div { flex:1 1 180px; }
+  .remove { margin-left:auto; }
+  .add { width:100%; }
+}

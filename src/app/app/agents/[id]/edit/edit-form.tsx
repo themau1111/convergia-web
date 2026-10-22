@@ -1,19 +1,28 @@
 "use client";
 
+import styles from "../../agent-forms.module.css";
+
 import { useActionState, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { saveAgentEdit, type AgentEditState } from "./actions";
-import type { AgentProfileRecord } from "@/lib/control-api";
+import { mergeImportedLabels, type PendingLabel } from "@/lib/agent-prompt-import";
+import { LabelsPicker } from "../../new/labels-picker";
+import type { AgentLabelRecord, AgentProfileRecord } from "@/lib/control-api";
 import { PaymentOptionsForm } from "../../payment-options-form";
 import { PromptImportDialog, type ImportedAgentFields } from "../../prompt-import-dialog";
 
 const SCRIPT_VARS = "{{nombre_cliente}}, {{saldo_pendiente}}, {{dia_pago}}, {{articulo}}, {{pagos_atrasados}}, {{modalidad}}, {{cuota_semanal}}, {{campaign_name}}, {{company_name}}, {{agent_name}}";
 
-export function EditAgentForm({ agent }: { agent: AgentProfileRecord }) {
+const EMPTY_LABELS: AgentLabelRecord[] = [];
+
+export function EditAgentForm({ agent, existingLabels = EMPTY_LABELS, library = EMPTY_LABELS }: {
+  agent: AgentProfileRecord; existingLabels?: AgentLabelRecord[]; library?: AgentLabelRecord[];
+}) {
   const boundAction = saveAgentEdit.bind(null, agent.id);
   const [state, formAction, pending] = useActionState<AgentEditState, FormData>(boundAction, {});
   const router = useRouter();
+  const [pendingLabels, setPendingLabels] = useState<PendingLabel[]>([]);
 
   const [agentName, setAgentName] = useState(agent.agent_name);
   const [companyName, setCompanyName] = useState(agent.company_name);
@@ -26,13 +35,17 @@ export function EditAgentForm({ agent }: { agent: AgentProfileRecord }) {
   useEffect(() => {
     if (state.ok) {
       toast.success("Cambios guardados", { description: state.ok });
-      router.push(`/app/agents/${agent.id}`);
+      router.push(`/app/agents/${state.savedId ?? agent.id}`);
     } else if (state.error) {
       toast.error("Error al guardar", { description: state.error });
     }
   }, [state, agent.id, router]);
 
   function handleImport(fields: ImportedAgentFields) {
+    setPendingLabels((prev) => {
+      const names = new Set(existingLabels.map((label) => label.name.trim().toLocaleLowerCase("es")));
+      return mergeImportedLabels(prev, fields.suggested_labels.filter((label) => !names.has(label.name.trim().toLocaleLowerCase("es"))));
+    });
     if (fields.agent_name) setAgentName(fields.agent_name);
     if (fields.company_name) setCompanyName(fields.company_name);
     if (fields.objective) setObjective(fields.objective);
@@ -43,10 +56,10 @@ export function EditAgentForm({ agent }: { agent: AgentProfileRecord }) {
   }
 
   return (
-    <form action={formAction} className="campaign-edit-form">
+    <form action={formAction} className={`campaign-edit-form ${styles.form}`}>
       <section className="edit-section">
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12, marginBottom: 16 }}>
-          <p className="eyebrow" style={{ margin: 0 }}>Identidad del agente</p>
+        <div className={styles.sectionHeading}>
+          <p className="eyebrow">Identidad del agente</p>
           <PromptImportDialog onImport={handleImport} />
         </div>
         <div className="form-grid">
@@ -64,7 +77,7 @@ export function EditAgentForm({ agent }: { agent: AgentProfileRecord }) {
           </label>
           <label>
             Objetivo
-            <input name="objective" value={objective} onChange={(e) => setObjective(e.target.value)} placeholder="Gestión de cobranza y acuerdos de pago" />
+            <input name="objective" maxLength={500} value={objective} onChange={(e) => setObjective(e.target.value)} placeholder="Gestión de cobranza y acuerdos de pago" />
           </label>
           <label>
             Definición del agente
@@ -84,21 +97,21 @@ export function EditAgentForm({ agent }: { agent: AgentProfileRecord }) {
       <section className="edit-section">
         <p className="eyebrow">Script de conversación</p>
         <p className="muted" style={{ marginBottom: 12, fontSize: 12 }}>
-          Variables disponibles: <code style={{ background: "#f0f1ed", padding: "2px 5px", borderRadius: 4, fontSize: 11 }}>{SCRIPT_VARS}</code>
+          Variables disponibles: <code className={styles.variables}>{SCRIPT_VARS}</code>
         </p>
         <div className="form-grid">
           <label className="wide-field">
             Script principal
-            <textarea name="script" value={script} onChange={(e) => setScript(e.target.value)} rows={8} style={{ minHeight: 180 }} />
+            <textarea name="script" maxLength={4000} value={script} onChange={(e) => setScript(e.target.value)} rows={8} style={{ minHeight: 180 }} />
           </label>
           <label className="wide-field">
             Escenarios de flujo
-            <textarea name="flow_scenarios" value={flowScenarios} onChange={(e) => setFlowScenarios(e.target.value)} rows={6} style={{ minHeight: 140 }} />
+            <textarea name="flow_scenarios" maxLength={4000} value={flowScenarios} onChange={(e) => setFlowScenarios(e.target.value)} rows={6} style={{ minHeight: 140 }} />
           </label>
           <label className="wide-field">
             Instrucciones adicionales <span style={{ fontWeight: 400, color: "var(--muted)", fontSize: 11 }}>(opcional)</span>
             <textarea
-              name="additional_instructions"
+              name="additional_instructions" maxLength={8000}
               value={additionalInstructions}
               onChange={(e) => setAdditionalInstructions(e.target.value)}
               rows={4}
@@ -109,6 +122,11 @@ export function EditAgentForm({ agent }: { agent: AgentProfileRecord }) {
         </div>
       </section>
 
+      <section className="edit-section">
+        <p className="eyebrow">Etiquetas propuestas para agregar</p>
+        <p className="muted">Revisa las sugerencias importadas. Se guardan junto con esta versión; las etiquetas existentes se conservan.</p>
+        <LabelsPicker library={library} pending={pendingLabels} onChange={setPendingLabels} />
+      </section>
       <PaymentOptionsForm paymentOptions={agent.payment_options} />
 
       {state.error && <p className="form-error" role="alert">{state.error}</p>}

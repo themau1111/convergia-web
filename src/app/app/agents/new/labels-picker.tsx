@@ -1,9 +1,12 @@
 "use client";
 
+import styles from "./labels-picker.module.css";
+
 import { useState } from "react";
 import type { AgentLabelRecord } from "@/lib/control-api";
 
-export type PendingLabel = { name: string; criteria: string };
+import type { PendingLabel } from "@/lib/agent-prompt-import";
+export type { PendingLabel } from "@/lib/agent-prompt-import";
 
 type Props = {
   library: AgentLabelRecord[];
@@ -24,6 +27,7 @@ export function LabelsPicker({ library, pending, onChange }: Props) {
   );
 
   function addLabel() {
+    if (pending.length >= 50) { setError("Puedes agregar hasta 50 etiquetas."); return; }
     const trimName = name.trim();
     const trimCriteria = criteria.trim();
     if (!trimName) { setError("El nombre de la etiqueta es obligatorio."); return; }
@@ -44,11 +48,12 @@ export function LabelsPicker({ library, pending, onChange }: Props) {
 
   function pickFromLibrary(label: AgentLabelRecord) {
     if (pending.some((p) => p.name.toLowerCase() === label.name.toLowerCase())) return;
+    if (pending.length >= 50) { setError("Puedes agregar hasta 50 etiquetas."); return; }
     onChange([...pending, { name: label.name, criteria: label.criteria }]);
   }
 
   return (
-    <div className="labels-picker">
+    <div className={`labels-picker ${styles.picker}`}>
       {/* Hidden field serializado para el server action */}
       <input type="hidden" name="labels_json" value={JSON.stringify(pending)} />
 
@@ -76,16 +81,16 @@ export function LabelsPicker({ library, pending, onChange }: Props) {
       {pending.length > 0 && (
         <div className="agent-labels-list" style={{ marginBottom: 20 }}>
           {pending.map((label, i) => (
-            <div className="agent-label-row" key={`${label.name}-${i}`}>
+            <div className="agent-label-row" key={label.name.trim().toLocaleLowerCase("es")}>
               <div>
                 <strong>{label.name}</strong>
                 <small className="muted">{label.criteria}</small>
               </div>
               <button
                 type="button"
-                className="danger-text"
+                className={styles.remove}
                 onClick={() => removeLabel(i)}
-                style={{ fontSize: 11 }}
+                aria-label={`Quitar etiqueta ${label.name}`}
               >
                 Quitar
               </button>
@@ -110,18 +115,17 @@ export function LabelsPicker({ library, pending, onChange }: Props) {
           </label>
           <label>
             Descripción / criterio de detección
-            <input
-              type="text"
+            <textarea
               value={criteria}
               onChange={(e) => setCriteria(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addLabel(); } }}
-              placeholder="El cliente indicó que no puede pagar en este momento por falta de liquidez"
+              rows={3}
+              placeholder="Por ejemplo: el cliente indica que no puede pagar por falta de liquidez"
               maxLength={500}
             />
           </label>
         </div>
         {error && <p className="form-error" role="alert" style={{ marginTop: 8 }}>{error}</p>}
-        <button type="button" className="secondary-action" onClick={addLabel} style={{ marginTop: 10 }}>
+        <button type="button" className={`secondary-action ${styles.add}`} onClick={addLabel}>
           Agregar etiqueta
         </button>
       </div>

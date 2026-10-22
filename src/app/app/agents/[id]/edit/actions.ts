@@ -2,9 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 import { updateAgentProfile } from "@/lib/control-api";
+import { labelsFromFormData } from "@/lib/agent-prompt-import";
 import { paymentOptionsFromFormData } from "../../payment-options";
 
-export type AgentEditState = { error?: string; ok?: string };
+export type AgentEditState = { error?: string; ok?: string; savedId?: string };
 
 export async function saveAgentEdit(
   agentId: string,
@@ -27,26 +28,30 @@ export async function saveAgentEdit(
   if (!companyName) return { error: "El nombre de la empresa es obligatorio." };
   if (!personality) return { error: "La personalidad es obligatoria." };
 
+  let labels;
+  try { labels = labelsFromFormData(data); }
+  catch { return { error: "Revisa las etiquetas: nombres únicos y criterios completos (máximo 50)." }; }
   try {
-    await updateAgentProfile(agentId, {
+    const saved = await updateAgentProfile(agentId, {
       agent_name: agentName,
+      labels,
       company_name: companyName,
       personality,
       voice_id: voiceId || null,
       agent_definition_key: agentDefinitionKey,
-      ...(script ? { script } : {}),
-      ...(flowScenarios ? { flow_scenarios: flowScenarios } : {}),
-      ...(objective ? { objective } : {}),
-      ...(additionalInstructions ? { additional_instructions: additionalInstructions } : {}),
+      script,
+      flow_scenarios: flowScenarios,
+      objective,
+      additional_instructions: additionalInstructions,
       payment_options: paymentOptionsFromFormData(data),
     });
     revalidatePath(`/app/agents/${agentId}`);
     revalidatePath("/app/agents");
-    return { ok: "Agente actualizado correctamente." };
+    return { ok: "Agente y etiquetas guardados correctamente.", savedId: saved.id };
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     if (msg.includes("control_api_409"))
-      return { error: "No se puede editar el agente porque tiene una campaña activa." };
+      return { error: "Hay una campaña activa o una etiqueta con el mismo nombre y otro criterio. Revisa el detalle antes de guardar." };
     if (msg.includes("control_api_403") || msg.includes("control_api_401"))
       return { error: "No tienes permisos para editar este agente." };
     return { error: "No fue posible guardar los cambios. Intenta de nuevo." };

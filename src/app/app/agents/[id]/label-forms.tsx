@@ -99,7 +99,8 @@ export function DeleteLabelForm({
         className="danger-text"
         disabled={pending}
         title={`Eliminar etiqueta "${labelName}"`}
-        style={{ fontSize: 11 }}
+        aria-label={`Eliminar etiqueta ${labelName}`}
+        style={{ fontSize: 14, minHeight: 44, minWidth: 72 }}
       >
         {pending ? "…" : "Eliminar"}
       </button>

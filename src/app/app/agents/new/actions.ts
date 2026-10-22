@@ -1,7 +1,8 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { createAgentProfile, createAgentLabel } from "@/lib/control-api";
+import { createAgentProfile } from "@/lib/control-api";
+import { labelsFromFormData } from "@/lib/agent-prompt-import";
 import { paymentOptionsFromFormData } from "../payment-options";
 
 export type AgentFormState = { error?: string };
@@ -35,10 +36,17 @@ export async function createAgentAction(
   if (!companyName) return { error: "El nombre de la empresa es obligatorio." };
   if (!personality) return { error: "La personalidad es obligatoria." };
 
+  let labels;
+  try { labels = labelsFromFormData(data); }
+  catch { return { error: "Revisa las etiquetas: nombres únicos y criterios completos (máximo 50)." }; }
+  const definition = String(data.get("agent_definition_key") ?? "");
+  if (definition !== "collections" && definition !== "rac") return { error: "Selecciona la definición de cobranza o RAC." };
   let agentId: string;
   try {
     const agent = await createAgentProfile({
       profile_key: profileKey,
+      agent_definition_key: definition,
+      labels,
       agent_name: agentName,
       company_name: companyName,
       personality,
@@ -53,23 +61,10 @@ export async function createAgentAction(
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     if (msg.includes("control_api_409"))
-      return { error: "Ya existe un agente con esa clave. Usa una clave diferente." };
+      return { error: "Hay un conflicto con el perfil o sus etiquetas. Revisa la clave y los criterios." };
     if (msg.includes("control_api_403") || msg.includes("control_api_401"))
       return { error: "No tienes permisos para crear agentes." };
     return { error: "No fue posible crear el agente. Revisa los datos e inténtalo de nuevo." };
-  }
-
-  // Crear etiquetas pendientes definidas en el formulario
-  const labelsJson = String(data.get("labels_json") ?? "[]").trim();
-  try {
-    const labels: { name: string; criteria: string }[] = JSON.parse(labelsJson);
-    for (const [i, label] of labels.entries()) {
-      if (label.name?.trim() && label.criteria?.trim()) {
-        await createAgentLabel(agentId, { name: label.name.trim(), criteria: label.criteria.trim(), position: i });
-      }
-    }
-  } catch {
-    // Las etiquetas son opcionales; no bloquear la redirección si fallan
   }
 
   redirect(`/app/agents/${agentId}`);

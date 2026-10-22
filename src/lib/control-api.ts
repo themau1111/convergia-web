@@ -518,6 +518,7 @@ export async function getAgentProfiles(): Promise<AgentProfileRecord[]> {
 export async function createAgentProfile(payload: {
   profile_key: string; agent_name: string; company_name: string;
   personality: string; voice_id?: string | null;
+  labels?: { name: string; criteria: string }[];
   script?: string; flow_scenarios?: string; objective?: string; additional_instructions?: string;
   payment_options?: PaymentOptions;
   agent_definition_key?: "collections" | "rac" | "survey";
@@ -535,6 +536,7 @@ export async function updateAgentProfile(
   id: string,
   payload: {
     agent_name?: string; company_name?: string; personality?: string;
+    labels?: { name: string; criteria: string }[];
     voice_id?: string | null; agent_definition_key?: "collections" | "rac" | "survey";
     script?: string; flow_scenarios?: string;
     objective?: string; additional_instructions?: string; profile_key?: string; payment_options?: PaymentOptions;
