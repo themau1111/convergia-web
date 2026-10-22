@@ -66,3 +66,12 @@ Relacionado: [[02-arquitectura]], [[04-integraciones]], [[05-operacion]].
   análisis de audio automático ni notificaciones externas en esta entrega.
 - La UI no instala el timer: muestra ejecuciones persistidas y ausencia de historial
   si todavía no corre. Errores de API se presentan como bandeja no disponible.
+
+## Diagnóstico de fallidas en development
+
+`campaign-report.tsx` presenta `failure_diagnostics` de `/v1/campaigns/{id}/results`:
+conteos por AMI/colgado/SIP, cobertura y causas no registradas, sin equiparar fallida
+con sin contestar. Señala resultados pendientes de campañas cerradas por separado.
+El campo es opcional para compatibilidad con backends anteriores.
+La bandeja semanal distingue `telephony_only` y muestra códigos sin aparentar una
+conversación evaluada. La web no reconstruye causas ni modifica estados históricos.

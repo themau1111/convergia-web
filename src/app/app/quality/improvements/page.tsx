@@ -14,7 +14,7 @@ export default async function ImprovementsPage({ searchParams }: { searchParams:
   const canDecide = ["owner", "admin"].includes(member.role);
   return <main className="members-shell">
     <header className="members-header"><div><p className="eyebrow">Calidad continua</p><h1>Propuestas de mejora</h1>
-      <p className="muted">Revisión semanal de logs nuevos. Las llamadas ya revisadas se omiten.</p></div>
+      <p className="muted">Revisión semanal de intentos y logs nuevos. Las llamadas ya revisadas se omiten.</p></div>
       <Link href="/app/quality">Volver a Calidad</Link></header>
     <p className="security-note">Aprobar autoriza investigar la propuesta. Cada cambio concreto necesita pruebas y revisión antes de desplegarse.</p>
     {params.notice === "saved" && <p role="status">Decisión guardada. No se modificó el agente.</p>}
@@ -28,23 +28,24 @@ export default async function ImprovementsPage({ searchParams }: { searchParams:
       </section>
       {!inbox.proposals.length && <p className="muted">No hay propuestas en esta página. Esto no demuestra que todas las llamadas sean correctas; consulta la cobertura de las ejecuciones.</p>}
       {inbox.proposals.map(proposal => <article className="detail-card" key={proposal.id}>
-        <p className="eyebrow">{states[proposal.status]} · {proposal.payload.evaluation_mode === "openai" ? "Reglas + OpenAI" : "Reglas técnicas"}</p>
+        <p className="eyebrow">{states[proposal.status]} · {proposal.payload.evaluation_mode === "openai" ? "Reglas + OpenAI" : proposal.payload.evaluation_mode === "telephony_only" ? "Telefonía, sin conversación evaluable" : "Reglas técnicas"}</p>
         <h2>{proposal.payload.title}</h2>
         <p>{proposal.payload.recommendation}</p>
         <p className="muted">{proposal.payload.limitations}</p>
         <p>Llamada <code>{proposal.call_uuid.slice(0, 8)}</code> · {time(proposal.created_at)}</p>
         {proposal.payload.evidence_ids.length > 0 && <p className="muted">Referencias de evidencia en el log: {proposal.payload.evidence_ids.join(", ")}. Consulta autorizada por UUID.</p>}
-        <dl><dt>Turnos cliente / agente</dt><dd>{proposal.payload.metrics.client_turns ?? 0} / {proposal.payload.metrics.agent_turns ?? 0}</dd>
-          <dt>Primer audio p95 en esta llamada</dt><dd>{proposal.payload.metrics.first_audio_p95_ms == null ? "Sin muestras" : `${proposal.payload.metrics.first_audio_p95_ms} ms`}</dd></dl>
+        {proposal.payload.telephony && <p>Diagnóstico telefónico: AMI {proposal.payload.telephony.ami_reason ?? "no registrado"} · colgado {proposal.payload.telephony.hangup_cause ?? "no registrado"} · SIP {proposal.payload.telephony.sip_status ?? "no registrado"}. Sistema: {proposal.payload.telephony.error_code}.</p>}
+        {proposal.payload.evaluation_mode !== "telephony_only" ? <dl><dt>Turnos cliente / agente</dt><dd>{proposal.payload.metrics.client_turns ?? 0} / {proposal.payload.metrics.agent_turns ?? 0}</dd>
+          <dt>Primer audio p95 en esta llamada</dt><dd>{proposal.payload.metrics.first_audio_p95_ms == null ? "Sin muestras" : `${proposal.payload.metrics.first_audio_p95_ms} ms`}</dd></dl> : <p className="muted">No hay conversación evaluable. Esta revisión utiliza sólo el estado y los códigos telefónicos.</p>}
         <details><summary>Versión de la propuesta</summary><p><code>{proposal.candidate_hash}</code></p></details>
         {proposal.decided_at && <p className="muted">Decisión registrada el {time(proposal.decided_at)}.</p>}
         {canDecide && proposal.status === "pending" && <form action={decideProposal}>
           <input type="hidden" name="id" value={proposal.id} />
           <input type="hidden" name="candidate_hash" value={proposal.candidate_hash} />
           <div className="quality-filter-actions">
-            <button className="primary-action" name="decision" value="approved">Aprobar investigación</button>
-            <button className="secondary-action" name="decision" value="changes_requested">Solicitar ajustes</button>
-            <button className="secondary-action" name="decision" value="rejected">Rechazar</button>
+            <button type="submit" className="primary-action" name="decision" value="approved">Aprobar investigación</button>
+            <button type="submit" className="secondary-action" name="decision" value="changes_requested">Solicitar ajustes</button>
+            <button type="submit" className="secondary-action" name="decision" value="rejected">Rechazar</button>
           </div>
         </form>}
       </article>)}

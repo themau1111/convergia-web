@@ -41,5 +41,8 @@ jobs:
       - name: Test recording authorization and waveform
         run: npm run test:recordings
 
+      - name: Test telephony diagnostic report
+        run: npm run test:telephony
+
       - name: Build
         run: npm run build

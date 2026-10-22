@@ -684,9 +684,16 @@ export async function preAcceptInvitation(id: string): Promise<void> {
   return controlApi<void>(`/v1/member-invitations/${encodeURIComponent(id)}/pre-accept`, { method: "POST" });
 }
 
+export type FailureDiagnostics = {
+  unresolved_attempts: number; total_failed: number; with_ami_reason: number; with_hangup_cause: number;
+  with_sip_status: number; without_codes: number;
+  buckets: { ami_reason: number | null; hangup_cause: number | null; sip_status: number | null;
+    error_code: string; description: string; count: number }[];
+};
 export type CampaignResults = {
   total_attempts: number; finished_attempts: number; without_labels: number;
   telephony: { result: string; count: number }[];
+  failure_diagnostics?: FailureDiagnostics | null;
   labels: { id: string; name: string; criteria: string; count: number }[];
 };
 export async function getCampaignResults(id: string): Promise<CampaignResults> {
@@ -699,7 +706,8 @@ export type QualityImprovementProposal = {
   status: "pending" | "approved" | "rejected" | "changes_requested";
   created_at: string; decided_at: string | null; decided_by: string | null;
   payload: { title: string; recommendation: string; limitations: string; evaluation_mode: string;
-    metrics: Record<string, number | null>; evidence_ids: number[] };
+    metrics: Record<string, number | null>; evidence_ids: number[];
+    telephony?: { ami_reason: number | null; hangup_cause: number | null; sip_status: number | null; error_code: string } | null };
 };
 export type QualityImprovementInbox = {
   schedule: "weekly"; timezone: string; pending_proposals: number; total_proposals: number;
