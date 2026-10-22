@@ -10,6 +10,7 @@ export type ImportedAgentFields = {
   script: string;
   flow_scenarios: string;
   additional_instructions: string;
+  suggested_labels: { name: string; criteria: string }[];
 };
 
 type Props = {

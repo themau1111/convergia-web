@@ -3,10 +3,15 @@
 import { useState } from "react";
 import type { AgentLabelRecord } from "@/lib/control-api";
 
-type PendingLabel = { name: string; criteria: string };
+export type PendingLabel = { name: string; criteria: string };
 
-export function LabelsPicker({ library }: { library: AgentLabelRecord[] }) {
-  const [pending, setPending] = useState<PendingLabel[]>([]);
+type Props = {
+  library: AgentLabelRecord[];
+  pending: PendingLabel[];
+  onChange: (labels: PendingLabel[]) => void;
+};
+
+export function LabelsPicker({ library, pending, onChange }: Props) {
   const [name, setName] = useState("");
   const [criteria, setCriteria] = useState("");
   const [error, setError] = useState("");
@@ -27,19 +32,19 @@ export function LabelsPicker({ library }: { library: AgentLabelRecord[] }) {
       setError("Ya agregaste una etiqueta con ese nombre.");
       return;
     }
-    setPending((prev) => [...prev, { name: trimName, criteria: trimCriteria }]);
+    onChange([...pending, { name: trimName, criteria: trimCriteria }]);
     setName("");
     setCriteria("");
     setError("");
   }
 
   function removeLabel(index: number) {
-    setPending((prev) => prev.filter((_, i) => i !== index));
+    onChange(pending.filter((_, i) => i !== index));
   }
 
   function pickFromLibrary(label: AgentLabelRecord) {
     if (pending.some((p) => p.name.toLowerCase() === label.name.toLowerCase())) return;
-    setPending((prev) => [...prev, { name: label.name, criteria: label.criteria }]);
+    onChange([...pending, { name: label.name, criteria: label.criteria }]);
   }
 
   return (

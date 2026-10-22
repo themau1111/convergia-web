@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useActionState, useState } from "react";
 import { createAgentAction, type AgentFormState } from "./actions";
-import { LabelsPicker } from "./labels-picker";
+import { LabelsPicker, type PendingLabel } from "./labels-picker";
 import { PaymentOptionsForm } from "../payment-options-form";
 import { PromptImportDialog, type ImportedAgentFields } from "../prompt-import-dialog";
 import type { AgentLabelRecord } from "@/lib/control-api";
@@ -34,6 +34,7 @@ export function AgentForm({ library = [] }: { library?: AgentLabelRecord[] }) {
   const [script, setScript] = useState("");
   const [flowScenarios, setFlowScenarios] = useState("");
   const [additionalInstructions, setAdditionalInstructions] = useState("");
+  const [pendingLabels, setPendingLabels] = useState<PendingLabel[]>([]);
 
   const generatedProfileKey = [slugify(companyName), slugify(agentName)].filter(Boolean).join("-");
   const visibleProfileKey = profileKeyEdited ? profileKey : generatedProfileKey;
@@ -46,6 +47,15 @@ export function AgentForm({ library = [] }: { library?: AgentLabelRecord[] }) {
     if (fields.script) setScript(fields.script);
     if (fields.flow_scenarios) setFlowScenarios(fields.flow_scenarios);
     if (fields.additional_instructions) setAdditionalInstructions(fields.additional_instructions);
+    if (fields.suggested_labels?.length) {
+      setPendingLabels((prev) => {
+        const existing = new Set(prev.map((l) => l.name.toLowerCase()));
+        const newLabels = fields.suggested_labels.filter(
+          (l) => l.name.trim() && l.criteria.trim() && !existing.has(l.name.toLowerCase()),
+        );
+        return [...prev, ...newLabels];
+      });
+    }
   }
 
   return (
@@ -167,7 +177,7 @@ export function AgentForm({ library = [] }: { library?: AgentLabelRecord[] }) {
           Por ejemplo: <em>falta de pago</em>, <em>no toma la llamada</em>, <em>promesa de pago</em>.
           Puedes agregarlas ahora o después de crear el agente.
         </p>
-        <LabelsPicker library={library} />
+        <LabelsPicker library={library} pending={pendingLabels} onChange={setPendingLabels} />
       </section>
 
       {state.error && (
