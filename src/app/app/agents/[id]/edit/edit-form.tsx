@@ -1,11 +1,12 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { saveAgentEdit, type AgentEditState } from "./actions";
 import type { AgentProfileRecord } from "@/lib/control-api";
 import { PaymentOptionsForm } from "../../payment-options-form";
+import { PromptImportDialog, type ImportedAgentFields } from "../../prompt-import-dialog";
 
 const SCRIPT_VARS = "{{nombre_cliente}}, {{saldo_pendiente}}, {{dia_pago}}, {{articulo}}, {{pagos_atrasados}}, {{modalidad}}, {{cuota_semanal}}, {{campaign_name}}, {{company_name}}, {{agent_name}}";
 
@@ -13,6 +14,14 @@ export function EditAgentForm({ agent }: { agent: AgentProfileRecord }) {
   const boundAction = saveAgentEdit.bind(null, agent.id);
   const [state, formAction, pending] = useActionState<AgentEditState, FormData>(boundAction, {});
   const router = useRouter();
+
+  const [agentName, setAgentName] = useState(agent.agent_name);
+  const [companyName, setCompanyName] = useState(agent.company_name);
+  const [objective, setObjective] = useState(agent.objective ?? "");
+  const [personality, setPersonality] = useState(agent.personality);
+  const [script, setScript] = useState(agent.script ?? "");
+  const [flowScenarios, setFlowScenarios] = useState(agent.flow_scenarios ?? "");
+  const [additionalInstructions, setAdditionalInstructions] = useState(agent.additional_instructions ?? "");
 
   useEffect(() => {
     if (state.ok) {
@@ -23,18 +32,31 @@ export function EditAgentForm({ agent }: { agent: AgentProfileRecord }) {
     }
   }, [state, agent.id, router]);
 
+  function handleImport(fields: ImportedAgentFields) {
+    if (fields.agent_name) setAgentName(fields.agent_name);
+    if (fields.company_name) setCompanyName(fields.company_name);
+    if (fields.objective) setObjective(fields.objective);
+    if (fields.personality) setPersonality(fields.personality);
+    if (fields.script) setScript(fields.script);
+    if (fields.flow_scenarios) setFlowScenarios(fields.flow_scenarios);
+    if (fields.additional_instructions) setAdditionalInstructions(fields.additional_instructions);
+  }
+
   return (
     <form action={formAction} className="campaign-edit-form">
       <section className="edit-section">
-        <p className="eyebrow">Identidad del agente</p>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12, marginBottom: 16 }}>
+          <p className="eyebrow" style={{ margin: 0 }}>Identidad del agente</p>
+          <PromptImportDialog onImport={handleImport} />
+        </div>
         <div className="form-grid">
           <label>
             Nombre del agente
-            <input name="agent_name" required defaultValue={agent.agent_name} maxLength={120} />
+            <input name="agent_name" required value={agentName} onChange={(e) => setAgentName(e.target.value)} maxLength={120} />
           </label>
           <label>
             Empresa presentada
-            <input name="company_name" required defaultValue={agent.company_name} maxLength={120} />
+            <input name="company_name" required value={companyName} onChange={(e) => setCompanyName(e.target.value)} maxLength={120} />
           </label>
           <label>
             ID de voz (opcional)
@@ -42,7 +64,7 @@ export function EditAgentForm({ agent }: { agent: AgentProfileRecord }) {
           </label>
           <label>
             Objetivo
-            <input name="objective" defaultValue={agent.objective ?? ""} placeholder="Gestión de cobranza y acuerdos de pago" />
+            <input name="objective" value={objective} onChange={(e) => setObjective(e.target.value)} placeholder="Gestión de cobranza y acuerdos de pago" />
           </label>
           <label>
             Definición del agente
@@ -54,7 +76,7 @@ export function EditAgentForm({ agent }: { agent: AgentProfileRecord }) {
           </label>
           <label className="wide-field">
             Personalidad y estilo
-            <textarea name="personality" required defaultValue={agent.personality} maxLength={1000} rows={3} />
+            <textarea name="personality" required value={personality} onChange={(e) => setPersonality(e.target.value)} maxLength={1000} rows={3} />
           </label>
         </div>
       </section>
@@ -67,11 +89,22 @@ export function EditAgentForm({ agent }: { agent: AgentProfileRecord }) {
         <div className="form-grid">
           <label className="wide-field">
             Script principal
-            <textarea name="script" defaultValue={agent.script ?? ""} rows={8} style={{ minHeight: 180 }} />
+            <textarea name="script" value={script} onChange={(e) => setScript(e.target.value)} rows={8} style={{ minHeight: 180 }} />
           </label>
           <label className="wide-field">
             Escenarios de flujo
-            <textarea name="flow_scenarios" defaultValue={agent.flow_scenarios ?? ""} rows={6} style={{ minHeight: 140 }} />
+            <textarea name="flow_scenarios" value={flowScenarios} onChange={(e) => setFlowScenarios(e.target.value)} rows={6} style={{ minHeight: 140 }} />
+          </label>
+          <label className="wide-field">
+            Instrucciones adicionales <span style={{ fontWeight: 400, color: "var(--muted)", fontSize: 11 }}>(opcional)</span>
+            <textarea
+              name="additional_instructions"
+              value={additionalInstructions}
+              onChange={(e) => setAdditionalInstructions(e.target.value)}
+              rows={4}
+              placeholder="Contexto de negocio, variables, límites, reglas de pago u otras instrucciones complementarias…"
+              style={{ minHeight: 100 }}
+            />
           </label>
         </div>
       </section>

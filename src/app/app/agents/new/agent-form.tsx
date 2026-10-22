@@ -5,6 +5,7 @@ import { useActionState, useState } from "react";
 import { createAgentAction, type AgentFormState } from "./actions";
 import { LabelsPicker } from "./labels-picker";
 import { PaymentOptionsForm } from "../payment-options-form";
+import { PromptImportDialog, type ImportedAgentFields } from "../prompt-import-dialog";
 import type { AgentLabelRecord } from "@/lib/control-api";
 
 const SCRIPT_VARS = "{{nombre_cliente}}, {{saldo_pendiente}}, {{dia_pago}}, {{articulo}}, {{pagos_atrasados}}, {{modalidad}}, {{cuota_semanal}}, {{campaign_name}}, {{company_name}}, {{agent_name}}";
@@ -28,14 +29,32 @@ export function AgentForm({ library = [] }: { library?: AgentLabelRecord[] }) {
   const [companyName, setCompanyName] = useState("");
   const [profileKey, setProfileKey] = useState("");
   const [profileKeyEdited, setProfileKeyEdited] = useState(false);
+  const [objective, setObjective] = useState("");
+  const [personality, setPersonality] = useState("");
+  const [script, setScript] = useState("");
+  const [flowScenarios, setFlowScenarios] = useState("");
+  const [additionalInstructions, setAdditionalInstructions] = useState("");
 
   const generatedProfileKey = [slugify(companyName), slugify(agentName)].filter(Boolean).join("-");
   const visibleProfileKey = profileKeyEdited ? profileKey : generatedProfileKey;
 
+  function handleImport(fields: ImportedAgentFields) {
+    if (fields.agent_name) setAgentName(fields.agent_name);
+    if (fields.company_name) setCompanyName(fields.company_name);
+    if (fields.objective) setObjective(fields.objective);
+    if (fields.personality) setPersonality(fields.personality);
+    if (fields.script) setScript(fields.script);
+    if (fields.flow_scenarios) setFlowScenarios(fields.flow_scenarios);
+    if (fields.additional_instructions) setAdditionalInstructions(fields.additional_instructions);
+  }
+
   return (
     <form action={formAction} className="campaign-edit-form">
       <section className="edit-section">
-        <p className="eyebrow">Identidad del agente</p>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12, marginBottom: 16 }}>
+          <p className="eyebrow" style={{ margin: 0 }}>Identidad del agente</p>
+          <PromptImportDialog onImport={handleImport} />
+        </div>
         <div className="form-grid">
           <label>
             Nombre del agente
@@ -74,11 +93,24 @@ export function AgentForm({ library = [] }: { library?: AgentLabelRecord[] }) {
           </label>
           <label className="wide-field">
             Objetivo
-            <input name="objective" placeholder="Gestión de cobranza y acuerdos de pago" />
+            <input
+              name="objective"
+              value={objective}
+              onChange={(e) => setObjective(e.target.value)}
+              placeholder="Gestión de cobranza y acuerdos de pago"
+            />
           </label>
           <label className="wide-field">
             Personalidad y estilo
-            <textarea name="personality" required maxLength={1000} rows={3} placeholder="Empática, clara y directa. Explica antes de solicitar un compromiso y nunca inventa información." />
+            <textarea
+              name="personality"
+              required
+              maxLength={1000}
+              rows={3}
+              value={personality}
+              onChange={(e) => setPersonality(e.target.value)}
+              placeholder="Empática, clara y directa. Explica antes de solicitar un compromiso y nunca inventa información."
+            />
           </label>
         </div>
       </section>
@@ -93,12 +125,38 @@ export function AgentForm({ library = [] }: { library?: AgentLabelRecord[] }) {
         <div className="form-grid">
           <label className="wide-field">
             Script principal
-            <textarea name="script" rows={8} placeholder="Hola, ¿hablo con {{nombre_cliente}}? Le llamo de {{company_name}}, soy {{agent_name}}…" style={{ minHeight: 180 }} />
+            <textarea
+              name="script"
+              rows={8}
+              value={script}
+              onChange={(e) => setScript(e.target.value)}
+              placeholder="Hola, ¿hablo con {{nombre_cliente}}? Le llamo de {{company_name}}, soy {{agent_name}}…"
+              style={{ minHeight: 180 }}
+            />
           </label>
           <label className="wide-field">
             Escenarios de flujo
-            <textarea name="flow_scenarios" rows={6} placeholder="Si el cliente dice que ya pagó: confirmar fecha y monto y agradecer. Si el cliente pide tiempo: ofrecer extensión de hasta 5 días…" style={{ minHeight: 140 }} />
+            <textarea
+              name="flow_scenarios"
+              rows={6}
+              value={flowScenarios}
+              onChange={(e) => setFlowScenarios(e.target.value)}
+              placeholder="Si el cliente dice que ya pagó: confirmar fecha y monto y agradecer. Si el cliente pide tiempo: ofrecer extensión de hasta 5 días…"
+              style={{ minHeight: 140 }}
+            />
           </label>
+          {additionalInstructions && (
+            <label className="wide-field">
+              Instrucciones adicionales <span style={{ fontWeight: 400, color: "var(--muted)" }}>(importadas del prompt)</span>
+              <textarea
+                name="additional_instructions"
+                rows={6}
+                value={additionalInstructions}
+                onChange={(e) => setAdditionalInstructions(e.target.value)}
+                style={{ minHeight: 140 }}
+              />
+            </label>
+          )}
         </div>
       </section>
 

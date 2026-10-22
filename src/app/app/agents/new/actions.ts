@@ -26,6 +26,7 @@ export async function createAgentAction(
   const script = String(data.get("script") ?? "").trim();
   const flowScenarios = String(data.get("flow_scenarios") ?? "").trim();
   const objective = String(data.get("objective") ?? "").trim();
+  const additionalInstructions = String(data.get("additional_instructions") ?? "").trim();
   const voiceId = String(data.get("voice_id") ?? "").trim();
   const profileKeyRaw = String(data.get("profile_key") ?? "").trim();
   const profileKey = profileKeyRaw || `${slugify(companyName)}-${slugify(agentName)}`;
@@ -45,6 +46,7 @@ export async function createAgentAction(
       ...(script ? { script } : {}),
       ...(flowScenarios ? { flow_scenarios: flowScenarios } : {}),
       ...(objective ? { objective } : {}),
+      ...(additionalInstructions ? { additional_instructions: additionalInstructions } : {}),
       payment_options: paymentOptionsFromFormData(data),
     });
     agentId = agent.id;

@@ -163,7 +163,7 @@ export type PaymentOptions = {
 export type AgentProfileRecord = {
   id: string; organization_id: string; profile_key: string; agent_definition_key: "collections" | "rac" | "survey"; version: number;
   agent_name: string; company_name: string; personality: string;
-  script: string; flow_scenarios: string; objective: string;
+  script: string; flow_scenarios: string; objective: string; additional_instructions: string;
   payment_options: PaymentOptions;
   voice_id: string | null; created_at: string;
 };
@@ -518,7 +518,7 @@ export async function getAgentProfiles(): Promise<AgentProfileRecord[]> {
 export async function createAgentProfile(payload: {
   profile_key: string; agent_name: string; company_name: string;
   personality: string; voice_id?: string | null;
-  script?: string; flow_scenarios?: string; objective?: string;
+  script?: string; flow_scenarios?: string; objective?: string; additional_instructions?: string;
   payment_options?: PaymentOptions;
   agent_definition_key?: "collections" | "rac" | "survey";
 }): Promise<AgentProfileRecord> {
@@ -537,7 +537,7 @@ export async function updateAgentProfile(
     agent_name?: string; company_name?: string; personality?: string;
     voice_id?: string | null; agent_definition_key?: "collections" | "rac" | "survey";
     script?: string; flow_scenarios?: string;
-    objective?: string; profile_key?: string; payment_options?: PaymentOptions;
+    objective?: string; additional_instructions?: string; profile_key?: string; payment_options?: PaymentOptions;
   },
 ): Promise<AgentProfileRecord> {
   return controlApi<AgentProfileRecord>(`/v1/agent-profiles/${encodeURIComponent(id)}`, {
