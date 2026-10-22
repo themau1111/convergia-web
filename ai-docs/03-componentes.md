@@ -1,7 +1,7 @@
 ---
 type: components
 status: current
-updated: 2026-10-21
+updated: 2026-11-06
 ---
 # Componentes
 
@@ -27,6 +27,15 @@ updated: 2026-10-21
 
 Las reglas funcionales no deben desplazarse desde FastAPI hacia componentes de UI.
 Relacionado: [[02-arquitectura]], [[04-integraciones]], [[05-operacion]].
+
+## Perfiles de agente: importación desde prompt
+
+- `src/app/api/agents/import-prompt/route.ts` — BFF autenticado (`POST`). Recibe `{prompt: string}`, valida sesión y origen, proxea a `POST /v1/agent-profiles/import-prompt` en FastAPI y devuelve los campos extraídos. Timeout 20 s. No escribe ningún perfil.
+- `src/app/app/agents/prompt-import-dialog.tsx` — Componente `PromptImportDialog` reutilizable. Botón que abre un modal; el usuario pega el prompt y presiona "Analizar y rellenar campos". Al recibir respuesta pre-llena los campos del formulario padre vía callback `onImport`. Exporta el tipo `ImportedAgentFields` con los 7 campos de texto más `suggested_labels`.
+- `src/app/app/agents/new/agent-form.tsx` — Incluye `PromptImportDialog` y levanta el estado de etiquetas (`pendingLabels`) para poder pre-llenarlas desde la importación.
+- `src/app/app/agents/new/labels-picker.tsx` — `LabelsPicker` recibe `pending: PendingLabel[]` y `onChange` como props (estado externo). Permite pre-llenar etiquetas sugeridas por la IA al importar un prompt, sin duplicar las existentes.
+- `src/app/app/agents/[id]/edit/edit-form.tsx` — Incluye `PromptImportDialog`; permite re-importar o actualizar el prompt en edición. Las etiquetas en edición se gestionan desde la página del agente, no en el formulario de edición.
+- `additional_instructions` — Campo opcional en `AgentProfileRecord`, `createAgentProfile` y `updateAgentProfile` en `control-api.ts`. Almacena el contenido del prompt que no encaja en campos estructurados (variables, contexto, límites, formas de pago).
 
 ## Cobranza: filtros y reporte
 

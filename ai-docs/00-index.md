@@ -1,7 +1,7 @@
 ---
 type: index
 status: current
-updated: 2026-08-26
+updated: 2026-11-06
 ---
 # Convergia Web - mapa para IA
 
