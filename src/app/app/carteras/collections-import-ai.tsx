@@ -1,5 +1,6 @@
 "use client";
 
+import styles from "./collections-import-wizard.module.css";
 import { useState } from "react";
 import type { ImportAiSuggestion, ImportSheet } from "@/lib/collections-import";
 
@@ -27,7 +28,7 @@ export function CollectionsImportAi({ file, sheet, disabled, onApply }: {
       if (data.header_signature !== sheet.header_signature) throw new Error("Los encabezados cambiaron; vuelve a analizarlos.");
       setSuggestion(data);
       if (data.status === "suggested") setMessage("Revisa las propuestas antes de aplicarlas. Se conservarán tus asignaciones actuales.");
-      else if (data.status === "no_suggestions") setMessage("No hay equivalencias adicionales claras. Puedes asignar las columnas manualmente.");
+      else if (data.status === "no_suggestions") setMessage("La IA no propuso campos nuevos. Las asignaciones existentes se conservan; revisa las columnas que siguen en «No importar».");
       else if (data.status === "rate_limited") setMessage("Se alcanzó el límite temporal de consultas. Espera un minuto o continúa manualmente.");
       else setMessage("La IA no está disponible por ahora. Puedes continuar con la asignación manual.");
     } catch (cause) {
@@ -35,8 +36,8 @@ export function CollectionsImportAi({ file, sheet, disabled, onApply }: {
     } finally { setBusy(false); }
   }
 
-  return <div>
-    <p className="csv-form-help">Si los títulos son nuevos, la IA puede sugerir equivalencias. Al solicitarla, se envían a OpenAI sólo las etiquetas de los encabezados seleccionados; no se envían filas ni el archivo. Revisa primero que la fila elegida contenga títulos de columnas.</p>
+  return <div className={styles.ai}>
+    <p className="csv-form-help">Los encabezados habituales se reconocen automáticamente. Usa la IA para proponer equivalencias de títulos no reconocidos. Al solicitarla, se envían a OpenAI sólo las etiquetas de los encabezados seleccionados; no se envían filas ni el archivo. Revisa primero que la fila elegida contenga títulos de columnas.</p>
     <button type="button" className="secondary-action" disabled={disabled || busy} onClick={() => void suggest()}>{busy ? "Consultando IA…" : "Sugerir columnas con IA"}</button>
     {message && <p role="status" className="csv-form-help">{message}</p>}
     {suggestion && suggestion.candidates.length > 0 && <>

@@ -1,5 +1,6 @@
 "use client";
 
+import styles from "./create-collection-portfolio-form.module.css";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -23,14 +24,14 @@ export function CreateCollectionPortfolioForm() {
   }
   return <Dialog open={open} onOpenChange={(next) => { if (!pending) { if (next) setOpen(true); else close(); } }}>
     <DialogTrigger asChild><button type="button" className="primary-action">Nueva cartera <span>+</span></button></DialogTrigger>
-    <DialogContent className="csv-create-dialog" showCloseButton={false}>
+    <DialogContent className={portfolio ? `csv-create-dialog ${styles.dialog}` : "csv-create-dialog"} showCloseButton={false}>
       <DialogClose asChild><button type="button" className="csv-dialog-close" aria-label="Cerrar" disabled={pending}>×</button></DialogClose>
       <DialogHeader className="csv-create-dialog-header">
         <p className="eyebrow">Cartera de cobranza</p>
         <DialogTitle>{portfolio ? portfolio.name : "Crea y revisa tu cartera"}</DialogTitle>
         <DialogDescription>{portfolio ? "La cartera está creada. Analiza el archivo, revisa sus columnas y confirma qué contactos importar." : "Ponle un nombre. Después podrás revisar cualquier CSV o Excel antes de cargar contactos."}</DialogDescription>
       </DialogHeader>
-      {portfolio ? <div className="csv-create-form"><CollectionsImportWizard portfolioId={portfolio.id} portfolioName={portfolio.name} /><button type="button" className="secondary-action" onClick={close}>Cerrar</button></div> : <form className="csv-create-form" onSubmit={create}>
+      {portfolio ? <div className={styles.body}><CollectionsImportWizard portfolioId={portfolio.id} portfolioName={portfolio.name} /><div className={styles.close}><button type="button" className="secondary-action" onClick={close}>Cerrar</button></div></div> : <form className="csv-create-form" onSubmit={create}>
         <label>Nombre de la cartera<input value={name} onChange={(e) => setName(e.target.value)} maxLength={120} required autoFocus placeholder="Cobranza del cliente" disabled={pending} /></label>
         {error && <p className="form-error" role="alert">{error}</p>}
         <div className="csv-form-actions"><button type="button" className="secondary-action" disabled={pending} onClick={close}>Cancelar</button><button type="submit" className="primary-action" disabled={pending || !name.trim()}>{pending ? "Creando…" : "Crear y revisar archivo"}</button></div>

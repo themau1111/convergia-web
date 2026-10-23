@@ -1,7 +1,7 @@
 ---
 type: integrations
 status: current
-updated: 2026-10-22
+updated: 2026-10-23
 ---
 # Integraciones
 
@@ -162,3 +162,24 @@ etiquetas guardadas distingue la eliminación inmediata. Sin cambios de contrato
 Verificación de componentes reales con datos sintéticos: 320×568, 390×844,
 844×390 y 1440×900, temas claro/oscuro, texto largo, foco y acciones visibles.
 No sustituye validación en dispositivos físicos ni del despliegue autenticado.
+
+### Carteras: ancho y requisitos de previsualización
+
+Corrección local 2026-10-23, pendiente de publicar. Tras crear la cartera, el diálogo
+usa hasta 1120 px en escritorio con origen y asignación en dos paneles; en móvil
+pasa a una columna. Encabezado fijo, contenido con scroll propio y espacios explícitos
+entre ayuda, IA, resultados de sugerencias y controles, en ambos temas.
+`importPreviewBlockers` explica junto al botón cada requisito pendiente (titular,
+teléfono, saldo, actualización de encabezados y límite de teléfonos). El formato
+numérico, grupo y artículo no sustituyen el saldo: un archivo sin ese dato requiere
+agregar una columna con el saldo real y volver a cargarlo. Se conserva la validación
+de dominio del backend. La vista previa recibe foco al aparecer.
+Pruebas locales: cinco casos de requisitos y siete del BFF; navegador con componentes
+reales y API/acciones simuladas confirma bloqueo sin saldo y habilitación al asignarlo,
+previsualización, escritorio 1440 px y móvil 390 px en temas claro/oscuro. Sin datos
+reales, importaciones de producción ni llamadas.
+
+El mensaje de IA sin propuestas ahora aclara que no se propusieron campos nuevos,
+conserva las asignaciones existentes y dirige a revisar «No importar». Se distingue
+el reconocimiento automático de encabezados de las sugerencias adicionales de IA;
+el backend reconoce `Tel` sin necesitar al proveedor (corrección local pendiente).

@@ -1,8 +1,9 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { ImportAnalysis, ImportMapping, ImportOptions, ImportPreview, ImportResult, ImportSheet } from "@/lib/collections-import";
+import { importPreviewBlockers, requiredImportFields } from "@/lib/collections-import-validation";
 import { CollectionsImportAi } from "./collections-import-ai";
 import styles from "./collections-import-wizard.module.css";
 
@@ -31,6 +32,8 @@ function PreviewDetails({ value }: { value: ImportPreview }) {
 
 export function CollectionsImportWizard({ portfolioId, portfolioName }: { portfolioId: string; portfolioName: string }) {
   const router = useRouter();
+  const previewHelpId = useId();
+  const previewRef = useRef<HTMLElement>(null);
   const [file, setFile] = useState<File | null>(null);
   const [analysis, setAnalysis] = useState<ImportAnalysis | null>(null);
   const [sheet, setSheet] = useState<ImportSheet | null>(null);
@@ -45,6 +48,8 @@ export function CollectionsImportWizard({ portfolioId, portfolioName }: { portfo
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const requestId = useRef(0);
+
+  useEffect(() => { if (preview) previewRef.current?.focus(); }, [preview]);
 
   function invalidate() { setPreview(null); setResult(null); setError(""); }
 
@@ -92,8 +97,10 @@ export function CollectionsImportWizard({ portfolioId, portfolioName }: { portfo
     });
   }
 
-  const canPreview = file && sheet && headerRow === sheet.header_row &&
-    ["nombre", "telefono", "saldo_pendiente"].every((key) => mapping[key]?.length) && (mapping.telefono?.length ?? 0) <= 5;
+  const previewBlockers = importPreviewBlockers({
+    hasFile: Boolean(file), hasSheet: Boolean(sheet), headerRow, analyzedHeaderRow: sheet?.header_row, mapping,
+  });
+  const canPreview = previewBlockers.length === 0;
 
   async function makePreview() {
     if (!file || !sheet || !canPreview) return;
@@ -130,6 +137,7 @@ export function CollectionsImportWizard({ portfolioId, portfolioName }: { portfo
     <p className="csv-form-help">CSV o XLSX, hasta 4 MiB. Primero revisas el formato y los cambios; después confirmas la importación. Teléfonos mexicanos y saldos en MXN.</p>
     {busy && <p role="status">Procesando archivo…</p>}
     {analysis && sheet && <>
+      <div className={styles.setup}>
       <fieldset className={styles.section} disabled={busy}>
         <legend>1. Revisa el origen</legend>
         <div className={styles.controls}>
@@ -149,6 +157,11 @@ export function CollectionsImportWizard({ portfolioId, portfolioName }: { portfo
       </fieldset>
       <fieldset className={styles.section} disabled={busy}>
         <legend>2. Asigna las columnas</legend>
+        <div className={styles.requirements} aria-label="Campos obligatorios para previsualizar">
+          {requiredImportFields.map(([key, label]) => <span key={key} data-ready={Boolean(mapping[key]?.length)}>
+            <span aria-hidden="true">{mapping[key]?.length ? "✓" : "○"}</span> {label}: {mapping[key]?.length ? "asignado" : "pendiente"}
+          </span>)}
+        </div>
         {analysis.profiles.length > 0 && <label className={styles.label}>Formato guardado del cliente
           <select value={profileId} onChange={(event) => {
             invalidate(); setProfileId(event.target.value);
@@ -180,7 +193,7 @@ export function CollectionsImportWizard({ portfolioId, portfolioName }: { portfo
             </select>
           </label>)}
         </div>
-        {!mapping.saldo_pendiente?.length && <p className={styles.warning}>Selecciona qué columna contiene el saldo que debemos gestionar. No sumaremos ni elegiremos entre varios saldos por ti.</p>}
+        {!mapping.saldo_pendiente?.length && <p className={styles.warning}>Falta asignar el saldo a gestionar. Si tu archivo sólo contiene teléfono, nombre, grupo y artículo, agrega una columna con el saldo real y vuelve a cargarlo. Grupo y artículo no sustituyen el saldo.</p>}
         {(mapping.telefono?.length ?? 0) > 5 && <p className={styles.warning}>Selecciona hasta cinco columnas de teléfono.</p>}
         <label className={styles.label}>Formato de los importes escritos como texto
           <select value={amountFormat} onChange={(e) => { setAmountFormat(e.target.value as ImportOptions["amount_format"]); invalidate(); }}>
@@ -190,9 +203,16 @@ export function CollectionsImportWizard({ portfolioId, portfolioName }: { portfo
         <p className="csv-form-help">Necesitamos titular, teléfono y saldo a gestionar. La referencia de crédito conserva deudas distintas aunque compartan teléfono. Puedes asignar varios teléfonos sin sumar saldos.</p>
         {!mapping.source_account_id?.length && <p className={styles.note}>Sin referencia de crédito, las coincidencias se resolverán por teléfono y nombre del titular.</p>}
       </fieldset>
-      <button type="button" className="secondary-action" disabled={busy || !canPreview} onClick={() => void makePreview()}>Previsualizar cambios</button>
+      </div>
+      <div className={styles.previewAction}>
+        <div id={previewHelpId} role="status" className={styles.previewHelp}>
+          {previewBlockers.length ? <><strong>Para habilitar la previsualización:</strong><ul>{previewBlockers.map((reason) => <li key={reason}>{reason}</li>)}</ul></>
+            : <p>Campos obligatorios completos. Revisa los cambios antes de importar.</p>}
+        </div>
+        <button type="button" className="primary-action" aria-describedby={previewHelpId} disabled={busy || !canPreview} onClick={() => void makePreview()}>Previsualizar cambios</button>
+      </div>
     </>}
-    {preview && <section className={styles.section} aria-label="Previsualización de importación">
+    {preview && <section ref={previewRef} tabIndex={-1} className={styles.section} aria-label="Previsualización de importación">
       <PreviewDetails value={preview} />
       <label className={styles.checkbox}><input type="checkbox" checked={remember} disabled={busy} onChange={(e) => setRemember(e.target.checked)} /> Recordar este formato para el cliente</label>
       {remember && <label className={styles.label}>Nombre del formato<input value={formatName} maxLength={120} disabled={busy} onChange={(e) => setFormatName(e.target.value)} placeholder="Ej. RAC — entrega mensual" /></label>}
