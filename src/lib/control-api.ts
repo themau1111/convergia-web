@@ -41,6 +41,7 @@ export type CampaignDetail = CampaignRecord & {
     timezone: string; start_at: string; end_at: string;
     retry_minutes: number; max_attempts_per_recipient: number;
   };
+  dialer: DialerConfig;
   notes?: string | null;
   created_at: string;
   completed_at?: string | null;
@@ -61,7 +62,7 @@ export type CampaignExecutionRecord = {
 };
 export type CampaignCallAttemptRecord = {
   id: string; execution_id: string; campaign_id: string; call_uuid: string;
-  attempt_number: number;
+  attempt_number: number; round_number?: number | null;
   telephony_result: string | null;
   technical_status: "prepared" | "originating" | "connected" | "completed" | "no_answer" | "failed" | "cancelled";
   error_code?: string | null; created_at: string; started_at?: string | null; completed_at?: string | null;

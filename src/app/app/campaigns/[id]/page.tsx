@@ -47,6 +47,10 @@ export default async function CampaignDetailPage({ params }: { params: Promise<{
         <article><p>Agente</p><strong>{campaign.agent_profile.agent_name}</strong><small>{campaign.agent_profile.company_name} · versión {campaign.agent_profile.version}</small></article>
         <article><p>Personalidad</p><strong>{campaign.agent_profile.personality}</strong><small>Perfil congelado para esta campaña</small></article>
         <article><p>Ventana</p><strong>{formatDate(campaign.schedule.start_at)}</strong><small>hasta {formatDate(campaign.schedule.end_at)}</small></article>
+        <article><p>Rondas</p><strong>{campaign.dialer?.rounds ?? 1}</strong><small>{(campaign.dialer?.rounds ?? 1) > 1 ? `Cooldown ${campaign.dialer?.cooldown_minutes ?? 0} min entre rondas` : "Sin rondas adicionales"}</small></article>
+        {(campaign.dialer?.telephony_filter?.length ?? 0) > 0 && (
+          <article><p>Excluidos por resultado</p><strong>{campaign.dialer.telephony_filter.join(", ")}</strong><small>No pasan a rondas siguientes</small></article>
+        )}
       </section>
 
       <section className={`preflight-card ${preflight?.ready ? "ready" : "blocked"}`}>
@@ -84,6 +88,53 @@ export default async function CampaignDetailPage({ params }: { params: Promise<{
           </div>
         </article>
       </section>
+
+      {(() => {
+        const timeoutAttempts = attempts.filter((a) => a.error_code === "origination_outcome_timeout");
+        if (!timeoutAttempts.length) return null;
+        return (
+          <section className="detail-card" aria-label="Diagnóstico de timeouts">
+            <div className="section-heading">
+              <div>
+                <p className="eyebrow">Diagnóstico</p>
+                <h2>Intentos sin resultado en plazo</h2>
+              </div>
+              <span>{timeoutAttempts.length}</span>
+            </div>
+            <p className="muted" style={{ marginBottom: 12, fontSize: 13 }}>
+              Estos intentos salieron del sistema pero no se recibió confirmación de Asterisk
+              dentro del tiempo límite. Suelen ocurrir durante reinicios o cortes breves de telefonía
+              y pueden reintentarse en una nueva vuelta de campaña.
+            </p>
+            <div className="attempt-table" role="region" tabIndex={0}>
+              <table className="campaign-attempts">
+                <thead>
+                  <tr>
+                    <th scope="col">Contacto</th>
+                    <th scope="col">Intento</th>
+                    <th scope="col">Ronda</th>
+                    <th scope="col">Inicio</th>
+                    <th scope="col">Cierre</th>
+                    <th scope="col">UUID</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {timeoutAttempts.map((a) => (
+                    <tr key={a.id}>
+                      <td>{a.call_uuid.slice(0, 8)}</td>
+                      <td>#{a.attempt_number}</td>
+                      <td>{a.round_number ?? 1}</td>
+                      <td>{formatDate(a.started_at ?? a.created_at)}</td>
+                      <td>{formatDate(a.completed_at)}</td>
+                      <td><code>{a.call_uuid.slice(0, 8)}</code></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        );
+      })()}
 
       <section className="detail-card audit-card">
         <div className="section-heading"><div><p className="eyebrow">Auditoría</p><h2>Historial de cambios</h2></div><span>{auditEvents.length}</span></div>

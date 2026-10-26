@@ -266,20 +266,24 @@ export function CampaignWizard({
               </div>
               {telephonyResults.length > 0 && (
                 <fieldset>
-                  <legend>Filtro de resultados de telefonía</legend>
-                  <p className="muted" style={{ marginBottom: 10, fontSize: 13 }}>Si marcas resultados, solo los contactos con esos resultados recibirán la siguiente ronda.</p>
+                  <legend>Excluir de rondas siguientes</legend>
+                  <p className="muted" style={{ marginBottom: 10, fontSize: 13 }}>
+                    Los contactos que obtengan estos resultados en una ronda <strong>no recibirán llamadas en rondas posteriores</strong>.
+                    {" "}Los números inválidos (SIP 404) se desactivan automáticamente del portafolio sin importar esta configuración.
+                  </p>
                   {telephonyResults.map((opt) => (
                     <label key={opt.value} className="checkbox" style={{ marginBottom: 8 }}>
                       <input type="checkbox" checked={draft.telephonyFilter.includes(opt.value)} onChange={() => toggleTelephonyFilter(opt.value)} />
                       {opt.label}
+                      {opt.value === "invalid" && <span style={{ marginLeft: 6, fontSize: 11, color: "var(--muted)" }}>(se desactivan automáticamente)</span>}
                     </label>
                   ))}
                 </fieldset>
               )}
               {selectedAgent && selectedAgent.labels.length > 0 && (
                 <fieldset>
-                  <legend>Filtro de etiquetas</legend>
-                  <p className="muted" style={{ marginBottom: 10, fontSize: 13 }}>Solo los contactos con estas etiquetas detectadas recibirán la siguiente ronda.</p>
+                  <legend>Excluir por etiqueta de resultado</legend>
+                  <p className="muted" style={{ marginBottom: 10, fontSize: 13 }}>Los contactos con estas etiquetas detectadas en una ronda anterior no recibirán llamadas en rondas siguientes.</p>
                   {selectedAgent.labels.map((label) => (
                     <label key={label.id} className="checkbox" style={{ marginBottom: 8 }}>
                       <input type="checkbox" checked={draft.labelFilter.includes(label.id)} onChange={() => toggleLabelFilter(label.id)} />
