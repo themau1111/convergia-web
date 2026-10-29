@@ -39,8 +39,8 @@ export async function createAgentAction(
   let labels;
   try { labels = labelsFromFormData(data); }
   catch { return { error: "Revisa las etiquetas: nombres únicos y criterios completos (máximo 50)." }; }
-  const rawDefinition = String(data.get("agent_definition_key") ?? "rac");
-  const validDefinitions = ["collections", "rac", "survey"] as const;
+  const rawDefinition = String(data.get("agent_definition_key") ?? "generativo");
+  const validDefinitions = ["generativo", "collections", "rac", "survey"] as const;
   if (!validDefinitions.includes(rawDefinition as typeof validDefinitions[number])) return { error: "Selecciona una definición de agente válida." };
   const definition = rawDefinition as typeof validDefinitions[number];
   let agentId: string;

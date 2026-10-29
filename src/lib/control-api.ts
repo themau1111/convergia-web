@@ -162,7 +162,7 @@ export type PaymentOptions = {
   max_negotiation_attempts: number;
 };
 export type AgentProfileRecord = {
-  id: string; organization_id: string; profile_key: string; agent_definition_key: "collections" | "rac" | "survey"; version: number;
+  id: string; organization_id: string; profile_key: string; agent_definition_key: "generativo" | "collections" | "rac" | "survey"; version: number;
   agent_name: string; company_name: string; personality: string;
   script: string; flow_scenarios: string; objective: string; additional_instructions: string;
   payment_options: PaymentOptions;
@@ -522,7 +522,7 @@ export async function createAgentProfile(payload: {
   labels?: { name: string; criteria: string }[];
   script?: string; flow_scenarios?: string; objective?: string; additional_instructions?: string;
   payment_options?: PaymentOptions;
-  agent_definition_key?: "collections" | "rac" | "survey";
+  agent_definition_key?: "generativo" | "collections" | "rac" | "survey";
 }): Promise<AgentProfileRecord> {
   return controlApi<AgentProfileRecord>("/v1/agent-profiles", {
     method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload),
@@ -538,7 +538,7 @@ export async function updateAgentProfile(
   payload: {
     agent_name?: string; company_name?: string; personality?: string;
     labels?: { name: string; criteria: string }[];
-    voice_id?: string | null; agent_definition_key?: "collections" | "rac" | "survey";
+    voice_id?: string | null; agent_definition_key?: "generativo" | "collections" | "rac" | "survey";
     script?: string; flow_scenarios?: string;
     objective?: string; additional_instructions?: string; profile_key?: string; payment_options?: PaymentOptions;
   },

@@ -20,9 +20,9 @@ export async function saveAgentEdit(
   const objective = String(data.get("objective") ?? "").trim();
   const additionalInstructions = String(data.get("additional_instructions") ?? "").trim();
   const voiceId = String(data.get("voice_id") ?? "").trim();
-  const rawKey = String(data.get("agent_definition_key") ?? "collections").trim();
-  const agentDefinitionKey = (["collections", "rac", "survey"].includes(rawKey)
-    ? rawKey : "collections") as "collections" | "rac" | "survey";
+  const rawKey = String(data.get("agent_definition_key") ?? "generativo").trim();
+  const agentDefinitionKey = (["generativo", "collections", "rac", "survey"].includes(rawKey)
+    ? rawKey : "generativo") as "generativo" | "collections" | "rac" | "survey";
 
   if (!agentName) return { error: "El nombre del agente es obligatorio." };
   if (!companyName) return { error: "El nombre de la empresa es obligatorio." };

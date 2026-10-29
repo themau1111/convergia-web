@@ -81,10 +81,11 @@ export function EditAgentForm({ agent, existingLabels = EMPTY_LABELS, library = 
           </label>
           <label>
             Definición del agente
-            <select name="agent_definition_key" defaultValue={agent.agent_definition_key ?? "collections"}>
-              <option value="collections">collections — Cobranza estándar</option>
-              <option value="rac">rac — Mueblería RAC</option>
-              <option value="survey">survey — Encuestas</option>
+            <select name="agent_definition_key" defaultValue={agent.agent_definition_key ?? "generativo"}>
+              <option value="generativo">Agente personalizado — tu prompt manda</option>
+              <option value="rac">RAC — Mueblería RAC (cobranza arrendamiento)</option>
+              <option value="collections">Cobranza estándar (legado)</option>
+              <option value="survey">Encuestas</option>
             </select>
           </label>
           <label className="wide-field">
