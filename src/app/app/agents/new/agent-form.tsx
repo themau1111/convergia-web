@@ -102,12 +102,11 @@ export function AgentForm({ library = EMPTY_LIBRARY }: { library?: AgentLabelRec
           </label>
           <label>
             Definición del agente
-            <select name="agent_definition_key" required defaultValue="">
-              <option value="" disabled>Selecciona la definición</option>
-              <option value="collections">Cobranza general</option>
-              <option value="rac">RAC · arrendamiento y devolución</option>
+            <select name="agent_definition_key" required defaultValue="rac">
+              <option value="rac">Agente generativo (recomendado)</option>
+              <option value="collections">Cobranza estándar (legado)</option>
             </select>
-            <small className="muted">Para Mueblería RAC selecciona RAC. Importar texto no cambia estas reglas.</small>
+            <small className="muted">El modo generativo permite al agente razonar y argumentar. Usa "Cobranza estándar" solo para campañas existentes que lo requieran.</small>
           </label>
           <label className="wide-field">
             Objetivo
