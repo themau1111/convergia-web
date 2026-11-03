@@ -29,7 +29,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     }
     const form = new FormData();
     form.set("file", file);
-    for (const key of ["sheet", "header_row", "options", "preview_id", "format_name"]) {
+    for (const key of ["sheet", "header_row", "options", "preview_id", "format_name", "agent_variables"]) {
       const value = input.get(key);
       if (typeof value === "string") form.set(key, value);
     }

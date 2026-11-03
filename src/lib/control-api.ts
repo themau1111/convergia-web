@@ -161,12 +161,19 @@ export type PaymentOptions = {
   };
   max_negotiation_attempts: number;
 };
+export type AgentVariable = {
+  name: string;
+  type: "text" | "number" | "currency" | "date";
+  required: boolean;
+  description: string;
+};
 export type AgentProfileRecord = {
   id: string; organization_id: string; profile_key: string; agent_definition_key: "generativo" | "collections" | "rac" | "survey"; version: number;
   agent_name: string; company_name: string; personality: string;
   script: string; flow_scenarios: string; objective: string; additional_instructions: string;
   payment_options: PaymentOptions;
   voice_id: string | null; created_at: string;
+  agent_variables?: AgentVariable[];
 };
 export type AgentLabelRecord = {
   id: string; organization_id: string; profile_key: string;
@@ -191,13 +198,15 @@ export type DialerConfig = {
 };
 export type CampaignCreatePayload = {
   name: string;
-  objective: "payment_reminder" | "agreement_follow_up";
+  objective?: "payment_reminder" | "agreement_follow_up";
   campaign_type?: "collections" | "survey";
-  portfolio_id: string;
+  portfolio_id?: string;
+  contact_file_id?: string;
+  column_mapping?: Record<string, string>;
   agent_profile_version_id: string;
   schedule: {
     timezone: string; start_at: string; end_at: string;
-    retry_minutes: number; max_attempts_per_recipient: number;
+    retry_minutes?: number; max_attempts_per_recipient?: number;
   };
   notes: string;
   dialer?: DialerConfig;
