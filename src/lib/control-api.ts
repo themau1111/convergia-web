@@ -14,7 +14,7 @@ export type CampaignRecord = {
   created_at: string;
   id: string;
   name: string;
-  objective: "payment_reminder" | "agreement_follow_up";
+  objective: string | null;
   campaign_type: "collections" | "survey";
   status: "draft" | "scheduled" | "running" | "paused" | "completed" | "cancelled" | "failed";
 };
@@ -35,7 +35,7 @@ export type SurveyQuestionnaireRecord = {
 };
 export type CampaignDetail = CampaignRecord & {
   organization_id: string;
-  portfolio: PortfolioRecord & { organization_id: string; last_validated_at?: string | null };
+  portfolio: (PortfolioRecord & { organization_id: string; last_validated_at?: string | null }) | null;
   agent_profile: AgentProfileRecord & { organization_id: string };
   schedule: {
     timezone: string; start_at: string; end_at: string;
@@ -201,7 +201,6 @@ export type CampaignCreatePayload = {
   objective?: "payment_reminder" | "agreement_follow_up";
   campaign_type?: "collections" | "survey";
   portfolio_id?: string;
-  contact_file_id?: string;
   column_mapping?: Record<string, string>;
   agent_profile_version_id: string;
   schedule: {
@@ -528,6 +527,7 @@ export async function getAgentProfiles(): Promise<AgentProfileRecord[]> {
 export async function createAgentProfile(payload: {
   profile_key: string; agent_name: string; company_name: string;
   personality: string; voice_id?: string | null;
+  agent_variables?: AgentVariable[];
   labels?: { name: string; criteria: string }[];
   script?: string; flow_scenarios?: string; objective?: string; additional_instructions?: string;
   payment_options?: PaymentOptions;
@@ -546,6 +546,7 @@ export async function updateAgentProfile(
   id: string,
   payload: {
     agent_name?: string; company_name?: string; personality?: string;
+    agent_variables?: AgentVariable[];
     labels?: { name: string; criteria: string }[];
     voice_id?: string | null; agent_definition_key?: "generativo" | "collections" | "rac" | "survey";
     script?: string; flow_scenarios?: string;

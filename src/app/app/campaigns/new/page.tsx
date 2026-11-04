@@ -14,7 +14,7 @@ export default async function NewCampaignPage() {
 
   // Pre-load labels for each agent so the wizard can show them without client fetches
   const agentsWithLabels = await Promise.all(
-    agentProfiles.map(async (agent) => {
+    agentProfiles.filter(agent => agent.agent_definition_key !== "survey").map(async (agent) => {
       const labels: AgentLabelRecord[] = await listAgentLabels(agent.id).catch(() => []);
       return { ...agent, labels };
     }),

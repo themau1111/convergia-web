@@ -584,3 +584,9 @@ body { background:transparent; }
 .quality-outcome { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:10px; }.quality-outcome>small,.quality-label-group>small { color:var(--muted); font-size:10px; }.quality-label-group { display:grid; gap:6px; margin-top:10px; }.quality-label-group .monitoring-labels { margin:0; }.quality-label-group .label-chip { max-width:100%; white-space:normal; overflow-wrap:anywhere; }.quality-list .quality-outcome .telephony-result { font-size:10px; }
 .detail-grid>.detail-card { min-width:0; }.attempt-table { max-width:100%; overflow-x:auto; }
 @media(max-width:650px) { .quality-filters { grid-template-columns:1fr; }.quality-filter-actions { flex-wrap:wrap; } }
+
+@media (max-width: 640px) {
+  .wizard-layout aside ol { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 4px; }
+  .wizard-layout aside li { justify-content: center; padding: 6px 0; }
+  .wizard-layout aside li span { flex-shrink: 0; }
+}

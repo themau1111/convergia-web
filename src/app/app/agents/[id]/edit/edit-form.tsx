@@ -1,5 +1,9 @@
 "use client";
 
+import { VariablesEditor } from "../../variables-editor";
+import { detectedVariables } from "@/lib/agent-variables";
+import type { AgentVariable } from "@/lib/control-api";
+
 import styles from "../../agent-forms.module.css";
 
 import { useActionState, useEffect, useState } from "react";
@@ -26,6 +30,7 @@ export function EditAgentForm({ agent, existingLabels = EMPTY_LABELS, library = 
 
   const [agentName, setAgentName] = useState(agent.agent_name);
   const [companyName, setCompanyName] = useState(agent.company_name);
+  const [variables, setVariables] = useState<AgentVariable[]>(agent.agent_variables ?? []);
   const [objective, setObjective] = useState(agent.objective ?? "");
   const [personality, setPersonality] = useState(agent.personality);
   const [script, setScript] = useState(agent.script ?? "");
@@ -42,6 +47,7 @@ export function EditAgentForm({ agent, existingLabels = EMPTY_LABELS, library = 
   }, [state, agent.id, router]);
 
   function handleImport(fields: ImportedAgentFields) {
+    setVariables(prev => detectedVariables([fields.script, fields.flow_scenarios, fields.additional_instructions, fields.objective, fields.personality].join("\n"), prev));
     setPendingLabels((prev) => {
       const names = new Set(existingLabels.map((label) => label.name.trim().toLocaleLowerCase("es")));
       return mergeImportedLabels(prev, fields.suggested_labels.filter((label) => !names.has(label.name.trim().toLocaleLowerCase("es"))));
@@ -129,6 +135,8 @@ export function EditAgentForm({ agent, existingLabels = EMPTY_LABELS, library = 
         <LabelsPicker library={library} pending={pendingLabels} onChange={setPendingLabels} />
       </section>
       <PaymentOptionsForm paymentOptions={agent.payment_options} />
+
+      <VariablesEditor variables={variables} onChange={setVariables} prompt={[script, flowScenarios, additionalInstructions, objective, personality].join("\n")} />
 
       {state.error && <p className="form-error" role="alert">{state.error}</p>}
 

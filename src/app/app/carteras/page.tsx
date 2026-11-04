@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 import { getCsvPortfolios, getCsvContacts, getSelectedWorkspace } from "@/lib/control-api";
 import type { CsvPortfolioRecord, CsvContactRecord } from "@/lib/control-api";
@@ -7,6 +8,7 @@ import { UploadCsvContactsForm } from "./upload-contacts-form";
 
 export default async function CarterasPage() {
   const isSurveyWorkspace = (await getSelectedWorkspace())?.key === "survey";
+  if (!isSurveyWorkspace) redirect("/app/campaigns/new");
   const templateHeaders = isSurveyWorkspace ? "Telefono,Nombre,Variable 1,Variable 2,Variable 3,Variable 4,Variable 5" : "Telefono,Nombre,Subcredito,Saldo,Variable 1,Variable 2,Variable 3,Variable 4,Variable 5";
   const templateBlob = `data:text/csv;charset=utf-8,${encodeURIComponent(`${templateHeaders}\n`)}`;
   const portfolios = await getCsvPortfolios().catch(() => [] as CsvPortfolioRecord[]);

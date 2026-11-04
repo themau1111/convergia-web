@@ -1,7 +1,7 @@
 export type ImportMapping = Record<string, number[]>;
 export type ImportOptions = { sheet: string; header_row: number; mapping: ImportMapping; amount_format: "dot_decimal" | "comma_decimal" };
 export type ImportSheet = {
-  name: string; header_row: number; columns: { index: number; header: string; suggested_field: string | null }[];
+  name: string; header_row: number; columns: { index: number; header: string; suggested_field: string | null; examples?: string[] }[];
   suggested_mapping: ImportMapping; ambiguous_fields: string[]; header_signature: string; data_rows: number;
 };
 export type ImportProfile = { id: string; name: string; header_signature: string; options: ImportOptions; version: number };

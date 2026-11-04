@@ -105,7 +105,7 @@ export const administrativeTools = {
           created_at: campaign.created_at,
           completed_at: campaign.completed_at,
           completion_reason: campaign.completion_reason,
-          portfolio: campaign.portfolio.name,
+          portfolio: campaign.portfolio?.name ?? "Sin base",
           agent: campaign.agent_profile.agent_name,
         },
         preflight,

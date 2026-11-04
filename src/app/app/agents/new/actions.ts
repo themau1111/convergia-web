@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { createAgentProfile } from "@/lib/control-api";
+import { variablesFromFormData } from "@/lib/agent-variables";
 import { labelsFromFormData } from "@/lib/agent-prompt-import";
 import { paymentOptionsFromFormData } from "../payment-options";
 
@@ -36,6 +37,9 @@ export async function createAgentAction(
   if (!companyName) return { error: "El nombre de la empresa es obligatorio." };
   if (!personality) return { error: "La personalidad es obligatoria." };
 
+  let agentVariables;
+  try { agentVariables = variablesFromFormData(data); }
+  catch { return { error: "Revisa las variables: nombre, tipo y nombres únicos no reservados." }; }
   let labels;
   try { labels = labelsFromFormData(data); }
   catch { return { error: "Revisa las etiquetas: nombres únicos y criterios completos (máximo 50)." }; }
@@ -49,6 +53,7 @@ export async function createAgentAction(
       profile_key: profileKey,
       agent_definition_key: definition,
       labels,
+      agent_variables: agentVariables,
       agent_name: agentName,
       company_name: companyName,
       personality,

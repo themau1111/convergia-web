@@ -1,7 +1,7 @@
 ---
 type: components
 status: current
-updated: 2026-11-07
+updated: 2026-11-03
 ---
 # Componentes
 
@@ -76,26 +76,28 @@ Relacionado: [[02-arquitectura]], [[04-integraciones]], [[05-operacion]].
 - La UI no instala el timer: muestra ejecuciones persistidas y ausencia de historial
   si todavía no corre. Errores de API se presentan como bandeja no disponible.
 
-## Wizard de campaña (6 pasos) — Etapa 1 Bravo
+## Wizard de campaña — corrección local 2026-11-03
 
-- `src/app/app/campaigns/new/campaign-wizard.tsx` — wizard cliente: (1) nombre y agente,
-  (2) carga CSV/XLSX y análisis, (3) mapeo de variables del agente a columnas con
-  sugerencia IA, (4) rondas y cooldown del dialer, (5) ventana horaria, (6) revisión y
-  creación. No requiere una cartera preexistente; el módulo de portafolio independiente
-  se eliminó del flujo.
-- `src/app/app/campaigns/new/actions.ts` — Server Action `submitCampaign`; construye el
-  payload para `POST /v1/campaigns` sin `portfolio_id` ni `objective` obligatorios;
-  traduce el mapeo semántico (variable_name → columna) a `variable_N` antes de enviarlo.
-- `src/app/app/campaigns/new/page.tsx` — carga agentes con sus variables desde `/v1`;
-  pasa la lista al wizard; calcula ventana horaria predeterminada (8-21 h, mañana
-  siguiente si ya pasaron las 21 h en Mexico_City).
-- Análisis de archivo: reutiliza `/api/collections-import/analyze` (BFF ya existente).
-- Sugerencia de mapeo IA: llama `/api/collections-import/suggest-mapping` con
-  encabezados y `agent_variables`; el BFF existente redirige a FastAPI sin file ni filas.
-- Columna 0 fija como teléfono; solo columnas restantes son mapeables a variables.
-- El wizard bloquea "Crear campaña" cuando hay cero contactos válidos; muestra alertas
-  críticas y de advertencia por clase de problema. Requiere mapear todas las variables
-  `required` antes de avanzar al paso de dialer.
+- `campaign-wizard.tsx`: agente, base, variables, dialer, ventana y resumen.
+  Precarga variables versionadas y etiquetas; cambiar agente limpia selecciones/base.
+- `/api/campaign-setup/[action]`: BFF de `analyze`, `suggest-mapping`, `create`;
+  reenvía archivo/opciones/payload a `/v1/campaign-setup` con credencial server-side.
+  Exige sesión, origen válido, archivo <=4 MiB y bloquea el workspace de Encuestas.
+- El mapeo usa índices reales (columna 0 siempre teléfono). Confirmar envía el archivo
+  real y el mapeo; la API revalida, guarda todo o revierte todo y hace preflight.
+  Errores se presentan al usuario; no se usa un `contact_file_id` inexistente.
+- Preview local autenticado muestra ejemplos, conteos de teléfonos/tipos/duplicados,
+  reutilización y saludo del agente. Crear se bloquea con cero válidos; se puede
+  conservar borrador. Crear programa la campaña: la ventana puede habilitar llamadas.
+- `campaign-schedule.ts`: defaults 08–21 de México, cambia al día siguiente desde
+  las 21:00; formato con Intl y zona explícita, independiente de la zona del navegador.
+- `agents/variables-editor.tsx`: alta/edición de nombre, tipo, requerida y descripción,
+  detección de placeholders y avisos usadas/no declaradas y declaradas/no usadas.
+  Se envían con el perfil en una transacción; extracción del prompt propone variables.
+- Navegación de Cobranza elimina Carteras; su ruta redirige a nueva campaña.
+  Encuestas conserva su muestra e importador. Borradores sin base se muestran sin fallar.
+- Publicación autorizada en producción el 2026-11-03. Regresiones de BFF, variables y horarios en
+  `tests/campaign-setup.test.mjs`; evidencia en `docs/REVISION_CADENCIA_2026-11-03.md`.
 
 ## Diagnóstico de fallidas en development
 

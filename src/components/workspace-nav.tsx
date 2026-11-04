@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 
 const collectionsItems = [
   ["01", "Pulso", "/"], ["02", "Campañas", "/app/campaigns"],
-  ["03", "Agentes", "/app/agents"], ["04", "Carteras", "/app/carteras"],
+  ["03", "Agentes", "/app/agents"],
   ["05", "Pruebas y carteras", "/app/settings/catalogs"], ["06", "Resultados", "/app/results"],
   ["07", "Calidad", "/app/quality"], ["08", "Equipo", "/app/settings/members"],
   ["09", "Actividad", "/app/settings/audit"],

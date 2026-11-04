@@ -2,9 +2,10 @@
 
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { useMemo, useState, useTransition } from "react";
+import { useMemo, useRef, useState, useTransition } from "react";
 
-import { submitCampaign } from "./actions";
+import { useRouter } from "next/navigation";
+import { getMexicoDefaults, formatSchedule, toIso } from "@/lib/campaign-schedule";
 import type { AgentProfileRecord, AgentVariable, TelephonyResultOption } from "@/lib/control-api";
 import type { ImportAnalysis } from "@/lib/collections-import";
 
@@ -17,7 +18,9 @@ type AgentWithLabels = AgentProfileRecord & { labels: { id: string; name: string
  * The backend may extend it with campaign-specific fields as it evolves.
  */
 type CampaignAnalysis = ImportAnalysis & {
-  file_id?: string;
+  preview_message?: string;
+  reused_in_campaigns?: number;
+  missing_required?: string[];
   valid_rows?: number;
   discarded_rows?: number;
   discard_reasons?: { reason: string; count: number }[];
@@ -25,67 +28,14 @@ type CampaignAnalysis = ImportAnalysis & {
 
 type CampaignMappingSuggestion = {
   status: "suggested" | "no_suggestions" | "unavailable" | "disabled" | "rate_limited";
-  mapping?: Record<string, string>; // variable_name → column_header
+  mapping?: Record<string, number>; // variable_name → zero-based column index
 };
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const STEPS = ["Campaña", "Base de contactos", "Variables", "Dialer", "Programación", "Resumen"] as const;
 
-const TZ_OFFSETS: Record<string, string> = {
-  "America/Mexico_City": "-06:00",
-  "America/Monterrey": "-06:00",
-};
-
-// ─── Pure helpers ─────────────────────────────────────────────────────────────
-
-function toIso(localValue: string, timezone: string): string {
-  return `${localValue}:00${TZ_OFFSETS[timezone] ?? "-06:00"}`;
-}
-
-/** Returns YYYY-MM-DDTHH:MM defaults based on current Mexico City time (UTC-6). */
-function getMexicoDefaults(): { start: string; end: string } {
-  const now = new Date();
-  // Convert to approximate Mexico City time (UTC-6 standard; ignores DST)
-  const utcMs = now.getTime() + now.getTimezoneOffset() * 60_000;
-  const mxMs = utcMs - 6 * 60 * 60_000;
-  const mxNow = new Date(mxMs);
-  // If it's past 9 PM, default to tomorrow
-  const base = mxNow.getUTCHours() >= 21
-    ? new Date(mxMs + 24 * 60 * 60_000)
-    : mxNow;
-  const y = base.getUTCFullYear();
-  const m = String(base.getUTCMonth() + 1).padStart(2, "0");
-  const d = String(base.getUTCDate()).padStart(2, "0");
-  return { start: `${y}-${m}-${d}T08:00`, end: `${y}-${m}-${d}T21:00` };
-}
-
-/**
- * Formats the schedule window as human-readable Spanish text.
- * e.g. "martes 3 nov 2026, 8:00 a.m. a 9:00 p.m. (hora del centro)"
- */
-function formatSchedule(startAt: string, endAt: string, timezone: string): string {
-  if (!startAt || !endAt) return "No configurado";
-  const off = TZ_OFFSETS[timezone] ?? "-06:00";
-  try {
-    const s = new Date(`${startAt}:00${off}`);
-    const e = new Date(`${endAt}:00${off}`);
-    const days = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
-    const months = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
-    const fmt12 = (d: Date) => {
-      const h = d.getUTCHours();
-      const min = String(d.getUTCMinutes()).padStart(2, "0");
-      return `${h % 12 || 12}:${min} ${h >= 12 ? "p.m." : "a.m."}`;
-    };
-    const tzLabel =
-      timezone === "America/Mexico_City" || timezone === "America/Monterrey"
-        ? "hora del centro"
-        : timezone;
-    return `${days[s.getUTCDay()]} ${s.getUTCDate()} ${months[s.getUTCMonth()]} ${s.getUTCFullYear()}, ${fmt12(s)} a ${fmt12(e)} (${tzLabel})`;
-  } catch {
-    return `${startAt} – ${endAt}`;
-  }
-}
+const TZ_OFFSETS: Record<string, string> = { "America/Mexico_City": "-06:00", "America/Monterrey": "-06:00" };
 
 // ─── ReviewCard sub-component ─────────────────────────────────────────────────
 
@@ -120,7 +70,9 @@ export function CampaignWizard({
   agentProfiles: AgentWithLabels[];
   telephonyResults: TelephonyResultOption[];
 }) {
-  const defaults = useMemo(() => getMexicoDefaults(), []);
+  const [defaults] = useState(() => getMexicoDefaults());
+  const router = useRouter();
+  const analysisRequest = useRef(0);
 
   const [step, setStep] = useState(0);
   const [pending, startTransition] = useTransition();
@@ -129,6 +81,7 @@ export function CampaignWizard({
   // ── File upload state ────────────────────────────────────────────────────────
   const [contactFile, setContactFile] = useState<File | null>(null);
   const [fileAnalysis, setFileAnalysis] = useState<CampaignAnalysis | null>(null);
+  const [reviewedMapping, setReviewedMapping] = useState("");
   const [fileLoading, setFileLoading] = useState(false);
   const [fileError, setFileError] = useState("");
   // Incrementing key forces the <input type="file"> to remount (clearing its selection)
@@ -180,10 +133,14 @@ export function CampaignWizard({
     [fileColumns],
   );
 
+  const columnByIndex = useMemo(() => new Map(fileColumns.map(column => [column.index, column])), [fileColumns]);
+  const telephonySelected = new Set(draft.telephonyFilter);
+  const labelSelected = new Set(draft.labelFilter);
   const totalRows = selectedSheet?.data_rows ?? 0;
   const validRows = fileAnalysis?.valid_rows;
   const discardedRows = fileAnalysis?.discarded_rows;
-  const validContactCount = validRows !== undefined ? validRows : totalRows;
+  const validContactCount = validRows ?? 0;
+  const hasReviewedMapping = reviewedMapping === JSON.stringify(draft.variableMapping) && (fileAnalysis?.missing_required?.length ?? 0) === 0;
 
   // ── Alerts for Resumen step ───────────────────────────────────────────────────
 
@@ -207,7 +164,8 @@ export function CampaignWizard({
   type AlertEntry = { level: "error" | "warn"; message: string };
   const alerts: AlertEntry[] = [];
 
-  if (contactFile && validContactCount === 0) {
+  if (!hasReviewedMapping) alerts.push({ level: "error", message: "Valida el mapeo antes de crear la campaña." });
+  if (!contactFile || validContactCount === 0) {
     alerts.push({
       level: "error",
       message: "No hay contactos válidos en el archivo. Corrige el archivo antes de crear la campaña.",
@@ -234,8 +192,11 @@ export function CampaignWizard({
   // ── Event handlers ────────────────────────────────────────────────────────────
 
   function resetContactFile() {
+    analysisRequest.current += 1;
     setContactFile(null);
     setFileAnalysis(null);
+    setFileLoading(false);
+    setSuggestLoading(false);
     setFileError("");
     setFileInputKey((k) => k + 1);
   }
@@ -252,57 +213,63 @@ export function CampaignWizard({
     setSuggestMessage("");
   }
 
+  function reviewOptions() {
+    return {
+      agent_profile_version_id: draft.agentProfileVersionId,
+      ...(selectedSheet ? { sheet: selectedSheet.name, header_row: selectedSheet.header_row } : {}),
+      column_mapping: Object.fromEntries(Object.entries(draft.variableMapping).filter(([,index]) => index != null).map(([name,index]) => [name, `variable_${index}`])),
+    };
+  }
+
   async function analyzeFile(file: File) {
+    const requestId = ++analysisRequest.current;
     setFileLoading(true);
     setFileError("");
-    setFileAnalysis(null);
     try {
       if (file.size > 4 * 1024 * 1024) throw new Error("El archivo supera el límite de 4 MiB");
       const form = new FormData();
       form.set("file", file);
-      const res = await fetch("/api/collections-import/analyze", { method: "POST", body: form });
+      form.set("options", JSON.stringify(reviewOptions()));
+      const res = await fetch("/api/campaign-setup/analyze", { method: "POST", body: form });
       if (!res.ok) {
         const data: { error?: string } = await res.json().catch(() => ({}));
         throw new Error(data.error ?? `Error ${res.status} al analizar el archivo`);
       }
       const data = await res.json() as CampaignAnalysis;
       if (!data.sheets?.length) throw new Error("El archivo no contiene hojas o columnas utilizables");
+      if (requestId !== analysisRequest.current) return null;
+      setReviewedMapping(JSON.stringify(draft.variableMapping));
       setFileAnalysis(data);
+      return data;
     } catch (cause) {
-      setFileError(cause instanceof Error ? cause.message : "No se pudo analizar el archivo");
+      if (requestId === analysisRequest.current) setFileError(cause instanceof Error ? cause.message : "No se pudo analizar el archivo");
+      return null;
     } finally {
-      setFileLoading(false);
+      if (requestId === analysisRequest.current) setFileLoading(false);
     }
   }
 
   async function suggestMapping() {
     if (!contactFile || !selectedSheet || agentVars.length === 0) return;
+    const generation = analysisRequest.current;
     setSuggestLoading(true);
     setSuggestMessage("");
     try {
       const form = new FormData();
       form.set("file", contactFile);
-      form.set("sheet", selectedSheet.name);
-      form.set("header_row", String(selectedSheet.header_row));
-      form.set(
-        "agent_variables",
-        JSON.stringify(agentVars.map((v) => ({ name: v.name, description: v.description, type: v.type }))),
-      );
-      const res = await fetch("/api/collections-import/suggest-mapping", {
+      form.set("options", JSON.stringify(reviewOptions()));
+      const res = await fetch("/api/campaign-setup/suggest-mapping", {
         method: "POST",
         body: form,
       });
       if (!res.ok) throw new Error("La IA no está disponible. Continúa con el mapeo manual.");
       const data = await res.json() as CampaignMappingSuggestion;
+      if (generation !== analysisRequest.current) return;
 
       if (data.status === "suggested" && data.mapping) {
         const updates: Record<string, number | null> = {};
-        for (const [varName, header] of Object.entries(data.mapping)) {
-          const col = mappableColumns.find(
-            (c) =>
-              c.header === header ||
-              c.header.toLowerCase() === header.toLowerCase(),
-          );
+        for (const [varName, columnIndex] of Object.entries(data.mapping)) {
+          const col = columnByIndex.get(columnIndex);
           if (col) updates[varName] = col.index;
         }
         setDraft((prev) => ({
@@ -318,11 +285,12 @@ export function CampaignWizard({
         setSuggestMessage("La IA no está disponible ahora. Continúa con el mapeo manual.");
       }
     } catch (cause) {
+      if (generation !== analysisRequest.current) return;
       setSuggestMessage(
         cause instanceof Error ? cause.message : "No se pudo consultar la IA.",
       );
     } finally {
-      setSuggestLoading(false);
+      setSuggestLoading(current => generation === analysisRequest.current ? false : current);
     }
   }
 
@@ -344,7 +312,7 @@ export function CampaignWizard({
     }));
   }
 
-  function next() {
+  async function next() {
     setError("");
 
     if (step === 0) {
@@ -366,6 +334,14 @@ export function CampaignWizard({
         );
       }
     }
+    if (step === 2 && contactFile) {
+      const reviewed = await analyzeFile(contactFile);
+      if (!reviewed) return;
+    }
+    if (step === 3) {
+      if (telephonyResults.length > 0 && draft.telephonyFilter.length === telephonyResults.length) return setError("Deja al menos un resultado telefónico sin excluir.");
+      if (selectedAgent?.labels.length && draft.labelFilter.length === selectedAgent.labels.length) return setError("Deja al menos una etiqueta sin excluir.");
+    }
     if (step === 4) {
       if (!draft.startAt || !draft.endAt) return setError("Configura las fechas de inicio y fin.");
       if (draft.endAt <= draft.startAt) return setError("La fecha de fin debe ser posterior al inicio.");
@@ -385,8 +361,7 @@ export function CampaignWizard({
     return {
       name: draft.name.trim(),
       agent_profile_version_id: draft.agentProfileVersionId,
-      contact_file_id: fileAnalysis?.file_id,
-      column_mapping: Object.keys(column_mapping).length > 0 ? column_mapping : undefined,
+      column_mapping,
       dialer: {
         rounds: draft.rounds,
         cooldown_minutes: draft.cooldownMinutes,
@@ -407,9 +382,17 @@ export function CampaignWizard({
     setError("");
     startTransition(async () => {
       try {
-        await submitCampaign(buildPayload(asDraft));
-      } catch {
-        setError("No fue posible crear la campaña. Revisa los datos e inténtalo de nuevo.");
+        if (!contactFile) throw new Error("Selecciona la base de contactos.");
+        const form = new FormData();
+        form.set("file", contactFile);
+        form.set("payload", JSON.stringify(buildPayload(asDraft)));
+        form.set("options", JSON.stringify(reviewOptions()));
+        const response = await fetch("/api/campaign-setup/create", { method: "POST", body: form });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error ?? "No fue posible guardar la campaña.");
+        router.push(`/app/campaigns/${encodeURIComponent(result.id)}`);
+      } catch (cause) {
+        setError(cause instanceof Error ? cause.message : "No fue posible crear la campaña.");
       }
     });
   }
@@ -484,6 +467,7 @@ export function CampaignWizard({
                         <small>
                           {agent.company_name} · v{agent.version}
                           {agent.objective ? ` · ${agent.objective}` : ""}
+                          {` · Voz: ${agent.voice_id || "predeterminada"}`}
                           {(agent.agent_variables?.length ?? 0) > 0
                             ? ` · ${agent.agent_variables!.length} variable${
                                 agent.agent_variables!.length !== 1 ? "s" : ""
@@ -608,7 +592,7 @@ export function CampaignWizard({
                       key={fileInputKey}
                       type="file"
                       accept=".csv,.xlsx"
-                      disabled={fileLoading}
+                      disabled={fileLoading || pending}
                       onChange={(e) => {
                         const file = e.target.files?.[0] ?? null;
                         if (!file) return;
@@ -758,6 +742,7 @@ export function CampaignWizard({
                             </td>
                             <td style={{ padding: "12px 16px", verticalAlign: "middle" }}>
                               <select
+                                aria-label={`Columna para ${variable.name}`}
                                 value={draft.variableMapping[variable.name] ?? ""}
                                 style={{ width: "100%" }}
                                 onChange={(e) => {
@@ -779,6 +764,7 @@ export function CampaignWizard({
                                   </option>
                                 ))}
                               </select>
+                              <small style={{ display: "block", marginTop: 6 }}>{(columnByIndex.get(draft.variableMapping[variable.name] ?? -1)?.examples ?? []).join(" · ")}</small>
                             </td>
                           </tr>
                         ))}
@@ -798,6 +784,13 @@ export function CampaignWizard({
                   <p className="muted" style={{ marginTop: 10, fontSize: 12 }}>
                     * Variable obligatoria · Las columnas no asignadas se ignoran.
                   </p>
+                  <button type="button" className="secondary-action" disabled={fileLoading || suggestLoading || !contactFile} onClick={() => { if (contactFile) void analyzeFile(contactFile); }}>Validar mapeo y ver saludo</button>
+                  {!hasReviewedMapping && <p role="status">Valida el mapeo para actualizar los contactos y la vista previa.</p>}
+                  {hasReviewedMapping && fileAnalysis?.preview_message && <div style={{ marginTop: 12 }} aria-live="polite">
+                    <p><strong>Vista previa</strong> · {validContactCount} contactos válidos, {discardedRows ?? 0} descartados</p>
+                    <p style={{ whiteSpace: "pre-wrap" }}>{fileAnalysis.preview_message}</p>
+                    {fileAnalysis.discard_reasons?.map(reason => <p key={reason.reason}>{reason.reason}: {reason.count}</p>)}
+                  </div>}
                 </>
               )}
             </>
@@ -856,7 +849,8 @@ export function CampaignWizard({
                     <label key={opt.value} className="checkbox" style={{ marginBottom: 8 }}>
                       <input
                         type="checkbox"
-                        checked={draft.telephonyFilter.includes(opt.value)}
+                        checked={telephonySelected.has(opt.value)}
+                        disabled={!telephonySelected.has(opt.value) && draft.telephonyFilter.length >= telephonyResults.length - 1}
                         onChange={() => toggleTelephonyFilter(opt.value)}
                       />
                       {opt.label}
@@ -881,7 +875,8 @@ export function CampaignWizard({
                     <label key={lbl.id} className="checkbox" style={{ marginBottom: 8 }}>
                       <input
                         type="checkbox"
-                        checked={draft.labelFilter.includes(lbl.id)}
+                        checked={labelSelected.has(lbl.id)}
+                        disabled={!labelSelected.has(lbl.id) && draft.labelFilter.length >= selectedAgent.labels.length - 1}
                         onChange={() => toggleLabelFilter(lbl.id)}
                       />
                       {lbl.name}
@@ -897,8 +892,7 @@ export function CampaignWizard({
             <>
               <h1>Programa la ejecución</h1>
               <p className="muted">
-                Define la ventana de llamadas. Crear la campaña no inicia llamadas
-                automáticamente.
+                Define la ventana de llamadas. Crear deja la campaña programada para llamar dentro de esta ventana; guardar borrador permite revisarla antes.
               </p>
 
               <div className="form-grid">
@@ -971,6 +965,7 @@ export function CampaignWizard({
                         <dt>Versión</dt>
                         <dd>v{selectedAgent.version}</dd>
                       </div>
+                      <div><dt>Voz</dt><dd>{selectedAgent.voice_id || "Predeterminada"}</dd></div>
                       {selectedAgent.objective && (
                         <div>
                           <dt>Objetivo</dt>
@@ -1008,6 +1003,7 @@ export function CampaignWizard({
                 </dl>
               </ReviewCard>
 
+              {(fileAnalysis?.reused_in_campaigns ?? 0) > 0 && <p role="status">Este archivo ya se usó en {fileAnalysis?.reused_in_campaigns} campaña(s). Revisa que la carga sea intencional.</p>}
               {/* Tarjeta: Variables (only if agent declares variables) */}
               {agentVars.length > 0 && (
                 <ReviewCard title="Variables" onEdit={() => setStep(2)}>
@@ -1044,7 +1040,7 @@ export function CampaignWizard({
                           const colIdx = draft.variableMapping[v.name];
                           const col =
                             colIdx != null
-                              ? fileColumns.find((c) => c.index === colIdx)
+                              ? columnByIndex.get(colIdx)
                               : null;
                           return (
                             <tr
@@ -1071,6 +1067,7 @@ export function CampaignWizard({
                                 {col ? (
                                   <strong>
                                     Col. {col.index + 1}: {col.header}
+                                    <small style={{ display: "block", fontWeight: 400, marginTop: 4 }}>{col.examples?.[0] ?? ""}</small>
                                   </strong>
                                 ) : (
                                   <span style={{ color: "var(--muted)" }}>Sin asignar</span>
@@ -1091,6 +1088,9 @@ export function CampaignWizard({
                 </ReviewCard>
               )}
 
+              <ReviewCard title="Vista previa del primer mensaje" onEdit={() => setStep(2)}>
+                <p style={{ padding: 16, whiteSpace: "pre-wrap" }}>{fileAnalysis?.preview_message || "El agente no tiene un saludo configurado."}</p>
+              </ReviewCard>
               {/* Tarjeta: Marcador */}
               <ReviewCard title="Marcador" onEdit={() => setStep(3)}>
                 <dl className="review-list" style={{ margin: 0, border: 0, borderRadius: 0 }}>
@@ -1226,8 +1226,8 @@ export function CampaignWizard({
               <button
                 type="button"
                 className="primary-action"
-                disabled={step === 1 && fileLoading}
-                onClick={next}
+                disabled={fileLoading || suggestLoading}
+                onClick={() => void next()}
               >
                 Continuar →
               </button>
@@ -1244,7 +1244,7 @@ export function CampaignWizard({
                 <button
                   type="button"
                   className="primary-action"
-                  disabled={pending || hasCriticalAlert}
+                  disabled={pending || fileLoading || hasCriticalAlert}
                   onClick={() => create(false)}
                 >
                   {pending ? "Creando…" : "Crear campaña →"}
