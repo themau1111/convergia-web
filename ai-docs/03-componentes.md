@@ -1,7 +1,7 @@
 ---
 type: components
 status: current
-updated: 2026-11-06
+updated: 2026-11-07
 ---
 # Componentes
 
@@ -75,6 +75,27 @@ Relacionado: [[02-arquitectura]], [[04-integraciones]], [[05-operacion]].
   análisis de audio automático ni notificaciones externas en esta entrega.
 - La UI no instala el timer: muestra ejecuciones persistidas y ausencia de historial
   si todavía no corre. Errores de API se presentan como bandeja no disponible.
+
+## Wizard de campaña (6 pasos) — Etapa 1 Bravo
+
+- `src/app/app/campaigns/new/campaign-wizard.tsx` — wizard cliente: (1) nombre y agente,
+  (2) carga CSV/XLSX y análisis, (3) mapeo de variables del agente a columnas con
+  sugerencia IA, (4) rondas y cooldown del dialer, (5) ventana horaria, (6) revisión y
+  creación. No requiere una cartera preexistente; el módulo de portafolio independiente
+  se eliminó del flujo.
+- `src/app/app/campaigns/new/actions.ts` — Server Action `submitCampaign`; construye el
+  payload para `POST /v1/campaigns` sin `portfolio_id` ni `objective` obligatorios;
+  traduce el mapeo semántico (variable_name → columna) a `variable_N` antes de enviarlo.
+- `src/app/app/campaigns/new/page.tsx` — carga agentes con sus variables desde `/v1`;
+  pasa la lista al wizard; calcula ventana horaria predeterminada (8-21 h, mañana
+  siguiente si ya pasaron las 21 h en Mexico_City).
+- Análisis de archivo: reutiliza `/api/collections-import/analyze` (BFF ya existente).
+- Sugerencia de mapeo IA: llama `/api/collections-import/suggest-mapping` con
+  encabezados y `agent_variables`; el BFF existente redirige a FastAPI sin file ni filas.
+- Columna 0 fija como teléfono; solo columnas restantes son mapeables a variables.
+- El wizard bloquea "Crear campaña" cuando hay cero contactos válidos; muestra alertas
+  críticas y de advertencia por clase de problema. Requiere mapear todas las variables
+  `required` antes de avanzar al paso de dialer.
 
 ## Diagnóstico de fallidas en development
 
