@@ -578,7 +578,7 @@ export function CampaignWizard({
                         </div>
                       ))}
                   </dl>
-                  <div style={{ padding: "12px 18px", display: "flex", alignItems: "center", gap: 12 }}>
+                  <div style={{ padding: "12px 18px", display: "flex", flexWrap: "wrap", alignItems: "center", gap: 10 }}>
                     <button
                       type="button"
                       className="secondary-action"
@@ -587,14 +587,20 @@ export function CampaignWizard({
                     >
                       Cambiar archivo
                     </button>
-                    {agentVars.length > 0 && suggestLoading && (
-                      <span style={{ fontSize: 12, color: "var(--muted)" }}>
-                        ✨ Sugiriendo mapeo con IA…
-                      </span>
+                    {agentVars.length > 0 && (
+                      <button
+                        type="button"
+                        className="secondary-action"
+                        style={{ fontSize: 12, padding: "8px 12px" }}
+                        disabled={suggestLoading || mappableColumns.length === 0}
+                        onClick={() => void suggestMapping()}
+                      >
+                        {suggestLoading ? "✨ Consultando IA…" : "✨ Sugerir mapeo con IA"}
+                      </button>
                     )}
                     {agentVars.length > 0 && !suggestLoading && suggestMessage && (
-                      <span style={{ fontSize: 12, color: "var(--muted)" }}>
-                        ✨ {suggestMessage}
+                      <span style={{ fontSize: 12, color: "var(--muted)", flexBasis: "100%", paddingTop: 2 }}>
+                        {suggestMessage}
                       </span>
                     )}
                   </div>
