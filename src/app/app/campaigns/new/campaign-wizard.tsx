@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { useMemo, useRef, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 
 import { useRouter } from "next/navigation";
 import { getMexicoDefaults, formatSchedule, toIso } from "@/lib/campaign-schedule";
@@ -77,6 +77,9 @@ export function CampaignWizard({
   const [step, setStep] = useState(0);
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState("");
+
+  // Tracks whether we already auto-suggested for the current file (resets on file/agent change).
+  const didAutoSuggest = useRef(false);
 
   // ── File upload state ────────────────────────────────────────────────────────
   const [contactFile, setContactFile] = useState<File | null>(null);
@@ -161,6 +164,17 @@ export function CampaignWizard({
     };
   }, [draft.startAt, draft.endAt, draft.timezone, nowMs]);
 
+  // ── Auto-suggest mapping when file is analyzed and agent declares variables ──
+  // Runs once per file upload; resets on file/agent change via didAutoSuggest ref.
+  useEffect(() => {
+    if (fileAnalysis && agentVars.length > 0 && contactFile && !didAutoSuggest.current) {
+      didAutoSuggest.current = true;
+      void suggestMapping();
+    }
+    // suggestMapping closes over current state; fileAnalysis is the right trigger.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fileAnalysis]);
+
   type AlertEntry = { level: "error" | "warn"; message: string };
   const alerts: AlertEntry[] = [];
 
@@ -193,6 +207,7 @@ export function CampaignWizard({
 
   function resetContactFile() {
     analysisRequest.current += 1;
+    didAutoSuggest.current = false;
     setContactFile(null);
     setFileAnalysis(null);
     setFileLoading(false);
@@ -202,6 +217,7 @@ export function CampaignWizard({
   }
 
   function selectAgent(id: string) {
+    didAutoSuggest.current = false;
     setDraft((prev) => ({
       ...prev,
       agentProfileVersionId: id,
@@ -562,7 +578,7 @@ export function CampaignWizard({
                         </div>
                       ))}
                   </dl>
-                  <div style={{ padding: "12px 18px" }}>
+                  <div style={{ padding: "12px 18px", display: "flex", alignItems: "center", gap: 12 }}>
                     <button
                       type="button"
                       className="secondary-action"
@@ -571,6 +587,16 @@ export function CampaignWizard({
                     >
                       Cambiar archivo
                     </button>
+                    {agentVars.length > 0 && suggestLoading && (
+                      <span style={{ fontSize: 12, color: "var(--muted)" }}>
+                        ✨ Sugiriendo mapeo con IA…
+                      </span>
+                    )}
+                    {agentVars.length > 0 && !suggestLoading && suggestMessage && (
+                      <span style={{ fontSize: 12, color: "var(--muted)" }}>
+                        ✨ {suggestMessage}
+                      </span>
+                    )}
                   </div>
                 </div>
               ) : (
