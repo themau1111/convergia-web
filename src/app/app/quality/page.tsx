@@ -8,6 +8,14 @@ import { QualityPoller } from "./quality-poller";
 import { RecordingPlayer } from "./recording-player";
 
 const kindLabel = { client: "Cliente", agent: "Agente", system: "Sistema", voicemail: "Buzón" } as const;
+const MX_TZ = "America/Mexico_City";
+function fmtEventTime(raw: string): string {
+  // event.time viene del backend como "YYYY-MM-DD HH:MM:SS" en UTC.
+  // Interpretamos el string como UTC y mostramos en hora México.
+  const d = new Date(raw.includes("T") ? raw : raw.replace(" ", "T") + "Z");
+  if (isNaN(d.getTime())) return raw;
+  return d.toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit", second: "2-digit", timeZone: MX_TZ });
+}
 
 type MonitoringFilters = {
   call?: string;
@@ -183,12 +191,13 @@ export default async function QualityPage({ searchParams }: { searchParams: Prom
             {calls.map((item) => {
               const params = new URLSearchParams(filterQuery);
               params.set("call", item.call_uuid);
+              const tz = "America/Mexico_City";
               const dateLabel = item.created_at
-                ? new Date(item.created_at).toLocaleDateString("es-MX")
+                ? new Date(item.created_at).toLocaleDateString("es-MX", { timeZone: tz })
                 : "—";
               const timeLabel = item.started_at
-                ? new Date(item.started_at).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" })
-                : item.created_at.slice(11, 16);
+                ? new Date(item.started_at).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit", timeZone: tz })
+                : new Date(item.created_at).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit", timeZone: tz });
               return (
                 <Link
                   className={item.call_uuid === filters.call ? "active" : ""}
@@ -248,7 +257,7 @@ export default async function QualityPage({ searchParams }: { searchParams: Prom
               <div className="conversation-events">
                 {selected?.events.map((event, index) => (
                   <div className={`conversation-event ${event.kind}`} key={`${event.time}-${index}`}>
-                    <small>{kindLabel[event.kind]} · {event.time || "sin marca"}</small>
+                    <small>{kindLabel[event.kind]} · {event.time ? fmtEventTime(event.time) : "sin marca"}</small>
                     <p>{event.text}</p>
                   </div>
                 ))}

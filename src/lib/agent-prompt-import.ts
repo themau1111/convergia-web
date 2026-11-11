@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { agentVariablesSchema } from "./agent-variables";
 
 export const MAX_PROMPT_CHARS = 12_000;
 export const MAX_PROMPT_BYTES = 80_000;
@@ -23,6 +24,7 @@ export const importedAgentFieldsSchema = z.object({
   flow_scenarios: z.string().max(4000),
   additional_instructions: z.string().max(8000),
   suggested_labels: pendingLabelsSchema.max(8),
+  suggested_variables: agentVariablesSchema.optional(),
 }).strict();
 export type ImportedAgentFields = z.infer<typeof importedAgentFieldsSchema>;
 export type PendingLabel = z.infer<typeof pendingLabelsSchema>[number];

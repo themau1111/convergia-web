@@ -1,7 +1,7 @@
 ---
 type: components
 status: current
-updated: 2026-11-06
+updated: 2026-11-03
 ---
 # Componentes
 
@@ -75,6 +75,29 @@ Relacionado: [[02-arquitectura]], [[04-integraciones]], [[05-operacion]].
   análisis de audio automático ni notificaciones externas en esta entrega.
 - La UI no instala el timer: muestra ejecuciones persistidas y ausencia de historial
   si todavía no corre. Errores de API se presentan como bandeja no disponible.
+
+## Wizard de campaña — corrección local 2026-11-03
+
+- `campaign-wizard.tsx`: agente, base, variables, dialer, ventana y resumen.
+  Precarga variables versionadas y etiquetas; cambiar agente limpia selecciones/base.
+- `/api/campaign-setup/[action]`: BFF de `analyze`, `suggest-mapping`, `create`;
+  reenvía archivo/opciones/payload a `/v1/campaign-setup` con credencial server-side.
+  Exige sesión, origen válido, archivo <=4 MiB y bloquea el workspace de Encuestas.
+- El mapeo usa índices reales (columna 0 siempre teléfono). Confirmar envía el archivo
+  real y el mapeo; la API revalida, guarda todo o revierte todo y hace preflight.
+  Errores se presentan al usuario; no se usa un `contact_file_id` inexistente.
+- Preview local autenticado muestra ejemplos, conteos de teléfonos/tipos/duplicados,
+  reutilización y saludo del agente. Crear se bloquea con cero válidos; se puede
+  conservar borrador. Crear programa la campaña: la ventana puede habilitar llamadas.
+- `campaign-schedule.ts`: defaults 08–21 de México, cambia al día siguiente desde
+  las 21:00; formato con Intl y zona explícita, independiente de la zona del navegador.
+- `agents/variables-editor.tsx`: alta/edición de nombre, tipo, requerida y descripción,
+  detección de placeholders y avisos usadas/no declaradas y declaradas/no usadas.
+  Se envían con el perfil en una transacción; extracción del prompt propone variables.
+- Navegación de Cobranza elimina Carteras; su ruta redirige a nueva campaña.
+  Encuestas conserva su muestra e importador. Borradores sin base se muestran sin fallar.
+- Publicación autorizada en producción el 2026-11-03. Regresiones de BFF, variables y horarios en
+  `tests/campaign-setup.test.mjs`; evidencia en `docs/REVISION_CADENCIA_2026-11-03.md`.
 
 ## Diagnóstico de fallidas en development
 

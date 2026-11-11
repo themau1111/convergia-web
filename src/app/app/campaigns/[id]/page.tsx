@@ -35,7 +35,7 @@ export default async function CampaignDetailPage({ params }: { params: Promise<{
   return (
     <main className="campaign-detail-shell">
       <header className="campaign-detail-header">
-        <div><Link className="back-link" href="/app/campaigns">← Volver a campañas</Link><p className="eyebrow">Detalle operativo</p><h1>{campaign.name}</h1><p className="muted">{campaign.objective === "payment_reminder" ? "Recordatorio de pago" : "Seguimiento de acuerdo"}</p></div>
+        <div><Link className="back-link" href="/app/campaigns">← Volver a campañas</Link><p className="eyebrow">Detalle operativo</p><h1>{campaign.name}</h1><p className="muted">{campaign.agent_profile.objective || "Objetivo definido por el agente"}</p></div>
         <div className="detail-header-end">
           {canEdit && <Link href={`/app/campaigns/${id}/edit`} className="secondary-action">Editar campaña</Link>}
           <span className={`detail-status ${campaign.status}`}>{statusLabels[campaign.status] ?? campaign.status}</span>
@@ -43,7 +43,7 @@ export default async function CampaignDetailPage({ params }: { params: Promise<{
       </header>
 
       <section className="detail-summary-grid" aria-label="Configuración congelada">
-        <article><p>Cartera</p><strong>{campaign.portfolio.name}</strong><small>{campaign.portfolio.estimated_recipients ?? "—"} destinatarios estimados</small></article>
+        <article><p>Cartera</p><strong>{campaign.portfolio?.name ?? "Sin base"}</strong><small>{campaign.portfolio?.estimated_recipients ?? "—"} destinatarios estimados</small></article>
         <article><p>Agente</p><strong>{campaign.agent_profile.agent_name}</strong><small>{campaign.agent_profile.company_name} · versión {campaign.agent_profile.version}</small></article>
         <article><p>Personalidad</p><strong>{campaign.agent_profile.personality}</strong><small>Perfil congelado para esta campaña</small></article>
         <article><p>Ventana</p><strong>{formatDate(campaign.schedule.start_at)}</strong><small>hasta {formatDate(campaign.schedule.end_at)}</small></article>

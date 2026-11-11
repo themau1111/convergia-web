@@ -1,5 +1,9 @@
 "use client";
 
+import { VariablesEditor } from "../variables-editor";
+import { detectedVariables } from "@/lib/agent-variables";
+import type { AgentVariable } from "@/lib/control-api";
+
 import styles from "../agent-forms.module.css";
 
 import { mergeImportedLabels } from "@/lib/agent-prompt-import";
@@ -34,6 +38,7 @@ export function AgentForm({ library = EMPTY_LIBRARY }: { library?: AgentLabelRec
   const [companyName, setCompanyName] = useState("");
   const [profileKey, setProfileKey] = useState("");
   const [profileKeyEdited, setProfileKeyEdited] = useState(false);
+  const [variables, setVariables] = useState<AgentVariable[]>([]);
   const [objective, setObjective] = useState("");
   const [personality, setPersonality] = useState("");
   const [script, setScript] = useState("");
@@ -45,6 +50,7 @@ export function AgentForm({ library = EMPTY_LIBRARY }: { library?: AgentLabelRec
   const visibleProfileKey = profileKeyEdited ? profileKey : generatedProfileKey;
 
   function handleImport(fields: ImportedAgentFields) {
+    setVariables(prev => detectedVariables([fields.script, fields.flow_scenarios, fields.additional_instructions, fields.objective, fields.personality].join("\n"), prev));
     if (fields.agent_name) setAgentName(fields.agent_name);
     if (fields.company_name) setCompanyName(fields.company_name);
     if (fields.objective) setObjective(fields.objective);
@@ -102,11 +108,12 @@ export function AgentForm({ library = EMPTY_LIBRARY }: { library?: AgentLabelRec
           </label>
           <label>
             Definición del agente
-            <select name="agent_definition_key" required defaultValue="rac">
-              <option value="rac">Agente generativo (recomendado)</option>
+            <select name="agent_definition_key" required defaultValue="generativo">
+              <option value="generativo">Agente personalizado (recomendado)</option>
+              <option value="rac">RAC — Mueblería RAC (cobranza arrendamiento)</option>
               <option value="collections">Cobranza estándar (legado)</option>
             </select>
-            <small className="muted">El modo generativo permite al agente razonar y argumentar. Usa "Cobranza estándar" solo para campañas existentes que lo requieran.</small>
+            <small className="muted">El agente personalizado usa tu prompt como instrucción principal. RAC y Cobranza estándar aplican flujos específicos de cobranza.</small>
           </label>
           <label className="wide-field">
             Objetivo
@@ -185,6 +192,8 @@ export function AgentForm({ library = EMPTY_LIBRARY }: { library?: AgentLabelRec
         </p>
         <LabelsPicker library={library} pending={pendingLabels} onChange={setPendingLabels} />
       </section>
+
+      <VariablesEditor variables={variables} onChange={setVariables} prompt={[script, flowScenarios, additionalInstructions, objective, personality].join("\n")} />
 
       {state.error && (
         <p className="form-error" role="alert">{state.error}</p>

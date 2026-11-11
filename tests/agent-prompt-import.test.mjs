@@ -15,6 +15,7 @@ function load(relative, modules = {}, extra = {}) {
   const exports = {};
   vm.runInNewContext(js, {exports, require:name => {
     if (name in modules) return modules[name];
+    if (name === '@/lib/agent-variables' || name === './agent-variables') return load('src/lib/agent-variables.ts');
     if (name === 'zod') return require('zod');
     if (name === '@/lib/agent-prompt-import') return load('src/lib/agent-prompt-import.ts');
     throw new Error('Unexpected dependency ' + name);

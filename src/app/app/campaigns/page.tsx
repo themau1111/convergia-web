@@ -25,7 +25,7 @@ export default async function CampaignsPage({ searchParams }: { searchParams: Pr
       <section className="campaign-list">
         {campaigns.map((campaign) => (
           <article className="campaign-row" key={campaign.id}>
-            <div className="campaign-identity"><span className={`status-dot ${campaign.status}`} /><div><strong>{campaign.name}</strong><small>{campaign.campaign_type === "survey" ? "Encuesta" : campaign.objective === "payment_reminder" ? "Recordatorio de pago" : "Seguimiento de acuerdo"}</small></div></div>
+            <div className="campaign-identity"><span className={`status-dot ${campaign.status}`} /><div><strong>{campaign.name}</strong><small>{campaign.campaign_type === "survey" ? "Encuesta" : campaign.objective === "payment_reminder" ? "Recordatorio de pago" : campaign.objective === "agreement_follow_up" ? "Seguimiento de acuerdo" : "Objetivo del agente"}</small></div></div>
             <div className="progress-group"><div><span>Ciclo</span><strong>{labels[campaign.status]}</strong></div></div>
             <span className="status-pill">{labels[campaign.status]}</span>
             <Link className="icon-button" href={`/app/campaigns/${campaign.id}`} aria-label={`Abrir ${campaign.name}`}>↗</Link>

@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { updateAgentProfile } from "@/lib/control-api";
+import { variablesFromFormData } from "@/lib/agent-variables";
 import { labelsFromFormData } from "@/lib/agent-prompt-import";
 import { paymentOptionsFromFormData } from "../../payment-options";
 
@@ -20,14 +21,17 @@ export async function saveAgentEdit(
   const objective = String(data.get("objective") ?? "").trim();
   const additionalInstructions = String(data.get("additional_instructions") ?? "").trim();
   const voiceId = String(data.get("voice_id") ?? "").trim();
-  const rawKey = String(data.get("agent_definition_key") ?? "collections").trim();
-  const agentDefinitionKey = (["collections", "rac", "survey"].includes(rawKey)
-    ? rawKey : "collections") as "collections" | "rac" | "survey";
+  const rawKey = String(data.get("agent_definition_key") ?? "generativo").trim();
+  const agentDefinitionKey = (["generativo", "collections", "rac", "survey"].includes(rawKey)
+    ? rawKey : "generativo") as "generativo" | "collections" | "rac" | "survey";
 
   if (!agentName) return { error: "El nombre del agente es obligatorio." };
   if (!companyName) return { error: "El nombre de la empresa es obligatorio." };
   if (!personality) return { error: "La personalidad es obligatoria." };
 
+  let agentVariables;
+  try { agentVariables = variablesFromFormData(data); }
+  catch { return { error: "Revisa las variables: nombre, tipo y nombres únicos no reservados." }; }
   let labels;
   try { labels = labelsFromFormData(data); }
   catch { return { error: "Revisa las etiquetas: nombres únicos y criterios completos (máximo 50)." }; }
@@ -35,6 +39,7 @@ export async function saveAgentEdit(
     const saved = await updateAgentProfile(agentId, {
       agent_name: agentName,
       labels,
+      agent_variables: agentVariables,
       company_name: companyName,
       personality,
       voice_id: voiceId || null,

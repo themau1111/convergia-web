@@ -14,7 +14,7 @@ export type CampaignRecord = {
   created_at: string;
   id: string;
   name: string;
-  objective: "payment_reminder" | "agreement_follow_up";
+  objective: string | null;
   campaign_type: "collections" | "survey";
   status: "draft" | "scheduled" | "running" | "paused" | "completed" | "cancelled" | "failed";
 };
@@ -35,7 +35,7 @@ export type SurveyQuestionnaireRecord = {
 };
 export type CampaignDetail = CampaignRecord & {
   organization_id: string;
-  portfolio: PortfolioRecord & { organization_id: string; last_validated_at?: string | null };
+  portfolio: (PortfolioRecord & { organization_id: string; last_validated_at?: string | null }) | null;
   agent_profile: AgentProfileRecord & { organization_id: string };
   schedule: {
     timezone: string; start_at: string; end_at: string;
@@ -161,12 +161,19 @@ export type PaymentOptions = {
   };
   max_negotiation_attempts: number;
 };
+export type AgentVariable = {
+  name: string;
+  type: "text" | "number" | "currency" | "date";
+  required: boolean;
+  description: string;
+};
 export type AgentProfileRecord = {
-  id: string; organization_id: string; profile_key: string; agent_definition_key: "collections" | "rac" | "survey"; version: number;
+  id: string; organization_id: string; profile_key: string; agent_definition_key: "generativo" | "collections" | "rac" | "survey"; version: number;
   agent_name: string; company_name: string; personality: string;
   script: string; flow_scenarios: string; objective: string; additional_instructions: string;
   payment_options: PaymentOptions;
   voice_id: string | null; created_at: string;
+  agent_variables?: AgentVariable[];
 };
 export type AgentLabelRecord = {
   id: string; organization_id: string; profile_key: string;
@@ -191,13 +198,14 @@ export type DialerConfig = {
 };
 export type CampaignCreatePayload = {
   name: string;
-  objective: "payment_reminder" | "agreement_follow_up";
+  objective?: "payment_reminder" | "agreement_follow_up";
   campaign_type?: "collections" | "survey";
-  portfolio_id: string;
+  portfolio_id?: string;
+  column_mapping?: Record<string, string>;
   agent_profile_version_id: string;
   schedule: {
     timezone: string; start_at: string; end_at: string;
-    retry_minutes: number; max_attempts_per_recipient: number;
+    retry_minutes?: number; max_attempts_per_recipient?: number;
   };
   notes: string;
   dialer?: DialerConfig;
@@ -519,10 +527,11 @@ export async function getAgentProfiles(): Promise<AgentProfileRecord[]> {
 export async function createAgentProfile(payload: {
   profile_key: string; agent_name: string; company_name: string;
   personality: string; voice_id?: string | null;
+  agent_variables?: AgentVariable[];
   labels?: { name: string; criteria: string }[];
   script?: string; flow_scenarios?: string; objective?: string; additional_instructions?: string;
   payment_options?: PaymentOptions;
-  agent_definition_key?: "collections" | "rac" | "survey";
+  agent_definition_key?: "generativo" | "collections" | "rac" | "survey";
 }): Promise<AgentProfileRecord> {
   return controlApi<AgentProfileRecord>("/v1/agent-profiles", {
     method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload),
@@ -537,8 +546,9 @@ export async function updateAgentProfile(
   id: string,
   payload: {
     agent_name?: string; company_name?: string; personality?: string;
+    agent_variables?: AgentVariable[];
     labels?: { name: string; criteria: string }[];
-    voice_id?: string | null; agent_definition_key?: "collections" | "rac" | "survey";
+    voice_id?: string | null; agent_definition_key?: "generativo" | "collections" | "rac" | "survey";
     script?: string; flow_scenarios?: string;
     objective?: string; additional_instructions?: string; profile_key?: string; payment_options?: PaymentOptions;
   },
