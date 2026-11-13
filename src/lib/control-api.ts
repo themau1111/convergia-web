@@ -473,6 +473,7 @@ export async function startLocalPocTestCall(
 }
 
 export async function startManualTestCall(payload: {
+  agent_profile_version_id?: string; dias_atraso?: number;
   nombre_cliente: string; telefono: string; dia_pago?: string; saldo_pendiente?: number;
   articulo?: string; pagos_atrasados?: number; modalidad?: string; cuota_semanal?: number;
   agent: TestAgentOptions;

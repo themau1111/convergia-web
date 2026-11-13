@@ -9,7 +9,7 @@ import { UploadContactsForm } from "./upload-form";
 
 import {
   createLocalPocClient, createLocalPocPortfolio, deactivateLocalPocClient,
-  getDataSources, getLocalPocClients, getLocalPortfolioAgentConfig, getPortfolios, getSelectedWorkspace,
+  getDataSources, getLocalPocClients, getLocalPortfolioAgentConfig, getPortfolios, getSelectedWorkspace, getAgentProfiles,
   startPortfolioTestCalls, syncLocalPocPortfolios,
   type LocalClientRecord, type LocalPortfolioAgentConfig, updateLocalPocClient,
   updateLocalPortfolioAgentConfig,
@@ -25,7 +25,7 @@ const numeric = (data: FormData, key: string) => Number(value(data, key) || 0);
 
 export default async function LocalOperationsPage() {
   if ((await getSelectedWorkspace())?.key === "survey") redirect("/app/surveys/test-call");
-  const [sources, portfolios] = await Promise.all([getDataSources(), getPortfolios()]);
+  const [sources, portfolios, profiles] = await Promise.all([getDataSources(), getPortfolios(), getAgentProfiles()]);
   const localSources = sources.filter((source) => source.adapter_type === "local_poc");
   const sourceIds = new Set(localSources.map((source) => source.id));
   const localPortfolios = portfolios.filter((portfolio) => sourceIds.has(portfolio.data_source_id));
@@ -48,7 +48,7 @@ export default async function LocalOperationsPage() {
     <header className="members-header"><div><p className="eyebrow">Laboratorio operativo</p><h1>Pruebas y carteras</h1><p className="muted">Consulta destinatarios locales, administra datos ficticios y ejecuta llamadas controladas.</p></div><Link href="/">← Volver al pulso</Link></header>
     <section className="local-ops-summary"><article><small>Carteras locales</small><strong>{localPortfolios.length}</strong></article><article><small>Destinatarios activos</small><strong>{total}</strong></article><article><small>Origen</small><strong>SQLite POC</strong></article></section>
 
-    <section className="manual-call-card"><div><p className="eyebrow">Llamada rápida</p><h2>Llama sin registrar a la persona</h2><p className="muted">El número y sus datos se usan sólo para esta llamada; no se agregan a ninguna cartera.</p></div><ManualCallForm /></section>
+    <section className="manual-call-card"><div><p className="eyebrow">Llamada rápida</p><h2>Llama sin registrar a la persona</h2><p className="muted">El número y sus datos se usan sólo para esta llamada; no se agregan a ninguna cartera.</p></div><ManualCallForm profiles={profiles.filter((profile) => profile.agent_definition_key !== "survey").map(({ id, agent_name, company_name, version }) => ({ id, agent_name, company_name, version }))} /></section>
 
     <section className="portfolio-browser">
       <div className="section-heading"><div><p className="eyebrow">Destinatarios registrados</p><h2>Carteras locales</h2></div><span>{total} personas disponibles</span></div>
