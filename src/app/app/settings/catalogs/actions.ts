@@ -41,6 +41,8 @@ export async function callManualAction(
     return { status: "error", message: "Debes confirmar antes de iniciar la llamada." };
   try {
     const result = await startManualTestCall({
+      ...(value(data, "agent_profile_version_id") ? { agent_profile_version_id: value(data, "agent_profile_version_id") } : {}),
+      ...(value(data, "dias_atraso") ? { dias_atraso: numeric(data, "dias_atraso") } : {}),
       nombre_cliente: value(data, "nombre_cliente") || MANUAL_CALL_DEFAULTS.nombre_cliente,
       telefono,
       dia_pago: value(data, "dia_pago") || MANUAL_CALL_DEFAULTS.dia_pago,
@@ -55,7 +57,9 @@ export async function callManualAction(
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     if (msg.includes("control_api_422"))
-      return { status: "error", message: "El teléfono no tiene un formato válido. Usa 10 dígitos mexicanos (ej. 8112345678)." };
+      return { status: "error", message: "Revisa el teléfono y los datos de prueba. El teléfono debe tener 10 dígitos mexicanos." };
+    if (msg.includes("control_api_404"))
+      return { status: "error", message: "El perfil seleccionado ya no está disponible. Actualiza la página y elige un perfil." };
     if (msg.includes("control_api_502") || msg.includes("telephony_not_configured"))
       return { status: "error", message: "La telefonía no está disponible en este momento." };
     if (msg.includes("control_api_403") || msg.includes("control_api_401"))

@@ -183,3 +183,10 @@ El mensaje de IA sin propuestas ahora aclara que no se propusieron campos nuevos
 conserva las asignaciones existentes y dirige a revisar «No importar». Se distingue
 el reconocimiento automático de encabezados de las sugerencias adicionales de IA;
 el backend reconoce `Tel` sin necesitar al proveedor (corrección local pendiente).
+
+### Prueba manual con perfil guardado (2026-11-13)
+
+El laboratorio carga versiones de perfiles de cobranza y envía opcionalmente
+`agent_profile_version_id` y `dias_atraso`. Con perfil usa identidad, voz y reglas
+versionadas del backend; sin perfil conserva el recordatorio manual. Encuestas
+mantiene su prueba dedicada. La confirmación explícita sigue siendo obligatoria.
