@@ -78,10 +78,6 @@ export function EditAgentForm({ agent, existingLabels = EMPTY_LABELS, library = 
             <input name="company_name" required value={companyName} onChange={(e) => setCompanyName(e.target.value)} maxLength={120} />
           </label>
           <label>
-            ID de voz (opcional)
-            <input name="voice_id" defaultValue={agent.voice_id ?? ""} placeholder="Se usará la voz predeterminada" />
-          </label>
-          <label>
             Objetivo
             <input name="objective" maxLength={500} value={objective} onChange={(e) => setObjective(e.target.value)} placeholder="Gestión de cobranza y acuerdos de pago" />
           </label>

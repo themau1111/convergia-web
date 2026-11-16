@@ -190,3 +190,7 @@ El laboratorio carga versiones de perfiles de cobranza y envía opcionalmente
 `agent_profile_version_id` y `dias_atraso`. Con perfil usa identidad, voz y reglas
 versionadas del backend; sin perfil conserva el recordatorio manual. Encuestas
 mantiene su prueba dedicada. La confirmación explícita sigue siendo obligatoria.
+
+## Voz unificada de cobranza
+
+`GET /v1/configuration/collections-voice` devuelve la política efectiva autenticada (nombre, modelo y velocidad). El layout de Agentes la consulta sólo desde el servidor y muestra el ajuste común para campañas existentes y nuevas. Los formularios de cobranza ya no ofrecen una selección de voz que el runtime sustituiría; la voz almacenada en versiones anteriores se identifica como histórica. Encuestas conserva su configuración separada.
