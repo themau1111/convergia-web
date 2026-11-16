@@ -739,3 +739,16 @@ export function decideQualityImprovement(id: string, candidateHash: string, deci
     body: JSON.stringify({ candidate_hash: candidateHash, decision }),
   });
 }
+
+export type CollectionsVoicePolicy = {
+  policy_id: string;
+  enforced: boolean;
+  voice_name: string;
+  voice_id: string;
+  model_id: string;
+  speed: number;
+};
+
+export async function getCollectionsVoicePolicy(): Promise<CollectionsVoicePolicy> {
+  return controlApi<CollectionsVoicePolicy>("/v1/configuration/collections-voice");
+}

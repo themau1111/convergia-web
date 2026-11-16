@@ -47,7 +47,7 @@ export default async function AgentDetailPage({ params }: { params: Promise<{ id
             <div><dt>Empresa</dt><dd>{agent.company_name}</dd></div>
             <div><dt>Clave</dt><dd><code>{agent.profile_key}</code></dd></div>
             <div><dt>Versión</dt><dd>v{agent.version}</dd></div>
-            {agent.voice_id && <div><dt>ID de voz</dt><dd>{agent.voice_id}</dd></div>}
+            {agent.voice_id && <div><dt>Voz guardada en esta versión (histórica)</dt><dd>{agent.voice_id}</dd></div>}
             {agent.objective && <div><dt>Objetivo</dt><dd>{agent.objective}</dd></div>}
           </dl>
         </section>

@@ -68,7 +68,7 @@ export function ManualCallForm({ profiles = [] }: { profiles?: ProfileOption[] }
           <label>Días de atraso (opcional)<input name="dias_atraso" type="number" min="0" /></label>
           <label>Modalidad<input name="modalidad" defaultValue={MANUAL_CALL_DEFAULTS.modalidad} /></label>
           <label>Cuota<input name="cuota_semanal" type="number" min="0.01" step=".01" defaultValue={MANUAL_CALL_DEFAULTS.cuota_semanal} /></label>
-          {!profileId && <label>ID de voz<input name="voice_id" /></label>}
+          <p className="muted">La prueba usa la voz unificada de cobranza, igual que las campañas.</p>
         </div>
       </details>
       <div className="call-submit-row">

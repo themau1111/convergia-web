@@ -103,10 +103,6 @@ export function AgentForm({ library = EMPTY_LIBRARY }: { library?: AgentLabelRec
             />
           </label>
           <label>
-            ID de voz (opcional)
-            <input name="voice_id" placeholder="Se usará la voz predeterminada" />
-          </label>
-          <label>
             Definición del agente
             <select name="agent_definition_key" required defaultValue="generativo">
               <option value="generativo">Agente personalizado (recomendado)</option>
