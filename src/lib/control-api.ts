@@ -635,6 +635,13 @@ export async function deleteAgentLabel(versionId: string, labelId: string): Prom
   );
 }
 
+export async function deleteAgentProfile(versionId: string): Promise<void> {
+  return controlApi<void>(
+    `/v1/agent-profiles/${encodeURIComponent(versionId)}`,
+    { method: "DELETE" },
+  );
+}
+
 export async function getTelephonyResults(): Promise<TelephonyResultOption[]> {
   return controlApi<TelephonyResultOption[]>("/v1/telephony-results");
 }
