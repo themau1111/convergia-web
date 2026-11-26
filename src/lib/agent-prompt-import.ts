@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { agentVariablesSchema } from "./agent-variables";
 
-export const MAX_PROMPT_CHARS = 12_000;
+export const MAX_PROMPT_CHARS = 24_000;
 export const MAX_PROMPT_BYTES = 80_000;
 export const pendingLabelsSchema = z.array(z.object({
   name: z.string().trim().min(1).max(80),
