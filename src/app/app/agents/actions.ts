@@ -18,11 +18,13 @@ export async function deleteAgentAction(
     revalidatePath("/app/agents");
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    if (msg.includes("control_api_403") || msg.includes("control_api_401"))
+    if (msg.includes("control_api_401") || msg.includes("control_api_403"))
       return { error: "No tienes permisos para eliminar este perfil." };
-    if (msg.includes("409") || msg.includes("en uso"))
-      return { error: "Este perfil está en uso por una campaña y no puede eliminarse." };
-    return { error: "No fue posible eliminar el perfil. Intenta de nuevo." };
+    if (msg.includes("control_api_409"))
+      return { error: "Este perfil está en uso por una campaña activa y no puede eliminarse." };
+    if (msg.includes("control_api_404") || msg.includes("control_api_405"))
+      return { error: "El backend aún no tiene esta operación. Espera el deploy o contacta al administrador." };
+    return { error: `No fue posible eliminar el perfil. (${msg})` };
   }
   redirect("/app/agents");
 }
