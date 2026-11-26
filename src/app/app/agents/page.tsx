@@ -42,8 +42,10 @@ export default async function AgentsPage({ searchParams }: { searchParams: Promi
               <progress value={0} max="100" />
             </div>
             <span className="status-pill">v{agent.version}</span>
-            <Link className="icon-button" href={`/app/agents/${agent.id}`} aria-label={`Abrir ${agent.agent_name}`}>↗</Link>
-            <DeleteAgentButton versionId={agent.id} agentName={`${agent.agent_name} v${agent.version}`} />
+            <div className="agent-row-actions">
+              <Link className="icon-button" href={`/app/agents/${agent.id}`} aria-label={`Abrir ${agent.agent_name}`}>↗</Link>
+              <DeleteAgentButton versionId={agent.id} agentName={`${agent.agent_name} v${agent.version}`} />
+            </div>
           </article>
         ))}
         {!agents.length && !!allItems.length && <div className="empty-state"><strong>Sin coincidencias.</strong><span>Prueba otros filtros o limpia la búsqueda.</span></div>}

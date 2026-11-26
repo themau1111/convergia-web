@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useEffect } from "react";
+import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { deleteAgentAction, type DeleteAgentState } from "./actions";
 
@@ -27,7 +28,7 @@ export function DeleteAgentButton({
   }
 
   return (
-    <form action={formAction} onSubmit={handleSubmit}>
+    <form action={formAction} onSubmit={handleSubmit} style={{ display: "contents" }}>
       <input type="hidden" name="version_id" value={versionId} />
       <button
         type="submit"
@@ -36,7 +37,7 @@ export function DeleteAgentButton({
         disabled={pending}
         title="Eliminar perfil"
       >
-        ✕
+        <Trash2 size={16} />
       </button>
     </form>
   );

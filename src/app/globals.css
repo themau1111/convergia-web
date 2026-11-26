@@ -46,7 +46,7 @@ h1,h2,strong { letter-spacing:-.035em; } .topbar h1 { margin:0; font-family:Geor
 .section-block { margin-bottom:36px; }.section-heading { margin-bottom:16px; }.section-heading h2,.lower-grid h2 { margin:0; font-family:Georgia,serif; font-size:25px; font-weight:500; }
 .section-heading>a { color:#365d50; font-size:12px; font-weight:700; }
 .campaign-list { overflow:hidden; border:1px solid var(--line); border-radius:16px; background:var(--card); }
-.campaign-row { display:grid; grid-template-columns:minmax(250px,1.3fr) minmax(180px,1fr) 100px 35px; align-items:center; gap:26px; padding:18px 20px; border-bottom:1px solid #ebe9e1; }
+.campaign-row { display:grid; grid-template-columns:minmax(250px,1.3fr) minmax(180px,1fr) 100px auto; align-items:center; gap:26px; padding:18px 20px; border-bottom:1px solid #ebe9e1; }.agent-row-actions { display:flex; align-items:center; gap:4px; }
 .campaign-row:last-child { border-bottom:0; }.campaign-identity { display:flex; align-items:center; gap:14px; }.campaign-identity div { display:grid; gap:5px; }.campaign-identity small { color:var(--muted); }
 .status-dot { width:9px; height:9px; border-radius:50%; background:#40a66f; box-shadow:0 0 0 5px #e3f5e8; }.status-dot.terminada { background:#86918c; box-shadow:0 0 0 5px #eceeeb; }.status-dot.pausada { background:#e69a53; box-shadow:0 0 0 5px #fbecdf; }
 .progress-group>div { display:flex; justify-content:space-between; margin-bottom:8px; color:var(--muted); font-size:11px; }.progress-group>div strong { color:var(--ink); }.progress-group progress { width:100%; height:5px; border:0; accent-color:var(--green); }
