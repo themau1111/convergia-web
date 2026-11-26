@@ -352,7 +352,10 @@ export function CampaignWizard({
     }
     if (step === 2 && contactFile) {
       const reviewed = await analyzeFile(contactFile);
-      if (!reviewed) return;
+      if (!reviewed) {
+        setError(fileError || "No se pudo validar el mapeo. Inténtalo de nuevo.");
+        return;
+      }
     }
     if (step === 3) {
       if (telephonyResults.length > 0 && draft.telephonyFilter.length === telephonyResults.length) return setError("Deja al menos un resultado telefónico sin excluir.");
@@ -817,7 +820,8 @@ export function CampaignWizard({
                     * Variable obligatoria · Las columnas no asignadas se ignoran.
                   </p>
                   <button type="button" className="secondary-action" disabled={fileLoading || suggestLoading || !contactFile} onClick={() => { if (contactFile) void analyzeFile(contactFile); }}>Validar mapeo y ver saludo</button>
-                  {!hasReviewedMapping && <p role="status">Valida el mapeo para actualizar los contactos y la vista previa.</p>}
+                  {fileError && <p className="form-error" role="alert">{fileError}</p>}
+                  {!hasReviewedMapping && !fileError && <p role="status">Valida el mapeo para actualizar los contactos y la vista previa.</p>}
                   {hasReviewedMapping && fileAnalysis?.preview_message && <div style={{ marginTop: 12 }} aria-live="polite">
                     <p><strong>Vista previa</strong> · {validContactCount} contactos válidos, {discardedRows ?? 0} descartados</p>
                     <p style={{ whiteSpace: "pre-wrap" }}>{fileAnalysis.preview_message}</p>
