@@ -1,7 +1,7 @@
 ---
 type: components
 status: current
-updated: 2026-11-03
+updated: 2026-11-26
 ---
 # Componentes
 
@@ -31,10 +31,11 @@ Relacionado: [[02-arquitectura]], [[04-integraciones]], [[05-operacion]].
 ## Perfiles de agente: importación desde prompt
 
 - `src/app/api/agents/import-prompt/route.ts` — BFF autenticado (`POST`). Recibe `{prompt: string}`, valida sesión y origen, proxea a `POST /v1/agent-profiles/import-prompt` en FastAPI y devuelve los campos extraídos. Timeout 20 s. No escribe ningún perfil.
-- `src/app/app/agents/prompt-import-dialog.tsx` — Componente `PromptImportDialog` reutilizable. Botón que abre un modal; el usuario pega el prompt y presiona "Analizar y rellenar campos". Al recibir respuesta pre-llena los campos del formulario padre vía callback `onImport`. Exporta el tipo `ImportedAgentFields` con los 7 campos de texto más `suggested_labels`.
-- `src/app/app/agents/new/agent-form.tsx` — Incluye `PromptImportDialog` y levanta el estado de etiquetas (`pendingLabels`) para poder pre-llenarlas desde la importación.
+- `src/app/app/agents/prompt-import-dialog.tsx` — Componente `PromptImportDialog` reutilizable. Acepta `initialPrompt?: string`; cuando tiene valor el botón dice "Ver prompt" y el textarea se pre-llena con el prompt guardado. Sin valor el botón dice "Importar desde prompt". Al recibir respuesta de la IA pre-llena los campos del formulario padre vía callback `onImport` y persiste el texto editado como `source_prompt`.
+- `src/app/app/agents/new/agent-form.tsx` — Incluye `PromptImportDialog`; persiste `source_prompt` en campo oculto para enviarlo a la Server Action.
 - `src/app/app/agents/new/labels-picker.tsx` — `LabelsPicker` recibe `pending: PendingLabel[]` y `onChange` como props (estado externo). Permite pre-llenar etiquetas sugeridas por la IA al importar un prompt, sin duplicar las existentes.
-- `src/app/app/agents/[id]/edit/edit-form.tsx` — Incluye `PromptImportDialog`; permite re-importar o actualizar el prompt en edición. Las etiquetas en edición se gestionan desde la página del agente, no en el formulario de edición.
+- `src/app/app/agents/[id]/edit/edit-form.tsx` — Incluye `PromptImportDialog` con `initialPrompt={agent.source_prompt ?? ""}`. Persiste el prompt editado en campo oculto. Muestra "Ver prompt" si `source_prompt` tiene valor, "Importar desde prompt" si es null.
+- `src/app/app/agents/page.tsx` — Lista de agentes; cada fila incluye botón ↗ (detalle) y botón 🗑 (`DeleteAgentButton`) agrupados en flex. La eliminación usa soft delete en el backend; solo bloquea cuando hay campañas en estado activo (draft/scheduled/running/paused); campañas completadas o canceladas no impiden el borrado.
 - `additional_instructions` — Campo opcional en `AgentProfileRecord`, `createAgentProfile` y `updateAgentProfile` en `control-api.ts`. Almacena el contenido del prompt que no encaja en campos estructurados (variables, contexto, límites, formas de pago).
 
 ## Cobranza: filtros y reporte
@@ -107,3 +108,21 @@ con sin contestar. Señala resultados pendientes de campañas cerradas por separ
 El campo es opcional para compatibilidad con backends anteriores.
 La bandeja semanal distingue `telephony_only` y muestra códigos sin aparentar una
 conversación evaluada. La web no reconstruye causas ni modifica estados históricos.
+
+## Gestión de agentes — Nov 2026
+
+- `src/app/app/agents/layout.tsx` — Layout de la sección de agentes. Envuelve en
+  `<div class="agents-layout">` (no Fragment) para ser un solo hijo del grid `.app-shell`
+  de 2 columnas; evita que `main.members-shell` caiga en una fila invisible.
+  Muestra `<aside class="voice-policy-banner">` cuando hay política de voz centralizada
+  activa (`policy.enforced`).
+- `src/app/app/agents/actions.ts` — Server Action `deleteAgentAction`: llama a
+  `DELETE /v1/agent-profiles/{id}`, revalida `/app/agents` y redirige. Devuelve error
+  descriptivo si el perfil está en uso (409) o sin permisos (401/403).
+- `src/app/app/agents/delete-agent-button.tsx` — Componente cliente `DeleteAgentButton`.
+  Muestra icono `✕` rojo junto al `↗` de cada fila; pide `confirm()` nativo antes de
+  enviar. Usa `useActionState` y `toast.error` para errores sin navegación.
+- `src/app/app/agents/page.tsx` — Lista de perfiles; incluye `DeleteAgentButton` en
+  cada fila. Los agentes en uso por campañas no se pueden eliminar (error del backend).
+- CSS `.agents-layout` (flex column, min-width 0) y `.voice-policy-banner` (banner
+  superior con padding responsive); `.danger-icon-button` para el color rojo del botón.
