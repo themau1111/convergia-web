@@ -20,6 +20,7 @@ export async function saveAgentEdit(
   const flowScenarios = String(data.get("flow_scenarios") ?? "").trim();
   const objective = String(data.get("objective") ?? "").trim();
   const additionalInstructions = String(data.get("additional_instructions") ?? "").trim();
+  const sourcePrompt = String(data.get("source_prompt") ?? "").trim();
   const voiceId = String(data.get("voice_id") ?? "").trim();
   const rawKey = String(data.get("agent_definition_key") ?? "generativo").trim();
   const agentDefinitionKey = (["generativo", "collections", "rac", "survey"].includes(rawKey)
@@ -48,6 +49,7 @@ export async function saveAgentEdit(
       flow_scenarios: flowScenarios,
       objective,
       additional_instructions: additionalInstructions,
+      source_prompt: sourcePrompt,
       payment_options: paymentOptionsFromFormData(data),
     });
     revalidatePath(`/app/agents/${agentId}`);

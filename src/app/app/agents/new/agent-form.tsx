@@ -45,6 +45,7 @@ export function AgentForm({ library = EMPTY_LIBRARY }: { library?: AgentLabelRec
   const [flowScenarios, setFlowScenarios] = useState("");
   const [additionalInstructions, setAdditionalInstructions] = useState("");
   const [pendingLabels, setPendingLabels] = useState<PendingLabel[]>([]);
+  const [sourcePrompt, setSourcePrompt] = useState("");
 
   const generatedProfileKey = [slugify(companyName), slugify(agentName)].filter(Boolean).join("-");
   const visibleProfileKey = profileKeyEdited ? profileKey : generatedProfileKey;
@@ -68,7 +69,7 @@ export function AgentForm({ library = EMPTY_LIBRARY }: { library?: AgentLabelRec
       <section className="edit-section">
         <div className={styles.sectionHeading}>
           <p className="eyebrow">Identidad del agente</p>
-          <PromptImportDialog onImport={handleImport} />
+          <PromptImportDialog onImport={handleImport} initialPrompt={sourcePrompt} onPromptUsed={setSourcePrompt} />
         </div>
         <div className="form-grid">
           <label>
@@ -191,6 +192,7 @@ export function AgentForm({ library = EMPTY_LIBRARY }: { library?: AgentLabelRec
 
       <VariablesEditor variables={variables} onChange={setVariables} prompt={[script, flowScenarios, additionalInstructions, objective, personality].join("\n")} />
 
+      <input type="hidden" name="source_prompt" value={sourcePrompt} />
       {state.error && (
         <p className="form-error" role="alert">{state.error}</p>
       )}

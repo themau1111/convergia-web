@@ -36,6 +36,7 @@ export function EditAgentForm({ agent, existingLabels = EMPTY_LABELS, library = 
   const [script, setScript] = useState(agent.script ?? "");
   const [flowScenarios, setFlowScenarios] = useState(agent.flow_scenarios ?? "");
   const [additionalInstructions, setAdditionalInstructions] = useState(agent.additional_instructions ?? "");
+  const [sourcePrompt, setSourcePrompt] = useState(agent.source_prompt ?? "");
 
   useEffect(() => {
     if (state.ok) {
@@ -66,7 +67,7 @@ export function EditAgentForm({ agent, existingLabels = EMPTY_LABELS, library = 
       <section className="edit-section">
         <div className={styles.sectionHeading}>
           <p className="eyebrow">Identidad del agente</p>
-          <PromptImportDialog onImport={handleImport} />
+          <PromptImportDialog onImport={handleImport} initialPrompt={sourcePrompt} onPromptUsed={setSourcePrompt} />
         </div>
         <div className="form-grid">
           <label>
@@ -134,6 +135,7 @@ export function EditAgentForm({ agent, existingLabels = EMPTY_LABELS, library = 
 
       <VariablesEditor variables={variables} onChange={setVariables} prompt={[script, flowScenarios, additionalInstructions, objective, personality].join("\n")} />
 
+      <input type="hidden" name="source_prompt" value={sourcePrompt} />
       {state.error && <p className="form-error" role="alert">{state.error}</p>}
 
       <div className="edit-actions">

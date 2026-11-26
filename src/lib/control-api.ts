@@ -171,6 +171,7 @@ export type AgentProfileRecord = {
   id: string; organization_id: string; profile_key: string; agent_definition_key: "generativo" | "collections" | "rac" | "survey"; version: number;
   agent_name: string; company_name: string; personality: string;
   script: string; flow_scenarios: string; objective: string; additional_instructions: string;
+  source_prompt?: string;
   payment_options: PaymentOptions;
   voice_id: string | null; created_at: string;
   agent_variables?: AgentVariable[];
@@ -531,6 +532,7 @@ export async function createAgentProfile(payload: {
   agent_variables?: AgentVariable[];
   labels?: { name: string; criteria: string }[];
   script?: string; flow_scenarios?: string; objective?: string; additional_instructions?: string;
+  source_prompt?: string;
   payment_options?: PaymentOptions;
   agent_definition_key?: "generativo" | "collections" | "rac" | "survey";
 }): Promise<AgentProfileRecord> {
@@ -551,7 +553,7 @@ export async function updateAgentProfile(
     labels?: { name: string; criteria: string }[];
     voice_id?: string | null; agent_definition_key?: "generativo" | "collections" | "rac" | "survey";
     script?: string; flow_scenarios?: string;
-    objective?: string; additional_instructions?: string; profile_key?: string; payment_options?: PaymentOptions;
+    objective?: string; additional_instructions?: string; source_prompt?: string; profile_key?: string; payment_options?: PaymentOptions;
   },
 ): Promise<AgentProfileRecord> {
   return controlApi<AgentProfileRecord>(`/v1/agent-profiles/${encodeURIComponent(id)}`, {

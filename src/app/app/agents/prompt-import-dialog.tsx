@@ -5,20 +5,24 @@ import { useEffect, useId, useRef, useState } from "react";
 import { importedAgentFieldsSchema, MAX_PROMPT_CHARS, type ImportedAgentFields } from "@/lib/agent-prompt-import";
 export type { ImportedAgentFields } from "@/lib/agent-prompt-import";
 
-type Props = { onImport: (fields: ImportedAgentFields) => void };
+type Props = {
+  onImport: (fields: ImportedAgentFields) => void;
+  initialPrompt?: string;
+  onPromptUsed?: (prompt: string) => void;
+};
 const fieldTitles = {
   agent_name: "Nombre", company_name: "Empresa", objective: "Objetivo", personality: "Personalidad",
   script: "Script", flow_scenarios: "Escenarios", additional_instructions: "Instrucciones adicionales",
 } as const;
 
-export function PromptImportDialog({ onImport }: Props) {
+export function PromptImportDialog({ onImport, initialPrompt, onPromptUsed }: Props) {
   const titleId = useId();
   const headingRef = useRef<HTMLHeadingElement>(null);
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [proposal, setProposal] = useState<ImportedAgentFields | null>(null);
-  const [draft, setDraft] = useState("");
+  const [draft, setDraft] = useState(initialPrompt ?? "");
   const dialogRef = useRef<HTMLDialogElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
@@ -40,7 +44,7 @@ export function PromptImportDialog({ onImport }: Props) {
     return () => { document.body.style.overflow = previous; };
   }, [open]);
 
-  function openDialog() { setOpen(true); setError(null); setProposal(null); }
+  function openDialog() { setDraft(initialPrompt ?? ""); setOpen(true); setError(null); setProposal(null); }
   function closeDialog() { if (!busy) setOpen(false); }
 
   async function analyze() {
@@ -62,7 +66,9 @@ export function PromptImportDialog({ onImport }: Props) {
 
   return (
     <>
-      <button type="button" className={`secondary-action ${styles.trigger}`} onClick={openDialog}>Importar desde prompt</button>
+      <button type="button" className={`secondary-action ${styles.trigger}`} onClick={openDialog}>
+        {initialPrompt ? "Ver prompt" : "Importar desde prompt"}
+      </button>
       <dialog ref={dialogRef} className={styles.dialog} aria-labelledby={titleId}
         onCancel={(event) => { event.preventDefault(); closeDialog(); }} onClose={() => setOpen(false)}>
         <header className={styles.header}>
@@ -116,7 +122,7 @@ export function PromptImportDialog({ onImport }: Props) {
           <button type="button" className={`secondary-action ${styles.cancel}`} disabled={busy} onClick={closeDialog}>Cancelar</button>
           {proposal ? <>
             <button type="button" className="secondary-action" onClick={() => setProposal(null)}>Editar prompt</button>
-            <button type="button" className={`primary-action ${styles.apply}`} onClick={() => { onImport(proposal); setOpen(false); }}>Aplicar al formulario</button>
+            <button type="button" className={`primary-action ${styles.apply}`} onClick={() => { onImport(proposal); onPromptUsed?.(draft); setOpen(false); }}>Aplicar al formulario</button>
           </> : <button type="button" className={`primary-action ${styles.apply}`} disabled={busy || !draft.trim()} onClick={() => void analyze()}>
             {busy ? "Analizando…" : "Analizar prompt"}
           </button>}
